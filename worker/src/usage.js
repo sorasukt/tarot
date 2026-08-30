@@ -53,7 +53,8 @@ export async function purgeExpiredUserData(env){
     env.DB.prepare("DELETE FROM usage_events WHERE expires_at<=CURRENT_TIMESTAMP"),
     env.DB.prepare("DELETE FROM member_ai_results WHERE expires_at<=CURRENT_TIMESTAMP"),
     env.DB.prepare("DELETE FROM daily_readings WHERE reading_date<date('now','-60 days')"),
-    env.DB.prepare("DELETE FROM ai_daily_quotas WHERE quota_date<date('now','-7 days')")
+    env.DB.prepare("DELETE FROM ai_daily_quotas WHERE quota_date<date('now','-7 days')"),
+    env.DB.prepare("DELETE FROM tarot_reading_history WHERE expires_at<=CURRENT_TIMESTAMP")
   ]);
 }
 

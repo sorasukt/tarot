@@ -1,0 +1,44 @@
+{
+  "name": "sorasukt Tarot",
+  "short_name": "Tarot",
+  "description": "พื้นที่สำหรับไพ่ ดวงประจำวัน และการสะท้อนมุมมองของคุณ",
+  "lang": "th",
+  "start_url": "/tarot/",
+  "scope": "/tarot/",
+  "display": "standalone",
+  "display_override": ["window-controls-overlay", "standalone", "minimal-ui"],
+  "background_color": "#ffffff",
+  "theme_color": "#ffffff",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/img/logo.png",
+      "sizes": "any",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/img/logo.png",
+      "sizes": "any",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "เปิดไพ่",
+      "short_name": "เปิดไพ่",
+      "url": "/tarot/reading/"
+    },
+    {
+      "name": "วันนี้",
+      "short_name": "วันนี้",
+      "url": "/tarot/"
+    },
+    {
+      "name": "ประวัติของฉัน",
+      "short_name": "ประวัติ",
+      "url": "/tarot/history/"
+    }
+  ]
+}

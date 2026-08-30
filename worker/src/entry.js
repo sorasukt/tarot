@@ -7,6 +7,7 @@ import {handleUsage,hasCurrentPolicy,loadPolicyAcceptance,purgeExpiredUserData} 
 import {handleBilling,handleStripeWebhook,loadMembership} from "./stripe.js";
 import {handleAdmin} from "./admin.js";
 import {handleTts} from "./tts.js";
+import {handleHistory} from "./history.js";
 
 const MAJOR=["The Fool","The Magician","The High Priestess","The Empress","The Emperor","The Hierophant","The Lovers","The Chariot","Strength","The Hermit","Wheel of Fortune","Justice","The Hanged Man","Death","Temperance","The Devil","The Tower","The Star","The Moon","The Sun","Judgement","The World"];
 const RANKS=["Ace","Two","Three","Four","Five","Six","Seven","Eight","Nine","Ten","Page","Knight","Queen","King"];
@@ -124,6 +125,12 @@ export default {
     if(!session)return json({success:false,error:{code:"UNAUTHORIZED",message:"Authentication required"}},401,headers);
     const auth={ok:true,payload:session};
 
+    if(url.pathname.startsWith("/api/member/history")){
+      if(!hasCurrentPolicy(request))return policyRequired(headers);
+      try{return await handleHistory(request,env,headers,session)}
+      catch(error){console.error(JSON.stringify({message:"Tarot history failed",error:error?.message||"error"}));return json({success:false,error:{code:"HISTORY_ERROR",message:"ไม่สามารถโหลดประวัติการเปิดไพ่ได้ในขณะนี้"}},500,headers)}
+    }
+
     if((url.pathname==="/api/member/daily"||url.pathname==="/api/member/astrology")&&request.method==="GET"){
       if(!hasCurrentPolicy(request))return policyRequired(headers);
       const limit=await enforceAiRateLimit(request,env,session.sub);
@@ -163,7 +170,7 @@ async function getMemberContext(env,session){
 }
 function preflight(corsOrigin){
   if(!corsOrigin)return new Response(null,{status:403,headers:{"Cache-Control":"no-store","Vary":"Origin"}});
-  const headers=new Headers();headers.set('Access-Control-Allow-Origin',corsOrigin);headers.set('Access-Control-Allow-Credentials','true');headers.set('Access-Control-Allow-Methods','GET, POST, PUT, OPTIONS');headers.set('Access-Control-Allow-Headers','Content-Type, X-Tarot-Policy-Version');headers.set('Access-Control-Max-Age','86400');headers.set('Cache-Control','no-store');headers.set('Vary','Origin, Access-Control-Request-Method, Access-Control-Request-Headers');return new Response(null,{status:204,headers});
+  const headers=new Headers();headers.set('Access-Control-Allow-Origin',corsOrigin);headers.set('Access-Control-Allow-Credentials','true');headers.set('Access-Control-Allow-Methods','GET, POST, PUT, PATCH, DELETE, OPTIONS');headers.set('Access-Control-Allow-Headers','Content-Type, X-Tarot-Policy-Version');headers.set('Access-Control-Max-Age','86400');headers.set('Cache-Control','no-store');headers.set('Vary','Origin, Access-Control-Request-Method, Access-Control-Request-Headers');return new Response(null,{status:204,headers});
 }
 function allowedOrigin(origin,env){const allowed=(env.ALLOWED_ORIGINS||"https://sorasukt.com,https://www.sorasukt.com").split(",").map(x=>x.trim()).filter(Boolean);return allowed.includes(origin)?origin:""}
 function baseHeaders(request,env){const origin=request.headers.get("Origin")||"",corsOrigin=allowedOrigin(origin,env),headers=new Headers();headers.set("Content-Type","application/json; charset=utf-8");headers.set("Cache-Control","no-store");headers.set("Vary","Origin");if(corsOrigin){headers.set("Access-Control-Allow-Origin",corsOrigin);headers.set("Access-Control-Allow-Credentials","true");}return headers}
