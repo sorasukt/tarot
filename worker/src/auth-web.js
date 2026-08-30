@@ -2,6 +2,7 @@ const SESSION_COOKIE = "sorasukt_session";
 const TX_COOKIE = "sorasukt_auth_tx";
 const CALLBACK_PATH = "/auth/callback";
 const DEFAULT_RETURN_TO = "https://sorasukt.com/tarot/";
+const DEFAULT_ROLES_CLAIM = "https://sorasukt.com/roles";
 
 export async function handleAuthRoute(request, env) {
   const url = new URL(request.url);
@@ -21,6 +22,7 @@ export async function getSession(request, env) {
   try {
     const payload = JSON.parse(decodeBase64Url(payloadPart));
     if (!payload?.sub || !payload?.exp || payload.exp <= Math.floor(Date.now() / 1000)) return null;
+    payload.roles = normalizeRoles(payload.roles);
     return payload;
   } catch {
     return null;
@@ -85,7 +87,16 @@ async function finishLogin(request, env) {
 
   const now = Math.floor(Date.now() / 1000);
   const exp = Math.min(Number(claims.exp) || now + 28800, now + 28800);
-  const session = { sub: claims.sub, name: claims.name || null, nickname: claims.nickname || null, email: claims.email || null, picture: claims.picture || null, exp };
+  const rolesClaim = env.AUTH0_ROLES_CLAIM || DEFAULT_ROLES_CLAIM;
+  const session = {
+    sub: claims.sub,
+    name: claims.name || null,
+    nickname: claims.nickname || null,
+    email: claims.email || null,
+    picture: claims.picture || null,
+    roles: normalizeRoles(claims[rolesClaim]),
+    exp
+  };
 
   if (env.DB) {
     try {
@@ -186,6 +197,10 @@ function safeReturnTo(value) {
   }
 }
 
+function normalizeRoles(value){
+  if(!Array.isArray(value))return [];
+  return [...new Set(value.map(role=>String(role||"").trim().toLowerCase()).filter(Boolean))].slice(0,20);
+}
 function callbackUrl(request) { return `${new URL(request.url).origin}${CALLBACK_PATH}`; }
 function auth0Domain(env) { return (env.AUTH0_DOMAIN || "auth.sorasukt.com").replace(/^https?:\/\//, "").replace(/\/$/, ""); }
 function assertConfig(env) { if (!env.AUTH0_CLIENT_ID || !env.AUTH0_CLIENT_SECRET) throw new Error("Auth0 Regular Web Application is not configured"); }
