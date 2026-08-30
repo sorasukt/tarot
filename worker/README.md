@@ -66,7 +66,6 @@ STRIPE_PRICE_SUB_YEARLY
 STRIPE_PRICE_ONETIME_WEEKLY
 STRIPE_PRICE_ONETIME_MONTHLY
 STRIPE_PRICE_ONETIME_YEARLY
-STRIPE_PORTAL_CONFIGURATION_ID
 ```
 
 ราคาที่กำหนดใน Stripe ต้องเป็นสกุลเงินบาทตามตารางนี้:
@@ -95,7 +94,8 @@ https://api.sorasukt.com/api/stripe/webhook
 1. เปิด `Switch plan` แล้วเพิ่ม recurring Price รายสัปดาห์ รายเดือน และรายปีของ `Tarot for your daily` เป็นแพ็กเกจที่เลือกเปลี่ยนได้
 2. เปิด `Cancel subscription`, การแก้ไขวิธีชำระเงิน และประวัติใบแจ้งหนี้
 3. กำหนดว่าจะคิดส่วนต่างทันทีหรือเมื่อจบรอบบิลให้ตรงกับนโยบายธุรกิจ โดยแนะนำให้การลดแพ็กเกจมีผลเมื่อจบรอบ เพื่อไม่ตัดสิทธิ์ที่ผู้ใช้จ่ายแล้ว
-4. นำ Configuration ID (`bpc_...`) ไปตั้งเป็น GitHub Actions variable `STRIPE_PORTAL_CONFIGURATION_ID` หากเว้นว่าง Worker จะใช้ default portal configuration ของบัญชี
+
+Worker จะใช้ Customer Portal configuration เริ่มต้นของบัญชี Stripe โดยอัตโนมัติ จึงไม่ต้องตั้ง Configuration ID ใน GitHub Actions
 
 เมื่อผู้ใช้เปลี่ยนแพ็กเกจ ต่ออายุ หยุด ยกเลิก หรือชำระไม่สำเร็จ Webhook จะอัปเดตสถานะ รอบแพ็กเกจ วันสิ้นสุด และการยกเลิกใน D1 เมื่อกลับจากหน้าจัดการ หน้า “ฉัน” จะตรวจสถานะล่าสุดกับผู้ให้บริการอีกครั้งเพื่อครอบคลุมกรณี Webhook ยังมาถึงไม่ทัน ระบบสนับสนุนใช้ THB และขอ billing/shipping address ในประเทศไทยผ่าน Stripe Checkout
 

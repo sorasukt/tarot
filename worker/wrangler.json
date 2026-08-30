@@ -21,7 +21,6 @@
     "STRIPE_PRICE_ONETIME_WEEKLY": "",
     "STRIPE_PRICE_ONETIME_MONTHLY": "",
     "STRIPE_PRICE_ONETIME_YEARLY": "",
-    "STRIPE_PORTAL_CONFIGURATION_ID": "",
     "ALLOWED_ORIGINS": "https://sorasukt.com,https://www.sorasukt.com",
     "AUTH0_DOMAIN": "auth.sorasukt.com",
     "AUTH0_CLIENT_ID": "NbMkuqqsuljnBKcAKVDr8bICryQZR4MI"

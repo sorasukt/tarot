@@ -195,7 +195,6 @@ async function customerPortal(env,headers,session){
   const row=await env.DB.prepare("SELECT stripe_customer_id FROM stripe_customers WHERE user_sub=?").bind(session.sub).first();
   if(!row?.stripe_customer_id)return json({success:false,error:{code:"CUSTOMER_NOT_FOUND",message:"ยังไม่พบข้อมูลการชำระเงินของบัญชีนี้"}},404,headers);
   const params=new URLSearchParams({customer:row.stripe_customer_id,return_url:`${siteUrl(env)}/tarot/me/?billing=updated`});
-  if(typeof env.STRIPE_PORTAL_CONFIGURATION_ID==="string"&&/^bpc_[A-Za-z0-9]+$/.test(env.STRIPE_PORTAL_CONFIGURATION_ID))params.set("configuration",env.STRIPE_PORTAL_CONFIGURATION_ID);
   const portal=await stripeRequest(env,"/billing_portal/sessions",{method:"POST",body:params});
   if(typeof portal.url!=="string"||!portal.url.startsWith("https://billing.stripe.com/"))throw new StripeApiError(502,"INVALID_PORTAL_URL");
   return json({success:true,url:portal.url},200,headers);

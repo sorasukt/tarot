@@ -106,14 +106,13 @@ jobs:
           STRIPE_PRICE_ONETIME_WEEKLY: ${{ vars.STRIPE_PRICE_ONETIME_WEEKLY }}
           STRIPE_PRICE_ONETIME_MONTHLY: ${{ vars.STRIPE_PRICE_ONETIME_MONTHLY }}
           STRIPE_PRICE_ONETIME_YEARLY: ${{ vars.STRIPE_PRICE_ONETIME_YEARLY }}
-          STRIPE_PORTAL_CONFIGURATION_ID: ${{ vars.STRIPE_PORTAL_CONFIGURATION_ID }}
         run: |
           node --input-type=module <<'NODE'
           import fs from 'node:fs';
           const config=JSON.parse(fs.readFileSync('wrangler.json','utf8'));
           config.d1_databases=[{binding:'DB',database_name:'sorasukt-members',database_id:process.env.D1_DATABASE_ID,migrations_dir:'migrations'}];
           config.r2_buckets=[{binding:'ARCHIVE',bucket_name:'sorasukt-ai-archive'}];
-          for(const name of ['STRIPE_PRICE_SUB_WEEKLY','STRIPE_PRICE_SUB_MONTHLY','STRIPE_PRICE_SUB_YEARLY','STRIPE_PRICE_ONETIME_WEEKLY','STRIPE_PRICE_ONETIME_MONTHLY','STRIPE_PRICE_ONETIME_YEARLY','STRIPE_PORTAL_CONFIGURATION_ID']){
+          for(const name of ['STRIPE_PRICE_SUB_WEEKLY','STRIPE_PRICE_SUB_MONTHLY','STRIPE_PRICE_SUB_YEARLY','STRIPE_PRICE_ONETIME_WEEKLY','STRIPE_PRICE_ONETIME_MONTHLY','STRIPE_PRICE_ONETIME_YEARLY']){
             config.vars[name]=process.env[name]||'';
           }
           fs.writeFileSync('wrangler.production.json',JSON.stringify(config,null,2));

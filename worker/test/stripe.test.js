@@ -72,16 +72,16 @@ test("PromptPay is excluded from Subscription Checkout",async()=>{
   }finally{globalThis.fetch=originalFetch}
 });
 
-test("Customer Portal uses the package-management configuration and returns to My Account",async()=>{
+test("Customer Portal uses the Stripe account default and returns to My Account",async()=>{
   const originalFetch=globalThis.fetch;let requestBody="";
   globalThis.fetch=async (url,options={})=>{assert.equal(url,"https://api.stripe.com/v1/billing_portal/sessions");requestBody=options.body||"";return Response.json({url:"https://billing.stripe.com/p/session/test"})};
   const DB={prepare(){return {bind(){return this},async first(){return {stripe_customer_id:"cus_portal"}}}}};
   try{
-    const response=await handleBilling(new Request("https://api.sorasukt.com/api/billing/portal",{method:"POST"}),{DB,STRIPE_SECRET_KEY:"sk_test",STRIPE_PORTAL_CONFIGURATION_ID:"bpc_membership"},headers,{sub:"auth0|member"});
+    const response=await handleBilling(new Request("https://api.sorasukt.com/api/billing/portal",{method:"POST"}),{DB,STRIPE_SECRET_KEY:"sk_test"},headers,{sub:"auth0|member"});
     const params=new URLSearchParams(requestBody);
     assert.equal(response.status,200);
     assert.equal(params.get("customer"),"cus_portal");
-    assert.equal(params.get("configuration"),"bpc_membership");
+    assert.equal(params.has("configuration"),false);
     assert.equal(params.get("return_url"),"https://sorasukt.com/tarot/me/?billing=updated");
   }finally{globalThis.fetch=originalFetch}
 });
