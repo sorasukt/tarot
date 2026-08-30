@@ -9,11 +9,11 @@
   }
   function renderStatus(value){
     if(!member?.success){$("membershipTitle").textContent="ลงชื่อใช้งานเพื่อเริ่มสมาชิกพิเศษ";$("membershipDetail").textContent="บัญชีฟรีเปิดไพ่ได้ 5 ครั้งต่อวัน และลองดวงดาวเชิงลึกได้ 1 ครั้งต่อวัน";$("portalButton").textContent="ลงชื่อใช้งาน";$("portalButton").hidden=false;return}
-    if(!value?.active){$("membershipTitle").textContent="บัญชีฟรีของคุณพร้อมใช้งาน";$("membershipDetail").textContent="เปิดไพ่ได้ 5 ครั้งต่อวัน · ดวงดาวเชิงลึก 1 ครั้งต่อวัน · อัปเกรดเพื่อเสียงอ่านไพ่และลิมิตที่สูงขึ้น";$("portalButton").hidden=true;return}
+    if(!value?.active){$("membershipTitle").textContent="บัญชีฟรีของคุณพร้อมใช้งาน";$("membershipDetail").textContent="เปิดไพ่ได้ 5 ครั้งต่อวัน · ดวงดาวเชิงลึก 1 ครั้งต่อวัน · อัปเกรดเพื่อเสียงอ่านไพ่และลิมิตที่สูงขึ้น";$("portalButton").textContent="ดูข้อมูลสมาชิกในหน้า ฉัน";$("portalButton").hidden=false;return}
     const annual=value.period==="yearly";
     $("membershipTitle").textContent=annual?"สมาชิก Annual กำลังใช้งาน":"Tarot for your daily กำลังใช้งาน";
     $("membershipDetail").textContent=`${annual?"เปิดไพ่ 60 ครั้ง/วัน · เสียงอ่านไพ่ 40 ครั้ง/วัน · ดวงดาวเชิงลึก 20 ครั้ง/วัน · สิทธิ์ Annual Boost":"เปิดไพ่ 30 ครั้ง/วัน · เสียงอ่านไพ่ 20 ครั้ง/วัน · ดวงดาวเชิงลึก 10 ครั้ง/วัน"}${value.currentPeriodEnd?` · ใช้ได้ถึง ${formatDate(value.currentPeriodEnd)}`:""}${value.cancelAtPeriodEnd?" · จะไม่ต่ออายุ":""}`;
-    $("portalButton").textContent="ดูข้อมูลสมาชิกในหน้า ฉัน";$("portalButton").hidden=false;
+    $("portalButton").textContent=value.paymentType==="subscription"?"จัดการการชำระเงิน":"ดูข้อมูลสมาชิกในหน้า ฉัน";$("portalButton").hidden=false;
   }
   function renderPlans(){
     const type=document.querySelector('input[name="paymentType"]:checked')?.value||"subscription";$("planGrid").replaceChildren();
@@ -41,7 +41,12 @@
     window.TarotPortal.setButtonBusy(button,true,"กำลังเปิดหน้าชำระเงิน…");$("billingMessage").textContent="กำลังพาคุณไปยังหน้าชำระเงินที่ปลอดภัย";
     try{const response=await billingApi("/api/billing/checkout/membership",{period,paymentType,requestId:crypto.randomUUID()}),data=await response.json();if(!response.ok)throw window.TarotPortal.apiError(data,"เริ่มชำระเงินไม่สำเร็จ");if(!/^https:\/\/checkout\.stripe\.com\//.test(data.url||""))throw new Error("ลิงก์ชำระเงินไม่ถูกต้อง");location.assign(data.url)}catch(error){if(error?.code==="MANAGE_EXISTING_SUBSCRIPTION"){location.assign("../me/?manage=membership");return}window.TarotPortal.renderError($("billingMessage"),error);window.TarotPortal.setButtonBusy(button,false)}
   }
-  function accountAction(){if(!member?.success){location.assign(`https://api.sorasukt.com/auth/login?returnTo=${encodeURIComponent(location.href)}`);return}location.assign("../me/")}
+  async function accountAction(){
+    if(!member?.success){location.assign(`https://api.sorasukt.com/auth/login?returnTo=${encodeURIComponent(location.href)}`);return}
+    if(member?.membership?.paymentType!=="subscription"){location.assign("../me/");return}
+    const button=$("portalButton");window.TarotPortal.setButtonBusy(button,true,"กำลังเปิด…");
+    try{const response=await window.TarotPortal.api("/api/billing/portal",{method:"POST",timeout:15000}),data=await response.json();if(!response.ok)throw window.TarotPortal.apiError(data,"เปิดหน้าจัดการการชำระเงินไม่สำเร็จ");if(!/^https:\/\/billing\.stripe\.com\//.test(data.url||""))throw new Error("ลิงก์จัดการการชำระเงินไม่ถูกต้อง");location.assign(data.url)}catch(error){window.TarotPortal.renderError($("billingMessage"),error);window.TarotPortal.setButtonBusy(button,false)}
+  }
   function billingApi(path,body){return window.TarotPortal.api(path,{method:"POST",headers:policyHeaders(),body:JSON.stringify(body),timeout:20000})}
   function policyHeaders(){return {"Content-Type":"application/json","X-Tarot-Policy-Version":window.TarotPortal.policyVersion}}
   function formatMoney(amount,currency){if(!Number.isFinite(amount)||!currency)return "—";return new Intl.NumberFormat("th-TH",{style:"currency",currency:currency.toUpperCase(),maximumFractionDigits:2}).format(amount/100)}
