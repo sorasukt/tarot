@@ -34,12 +34,13 @@ test("member policy acceptance is persisted",async()=>{
   assert.deepEqual(values,["auth0|member",POLICY_VERSION]);
 });
 
-test("scheduled cleanup removes expired user and quota data",async()=>{
+test("scheduled cleanup removes expired user, quota, and tarot history data",async()=>{
   const statements=[];
-  const env={DB:{prepare(sql){statements.push(sql);return {sql}},async batch(batch){assert.equal(batch.length,4)}}};
+  const env={DB:{prepare(sql){statements.push(sql);return {sql}},async batch(batch){assert.equal(batch.length,5)}}};
   await purgeExpiredUserData(env);
   assert.ok(statements.some(sql=>sql.includes("usage_events")));
   assert.ok(statements.some(sql=>sql.includes("member_ai_results")));
   assert.ok(statements.some(sql=>sql.includes("daily_readings")&&sql.includes("-60 days")));
   assert.ok(statements.some(sql=>sql.includes("ai_daily_quotas")&&sql.includes("-7 days")));
+  assert.ok(statements.some(sql=>sql.includes("tarot_reading_history")&&sql.includes("expires_at")));
 });
