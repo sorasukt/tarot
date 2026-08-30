@@ -14,19 +14,19 @@ test("429 falls back through the requested Gemini model order",async()=>{
   };
   try{
     const generated=await generateGeminiJson({GEMINI_API_KEY:"test",GEMINI_MODEL:"gemini-3.6-flash"},options);
-    assert.deepEqual(models,["gemini-3.6-flash","gemini-2.5-flash","gemini-2.5-flash-lite"]);
+    assert.deepEqual(models,["gemini-3.6-flash","gemini-3.5-flash","gemini-3.5-flash-lite"]);
     assert.deepEqual(generated.result,{title:"ready"});
-    assert.equal(generated.model,"gemini-2.5-flash-lite");
+    assert.equal(generated.model,"gemini-3.5-flash-lite");
   }finally{globalThis.fetch=originalFetch}
 });
 
-test("Gemini 3.5 Flash Lite is the final fallback and exhaustion is explicit",async()=>{
+test("Gemini 2.5 Flash Lite is the final fallback and exhaustion is explicit",async()=>{
   const originalFetch=globalThis.fetch;
   const models=[];
   globalThis.fetch=async url=>{models.push(new URL(url).pathname.match(/models\/([^:]+)/)?.[1]);return new Response(null,{status:429})};
   try{
     await assert.rejects(generateGeminiJson({GEMINI_API_KEY:"test",GEMINI_MODEL:"gemini-3.6-flash"},options),GeminiCapacityError);
-    assert.deepEqual(models,["gemini-3.6-flash","gemini-2.5-flash","gemini-2.5-flash-lite","gemini-3.5-flash","gemini-3.1-flash-lite","gemini-3.5-flash-lite"]);
+    assert.deepEqual(models,["gemini-3.6-flash","gemini-3.5-flash","gemini-3.5-flash-lite","gemini-3.1-flash-lite","gemini-2.5-flash","gemini-2.5-flash-lite"]);
   }finally{globalThis.fetch=originalFetch}
 });
 
@@ -34,7 +34,7 @@ test("upstream 5xx continues to the next model within the same request",async()=
   const originalFetch=globalThis.fetch;
   const models=[];
   globalThis.fetch=async url=>{models.push(new URL(url).pathname.match(/models\/([^:]+)/)?.[1]);return models.length===1?new Response(null,{status:503}):success()};
-  try{const generated=await generateGeminiJson({GEMINI_API_KEY:"test"},options);assert.equal(generated.model,"gemini-2.5-flash");assert.equal(models.length,2)}
+  try{const generated=await generateGeminiJson({GEMINI_API_KEY:"test"},options);assert.equal(generated.model,"gemini-3.6-flash");assert.deepEqual(models,["gemini-3.7-flash","gemini-3.6-flash"])}
   finally{globalThis.fetch=originalFetch}
 });
 
@@ -48,8 +48,8 @@ test("a per-model timeout continues automatically without a second user request"
   };
   try{
     const generated=await generateGeminiJson({GEMINI_API_KEY:"test"},{...options,timeoutMs:200,perModelTimeoutMs:20});
-    assert.equal(generated.model,"gemini-2.5-flash");
-    assert.deepEqual(models,["gemini-3.6-flash","gemini-2.5-flash"]);
+    assert.equal(generated.model,"gemini-3.6-flash");
+    assert.deepEqual(models,["gemini-3.7-flash","gemini-3.6-flash"]);
   }finally{globalThis.fetch=originalFetch}
 });
 
@@ -57,11 +57,11 @@ test("invalid or incomplete JSON continues to the next model but authentication 
   const originalFetch=globalThis.fetch;
   let requests=0;
   globalThis.fetch=async()=>{requests+=1;return requests===1?new Response("not-json",{status:200}):success()};
-  try{const generated=await generateGeminiJson({GEMINI_API_KEY:"test"},options);assert.equal(generated.model,"gemini-2.5-flash");assert.equal(requests,2)}
+  try{const generated=await generateGeminiJson({GEMINI_API_KEY:"test"},options);assert.equal(generated.model,"gemini-3.6-flash");assert.equal(requests,2)}
   finally{globalThis.fetch=originalFetch}
 
   requests=0;globalThis.fetch=async()=>{requests+=1;return requests===1?new Response(JSON.stringify({candidates:[{content:{parts:[{text:"{}"}]}}]}),{status:200,headers:{"Content-Type":"application/json"}}):success()};
-  try{const generated=await generateGeminiJson({GEMINI_API_KEY:"test"},options);assert.equal(generated.model,"gemini-2.5-flash");assert.equal(requests,2)}
+  try{const generated=await generateGeminiJson({GEMINI_API_KEY:"test"},options);assert.equal(generated.model,"gemini-3.6-flash");assert.equal(requests,2)}
   finally{globalThis.fetch=originalFetch}
 
   requests=0;globalThis.fetch=async()=>{requests+=1;return new Response(null,{status:401})};
@@ -70,7 +70,7 @@ test("invalid or incomplete JSON continues to the next model but authentication 
 });
 
 test("duplicate configured models are removed and capacity response includes Stripe support",()=>{
-  assert.deepEqual(geminiModelChain({GEMINI_MODEL:"gemini-2.5-flash"}),["gemini-2.5-flash","gemini-2.5-flash-lite","gemini-3.5-flash","gemini-3.1-flash-lite","gemini-3.5-flash-lite"]);
+  assert.deepEqual(geminiModelChain({GEMINI_MODEL:"gemini-2.5-flash"}),["gemini-2.5-flash","gemini-3.6-flash","gemini-3.5-flash","gemini-3.5-flash-lite","gemini-3.1-flash-lite","gemini-2.5-flash-lite"]);
   const error=capacityError({SUPPORT_URL:"https://buy.stripe.com/example"});
   assert.equal(error.code,"AI_CAPACITY_EXHAUSTED");
   assert.equal(error.supportUrl,"https://buy.stripe.com/example");
