@@ -3,12 +3,13 @@ import {loadMembership} from "./stripe.js";
 const LIMITS={
   guest:{tarot:2,astrology:0,tts:0},
   free:{tarot:5,astrology:1,tts:0},
-  member:{tarot:30,astrology:10,tts:20}
+  member:{tarot:30,astrology:10,tts:20},
+  annual_member:{tarot:60,astrology:20,tts:40}
 };
 
 export async function entitlementFor(env,session,feature){
   const membership=session?.sub?await loadMembership(env,session.sub):null;
-  const tier=membership?.active?"member":session?.sub?"free":"guest";
+  const tier=membership?.active?(membership.period==="yearly"?"annual_member":"member"):session?.sub?"free":"guest";
   return {tier,membership,limit:LIMITS[tier]?.[feature]??0};
 }
 
@@ -32,13 +33,15 @@ export async function enforceDailyFeatureLimit(request,env,session,feature){
 
 export function publicEntitlements(tier="guest"){
   const limits=LIMITS[tier]||LIMITS.guest;
+  const paid=tier==="member"||tier==="annual_member";
   return {
     tier,
     limits:{...limits},
     benefits:{
-      voiceNarration:tier==="member",
-      expandedTarot:tier==="member",
-      deepAstrology:tier!=="guest"
+      voiceNarration:paid,
+      expandedTarot:paid,
+      deepAstrology:tier!=="guest",
+      annualBoost:tier==="annual_member"
     }
   };
 }
