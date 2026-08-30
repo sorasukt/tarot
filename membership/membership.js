@@ -10,8 +10,9 @@
   function renderStatus(value){
     if(!member?.success){$("membershipTitle").textContent="ลงชื่อใช้งานเพื่อเริ่มสมาชิกพิเศษ";$("membershipDetail").textContent="บัญชีฟรีเปิดไพ่ได้ 5 ครั้งต่อวัน และลองดวงดาวเชิงลึกได้ 1 ครั้งต่อวัน";$("portalButton").textContent="ลงชื่อใช้งาน";$("portalButton").hidden=false;return}
     if(!value?.active){$("membershipTitle").textContent="บัญชีฟรีของคุณพร้อมใช้งาน";$("membershipDetail").textContent="เปิดไพ่ได้ 5 ครั้งต่อวัน · ดวงดาวเชิงลึก 1 ครั้งต่อวัน · อัปเกรดเพื่อเสียงอ่านไพ่และลิมิตที่สูงขึ้น";$("portalButton").hidden=true;return}
-    $("membershipTitle").textContent="Tarot for your daily กำลังใช้งาน";
-    $("membershipDetail").textContent=`เปิดไพ่ 30 ครั้ง/วัน · เสียงอ่านไพ่ 20 ครั้ง/วัน · ดวงดาวเชิงลึก 10 ครั้ง/วัน${value.currentPeriodEnd?` · ใช้ได้ถึง ${formatDate(value.currentPeriodEnd)}`:""}${value.cancelAtPeriodEnd?" · จะไม่ต่ออายุ":""}`;
+    const annual=value.period==="yearly";
+    $("membershipTitle").textContent=annual?"สมาชิก Annual กำลังใช้งาน":"Tarot for your daily กำลังใช้งาน";
+    $("membershipDetail").textContent=`${annual?"เปิดไพ่ 60 ครั้ง/วัน · เสียงอ่านไพ่ 40 ครั้ง/วัน · ดวงดาวเชิงลึก 20 ครั้ง/วัน · สิทธิ์ Annual Boost":"เปิดไพ่ 30 ครั้ง/วัน · เสียงอ่านไพ่ 20 ครั้ง/วัน · ดวงดาวเชิงลึก 10 ครั้ง/วัน"}${value.currentPeriodEnd?` · ใช้ได้ถึง ${formatDate(value.currentPeriodEnd)}`:""}${value.cancelAtPeriodEnd?" · จะไม่ต่ออายุ":""}`;
     $("portalButton").textContent="ดูข้อมูลสมาชิกในหน้า ฉัน";$("portalButton").hidden=false;
   }
   function renderPlans(){
@@ -20,10 +21,10 @@
       const plan=findPlan(period,type),card=document.createElement("article");card.className=`plan-card${period==="yearly"?" is-featured":""}`;
       const title=document.createElement("h2");title.textContent=labels[period];
       const eyebrow=document.createElement("p");eyebrow.className="eyebrow";eyebrow.textContent=period.toUpperCase();
-      if(period==="yearly"){const badge=document.createElement("span");badge.className="plan-badge";badge.textContent="คุ้มที่สุด";card.append(badge)}
+      if(period==="yearly"){const badge=document.createElement("span");badge.className="plan-badge";badge.textContent="Annual Boost";card.append(badge)}
       const price=document.createElement("p");price.className="plan-price";price.textContent=plan?.amount&&plan.currency?formatMoney(plan.amount,plan.currency):"ยังไม่เปิดขาย";
       const comparison=document.createElement("p");comparison.className="plan-compare";comparison.textContent=planMessage(period,type);
-      const detail=document.createElement("p");detail.className="plan-detail";detail.textContent=!plan?.configured||!plan.active?"ยังไม่เปิดรับชำระ":type==="subscription"?"ต่ออายุอัตโนมัติ":"ชำระครั้งเดียว · ไม่ต่ออายุ";
+      const detail=document.createElement("p");detail.className="plan-detail";detail.textContent=!plan?.configured||!plan.active?"ยังไม่เปิดรับชำระ":period==="yearly"?"ลิมิตสูงสุดสำหรับสมาชิก · ใช้สิทธิ์ตลอดปี":type==="subscription"?"ต่ออายุอัตโนมัติ":"ชำระครั้งเดียว · ไม่ต่ออายุ";
       const hasSubscription=type==="subscription"&&member?.membership?.paymentType==="subscription"&&member.membership.status!=="canceled";
       const button=document.createElement("button");button.type="button";button.textContent=hasSubscription?"เปลี่ยนแพ็กเกจในหน้า ฉัน":type==="subscription"?"สมัครสมาชิก":"ซื้อสิทธิ์ครั้งเดียว";button.disabled=!plan?.configured||!plan.active;button.addEventListener("click",()=>hasSubscription?location.assign("../me/?manage=membership"):checkout(period,type,button));
       card.append(eyebrow,title,price,comparison,detail,button);$("planGrid").append(card)
@@ -32,8 +33,8 @@
   function findPlan(period,paymentType){return plans.find(item=>item.period===period&&item.paymentType===paymentType)}
   function planMessage(period,paymentType){
     if(period==="weekly")return paymentType==="subscription"?"เริ่มต้นง่าย เหมาะกับการลองใช้สิทธิ์สมาชิก":"ใช้สิทธิ์เต็ม 7 วันโดยไม่ต่ออายุ";
-    if(period==="monthly")return "สมดุลระหว่างราคาและระยะเวลา";
-    return paymentType==="subscription"?"เหมาะกับผู้ที่ใช้งานเป็นประจำตลอดปี":"ซื้อครั้งเดียวและใช้สิทธิ์ยาวตลอดปี";
+    if(period==="monthly")return "30 ไพ่/วัน · 20 เสียง/วัน · ดวงดาว 10 ครั้ง/วัน";
+    return "Annual Boost: 60 ไพ่/วัน · 40 เสียง/วัน · ดวงดาว 20 ครั้ง/วัน";
   }
   async function checkout(period,paymentType,button){
     if(!member?.success){location.assign(`https://api.sorasukt.com/auth/login?returnTo=${encodeURIComponent(location.href)}`);return}
