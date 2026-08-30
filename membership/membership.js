@@ -8,10 +8,11 @@
     if(new URLSearchParams(location.search).has("canceled"))$("billingMessage").textContent="ยังไม่มีการเรียกเก็บเงิน คุณสามารถเลือกแผนใหม่เมื่อพร้อม";
   }
   function renderStatus(value){
-    if(!member?.success){$("membershipTitle").textContent="ลงชื่อใช้งานเพื่อเริ่มสมาชิกพิเศษ";$("membershipDetail").textContent="ลงชื่อเข้าใช้เพื่อสมัครและดูสิทธิ์ของคุณได้ทุกเมื่อ";$("portalButton").textContent="ลงชื่อใช้งานเพื่อสมัคร";$("portalButton").hidden=false;return}
-    if(!value){$("membershipTitle").textContent="ยังไม่มีสมาชิกพิเศษ";$("membershipDetail").textContent="เลือกแผนด้านล่างเพื่อเริ่มใช้งาน";$("portalButton").hidden=true;return}
-    $("membershipTitle").textContent=value.active?"Tarot for your daily กำลังใช้งาน":"สถานะสมาชิก: "+statusLabel(value.status);
-    $("membershipDetail").textContent=`${labels[value.period]||"แผนสมาชิก"}${value.currentPeriodEnd?` · ใช้ได้ถึง ${formatDate(value.currentPeriodEnd)}`:""}${value.cancelAtPeriodEnd?" · จะไม่ต่ออายุ":""}`;
+    if(!member?.success){$("membershipTitle").textContent="ลงชื่อใช้งานเพื่อเริ่มสมาชิกพิเศษ";$("membershipDetail").textContent="บัญชีฟรีเปิดไพ่ได้ 5 ครั้งต่อวัน และลองดวงดาวเชิงลึกได้ 1 ครั้งต่อวัน";$("portalButton").textContent="ลงชื่อใช้งาน";$("portalButton").hidden=false;return}
+    if(!value?.active){$("membershipTitle").textContent="บัญชีฟรีของคุณพร้อมใช้งาน";$("membershipDetail").textContent="เปิดไพ่ได้ 5 ครั้งต่อวัน · ดวงดาวเชิงลึก 1 ครั้งต่อวัน · อัปเกรดเพื่อเสียงอ่านไพ่และลิมิตที่สูงขึ้น";$("portalButton").hidden=true;return}
+    const annual=value.period==="yearly";
+    $("membershipTitle").textContent=annual?"สมาชิก Annual กำลังใช้งาน":"Tarot for your daily กำลังใช้งาน";
+    $("membershipDetail").textContent=`${annual?"เปิดไพ่ 60 ครั้ง/วัน · เสียงอ่านไพ่ 40 ครั้ง/วัน · ดวงดาวเชิงลึก 20 ครั้ง/วัน · สิทธิ์ Annual Boost":"เปิดไพ่ 30 ครั้ง/วัน · เสียงอ่านไพ่ 20 ครั้ง/วัน · ดวงดาวเชิงลึก 10 ครั้ง/วัน"}${value.currentPeriodEnd?` · ใช้ได้ถึง ${formatDate(value.currentPeriodEnd)}`:""}${value.cancelAtPeriodEnd?" · จะไม่ต่ออายุ":""}`;
     $("portalButton").textContent="ดูข้อมูลสมาชิกในหน้า ฉัน";$("portalButton").hidden=false;
   }
   function renderPlans(){
@@ -20,25 +21,20 @@
       const plan=findPlan(period,type),card=document.createElement("article");card.className=`plan-card${period==="yearly"?" is-featured":""}`;
       const title=document.createElement("h2");title.textContent=labels[period];
       const eyebrow=document.createElement("p");eyebrow.className="eyebrow";eyebrow.textContent=period.toUpperCase();
-      if(period==="yearly"){const badge=document.createElement("span");badge.className="plan-badge";badge.textContent="คุ้มที่สุด";card.append(badge)}
+      if(period==="yearly"){const badge=document.createElement("span");badge.className="plan-badge";badge.textContent="Annual Boost";card.append(badge)}
       const price=document.createElement("p");price.className="plan-price";price.textContent=plan?.amount&&plan.currency?formatMoney(plan.amount,plan.currency):"ยังไม่เปิดขาย";
-      const comparison=document.createElement("p");comparison.className="plan-compare";comparison.textContent=comparisonText(period,type);
-      const detail=document.createElement("p");detail.className="plan-detail";detail.textContent=!plan?.configured||!plan.active?"ยังไม่เปิดรับชำระ":type==="subscription"?"ต่ออายุอัตโนมัติ":"ชำระครั้งเดียว";
+      const comparison=document.createElement("p");comparison.className="plan-compare";comparison.textContent=planMessage(period,type);
+      const detail=document.createElement("p");detail.className="plan-detail";detail.textContent=!plan?.configured||!plan.active?"ยังไม่เปิดรับชำระ":period==="yearly"?"ลิมิตสูงสุดสำหรับสมาชิก · ใช้สิทธิ์ตลอดปี":type==="subscription"?"ต่ออายุอัตโนมัติ":"ชำระครั้งเดียว · ไม่ต่ออายุ";
       const hasSubscription=type==="subscription"&&member?.membership?.paymentType==="subscription"&&member.membership.status!=="canceled";
       const button=document.createElement("button");button.type="button";button.textContent=hasSubscription?"เปลี่ยนแพ็กเกจในหน้า ฉัน":type==="subscription"?"สมัครสมาชิก":"ซื้อสิทธิ์ครั้งเดียว";button.disabled=!plan?.configured||!plan.active;button.addEventListener("click",()=>hasSubscription?location.assign("../me/?manage=membership"):checkout(period,type,button));
       card.append(eyebrow,title,price,comparison,detail,button);$("planGrid").append(card)
     });
-    renderComparison();
   }
   function findPlan(period,paymentType){return plans.find(item=>item.period===period&&item.paymentType===paymentType)}
-  function comparisonText(period,paymentType){const plan=findPlan(period,paymentType),weekly=findPlan("weekly",paymentType),monthly=findPlan("monthly",paymentType);if(!plan?.amount||!weekly?.amount||!monthly?.amount)return "เลือกช่วงเวลาที่เหมาะกับคุณ";if(period==="weekly")return "เหมาะกับการเริ่มต้นระยะสั้น";const saving=period==="monthly"?weekly.amount*52-monthly.amount*12:monthly.amount*12-plan.amount;return `ประหยัด ${formatMoney(saving,plan.currency)} ต่อปี เมื่อเทียบ${period==="monthly"?"แผนรายสัปดาห์":"แผนรายเดือน"}`}
-  function renderComparison(){
-    const body=$("priceComparisonBody");body.replaceChildren();
-    const paymentType=document.querySelector('input[name="paymentType"]:checked')?.value||"subscription",ready=periods.every(period=>findPlan(period,paymentType)?.amount);$("priceComparison").hidden=!ready;if(!ready)return;
-    const methodLabel=paymentType==="subscription"?"Subscription":"Pay as you go",weekly=findPlan("weekly",paymentType),monthly=findPlan("monthly",paymentType),yearly=findPlan("yearly",paymentType),weeklyAnnual=weekly.amount*52;
-    $("priceComparisonTitle").textContent=`เปรียบเทียบแผน ${methodLabel}`;$("priceComparisonDescription").textContent=`เปรียบเทียบรายสัปดาห์ รายเดือน และรายปีภายใน ${methodLabel} เท่านั้น`;$("priceComparisonCaption").textContent=`เปรียบเทียบช่วงเวลาของ ${methodLabel}`;
-    periods.forEach(period=>{const plan=findPlan(period,paymentType),annualCost=period==="weekly"?weeklyAnnual:period==="monthly"?plan.amount*12:plan.amount,monthlyAverage=annualCost/12,saving=weeklyAnnual-annualCost,row=document.createElement("tr");[labels[period],formatMoney(plan.amount,plan.currency),formatMoney(monthlyAverage,plan.currency),saving>0?formatMoney(saving,plan.currency):"—"].forEach((value,index)=>{const cell=document.createElement(index===0?"th":"td");if(index===0)cell.scope="row";cell.textContent=value;row.append(cell)});body.append(row)});
-    const annualSaving=monthly.amount*12-yearly.amount;$("yearlySaving").textContent=`${methodLabel} รายปีเฉลี่ย ${formatMoney(yearly.amount/12,yearly.currency)} ต่อเดือน และประหยัด ${formatMoney(annualSaving,yearly.currency)} ต่อปี เมื่อเทียบกับแผนรายเดือนของวิธีเดียวกัน`;
+  function planMessage(period,paymentType){
+    if(period==="weekly")return paymentType==="subscription"?"เริ่มต้นง่าย เหมาะกับการลองใช้สิทธิ์สมาชิก":"ใช้สิทธิ์เต็ม 7 วันโดยไม่ต่ออายุ";
+    if(period==="monthly")return "30 ไพ่/วัน · 20 เสียง/วัน · ดวงดาว 10 ครั้ง/วัน";
+    return "Annual Boost: 60 ไพ่/วัน · 40 เสียง/วัน · ดวงดาว 20 ครั้ง/วัน";
   }
   async function checkout(period,paymentType,button){
     if(!member?.success){location.assign(`https://api.sorasukt.com/auth/login?returnTo=${encodeURIComponent(location.href)}`);return}
@@ -50,5 +46,4 @@
   function policyHeaders(){return {"Content-Type":"application/json","X-Tarot-Policy-Version":window.TarotPortal.policyVersion}}
   function formatMoney(amount,currency){if(!Number.isFinite(amount)||!currency)return "—";return new Intl.NumberFormat("th-TH",{style:"currency",currency:currency.toUpperCase(),maximumFractionDigits:2}).format(amount/100)}
   function formatDate(value){try{return new Intl.DateTimeFormat("th-TH",{dateStyle:"long",timeZone:"Asia/Bangkok"}).format(new Date(value))}catch{return value}}
-  function statusLabel(value){return ({active:"กำลังใช้งาน",trialing:"ช่วงทดลอง",past_due:"รอการชำระ",canceled:"ยกเลิกแล้ว",unpaid:"ยังไม่ชำระ",incomplete:"ยังไม่สมบูรณ์"})[value]||"ยังไม่ใช้งาน"}
 })();

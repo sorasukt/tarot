@@ -3,7 +3,7 @@ import {readJsonBody,RequestBodyError} from "./request.js";
 export const POLICY_VERSION="2026-08-28-payments1";
 
 const EVENTS=new Set(["page_view","policy_accepted","action_started","action_completed","action_failed"]);
-const FEATURES=new Set(["portal","daily","tarot","astrology","zodiac","colors","numbers","naming","profile","place_search","membership","support","billing"]);
+const FEATURES=new Set(["portal","daily","tarot","tts","astrology","zodiac","colors","numbers","naming","profile","place_search","membership","support","billing"]);
 const STATUSES=new Set(["started","completed","failed","cached"]);
 
 export function hasCurrentPolicy(request){return request.headers.get("X-Tarot-Policy-Version")===POLICY_VERSION}
@@ -52,7 +52,8 @@ export async function purgeExpiredUserData(env){
   await env.DB.batch([
     env.DB.prepare("DELETE FROM usage_events WHERE expires_at<=CURRENT_TIMESTAMP"),
     env.DB.prepare("DELETE FROM member_ai_results WHERE expires_at<=CURRENT_TIMESTAMP"),
-    env.DB.prepare("DELETE FROM daily_readings WHERE reading_date<date('now','-60 days')")
+    env.DB.prepare("DELETE FROM daily_readings WHERE reading_date<date('now','-60 days')"),
+    env.DB.prepare("DELETE FROM ai_daily_quotas WHERE quota_date<date('now','-7 days')")
   ]);
 }
 
