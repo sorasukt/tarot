@@ -2,7 +2,7 @@ import {loadMembership} from "./stripe.js";
 import {readJsonBody,RequestBodyError} from "./request.js";
 
 const CATEGORIES=new Set(["work","love","study","money","personal","other"]);
-const DEFAULT_RETENTION_DAYS=60;
+const RETENTION_DAYS={free:30,member:180,annual_member:730};
 
 export async function saveReadingHistory(env,session,{question,selected,reading,category="personal",privateMode=false,requestKey=""}){
   if(privateMode||!session?.sub||!env.DB)return {saved:false,reason:privateMode?"private":"anonymous"};
@@ -10,12 +10,12 @@ export async function saveReadingHistory(env,session,{question,selected,reading,
   const cards=selected.map((card,index)=>({id:card.id,name:card.name,orientation:card.orientation,position:reading?.cards?.[index]?.position||""}));
   const preview=String(reading?.summary||reading?.overallReading||"").trim().slice(0,280);
   const id=crypto.randomUUID();
-  const retentionDays=authoritativeRetentionDays(env);
+  const access=await historyAccess(env,session);
   await env.DB.prepare(`INSERT OR IGNORE INTO tarot_reading_history(id,user_sub,request_key,question,category,cards_json,preview,reading_json,expires_at)
     VALUES(?,?,?,?,?,?,?,?,datetime('now', ?))`)
-    .bind(id,session.sub,requestKey||id,String(question||"").slice(0,500),normalizedCategory,JSON.stringify(cards),preview,JSON.stringify(reading),`+${retentionDays} days`).run();
+    .bind(id,session.sub,requestKey||id,String(question||"").slice(0,500),normalizedCategory,JSON.stringify(cards),preview,JSON.stringify(reading),`+${access.retentionDays} days`).run();
   const row=await env.DB.prepare("SELECT id FROM tarot_reading_history WHERE user_sub=? AND request_key=?").bind(session.sub,requestKey||id).first();
-  return {saved:true,id:row?.id||id};
+  return {saved:true,id:row?.id||id,retentionDays:access.retentionDays};
 }
 
 export async function handleHistory(request,env,headers,session){
@@ -83,18 +83,19 @@ export function recurringCardStats(cards){
 export async function historyAccess(env,session){
   const membership=session?.sub?await loadMembership(env,session.sub):null;
   const tier=membership?.active?(membership.period==="yearly"?"annual_member":"member"):"free";
-  const entitlementDays=tier==="annual_member"?365:tier==="member"?90:30;
-  const retentionDays=authoritativeRetentionDays(env);
-  return {tier,days:Math.min(entitlementDays,retentionDays),retentionDays};
+  const retentionDays=retentionDaysForTier(tier,env);
+  return {tier,days:retentionDays,retentionDays};
 }
 
-export function authoritativeRetentionDays(env={}){
-  const configured=Number(env.HISTORY_RETENTION_DAYS||DEFAULT_RETENTION_DAYS);
-  if(!Number.isFinite(configured))return DEFAULT_RETENTION_DAYS;
-  return Math.min(Math.max(Math.floor(configured),1),365);
+export function retentionDaysForTier(tier,env={}){
+  const defaults=RETENTION_DAYS[tier]||RETENTION_DAYS.free;
+  const key=tier==="annual_member"?"HISTORY_RETENTION_ANNUAL_DAYS":tier==="member"?"HISTORY_RETENTION_MEMBER_DAYS":"HISTORY_RETENTION_FREE_DAYS";
+  const configured=Number(env[key]||defaults);
+  if(!Number.isFinite(configured))return defaults;
+  return Math.min(Math.max(Math.floor(configured),1),1095);
 }
 
-function normalizeRange(value){if(value==="30")return 30;if(value==="90")return 90;if(value==="365"||value==="all")return 365;return 30}
+function normalizeRange(value){if(value==="30")return 30;if(value==="90")return 90;if(value==="180")return 180;if(value==="365")return 365;if(value==="730"||value==="all")return 730;return 30}
 function safeJson(value,fallback){try{return JSON.parse(value)}catch{return fallback}}
 function methodNotAllowed(headers){return json({success:false,error:{code:"METHOD_NOT_ALLOWED",message:"Method not allowed"}},405,headers)}
 function json(data,status,headers){return new Response(JSON.stringify(data),{status,headers})}
