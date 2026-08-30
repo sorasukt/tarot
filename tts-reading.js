@@ -22,7 +22,7 @@
     const button=document.createElement("button");
     button.type="button";
     button.className="primary";
-    button.textContent="ฟังคำอ่านไพ่";
+    button.textContent="ฟังคำอ่านไพ่ · สมาชิก";
     button.setAttribute("aria-describedby","readingAudioStatus");
 
     const stop=document.createElement("button");
@@ -58,7 +58,14 @@
       });
       if(!response.ok){
         const data=await response.json().catch(()=>null);
-        throw window.TarotPortal.apiError(data,"ไม่สามารถสร้างเสียงได้");
+        const error=window.TarotPortal.apiError(data,"ไม่สามารถสร้างเสียงได้");
+        if(error.code==="MEMBERSHIP_REQUIRED"){
+          status.innerHTML='เสียงอ่านไพ่เป็นสิทธิพิเศษสำหรับสมาชิก · <a href="/tarot/membership/">ดูสิทธิพิเศษ</a>';
+          button.disabled=false;
+          button.textContent="ฟังคำอ่านไพ่ · สมาชิก";
+          return;
+        }
+        throw error;
       }
       const blob=await response.blob();
       if(!blob.size)throw new Error("ไม่ได้รับข้อมูลเสียง");
@@ -80,7 +87,7 @@
       const used=browserFallback(text,status);
       if(!used)status.textContent=error?.message||"ไม่สามารถเปิดเสียงได้ในขณะนี้";
       button.disabled=false;
-      button.textContent="ฟังคำอ่านไพ่";
+      button.textContent="ฟังคำอ่านไพ่ · สมาชิก";
     }
   }
 
@@ -88,7 +95,7 @@
     if(activeAudio){activeAudio.pause();activeAudio.src="";activeAudio=null;}
     if(objectUrl){URL.revokeObjectURL(objectUrl);objectUrl="";}
     if("speechSynthesis" in window)window.speechSynthesis.cancel();
-    if(button){button.disabled=false;button.textContent="ฟังคำอ่านไพ่";}
+    if(button){button.disabled=false;button.textContent="ฟังคำอ่านไพ่ · สมาชิก";}
     if(stop)stop.hidden=true;
     if(status&&clearStatus)status.textContent="";
   }

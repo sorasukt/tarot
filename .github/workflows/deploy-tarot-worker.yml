@@ -3,7 +3,7 @@ name: Deploy Tarot Worker
 on:
   pull_request:
     branches:
-      - main
+      - "**"
     paths:
       - "worker/**"
       - ".github/workflows/deploy-tarot-worker.yml"
