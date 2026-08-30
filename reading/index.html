@@ -20,11 +20,11 @@
 <body>
 <div class="portal">
 <header class="portal-header">
-<a class="portal-brand" href="../">
-<em>/</em>sorasukt</a>
+<a class="portal-brand" href="../"><em>/</em>sorasukt</a>
 <nav class="portal-nav" aria-label="เมนูหลัก">
 <a href="../">วันนี้</a>
 <a href="./" aria-current="page">เปิดไพ่</a>
+<a href="../history/">ไทม์ไลน์</a>
 <a href="../astrology/">ดวงดาว</a>
 <a href="../zodiac/">ราศี</a>
 <a href="../colors/">สีมงคล</a>
@@ -46,68 +46,38 @@
 <h1>ตั้งคำถามไว้ในใจ<br>แล้วเลือกไพ่ของคุณ</h1>
 <p class="lead">ไพ่ไม่ได้กำหนดอนาคต แต่ช่วยเปิดมุมมองใหม่ต่อสิ่งที่คุณกำลังคิดอยู่</p>
 <label class="question-label" for="question">คุณอยากถามอะไรกับไพ่?</label>
-<textarea id="question" maxlength="500" rows="4" placeholder="เช่น ช่วงนี้ฉันควรให้ความสำคัญกับเรื่องใดมากที่สุด?">
-</textarea>
-<div class="question-meta">
-<span>ถามแบบเปิดจะช่วยให้ได้มุมมองที่ลึกขึ้น</span>
-<span id="charCount">0 / 500</span>
+<textarea id="question" maxlength="500" rows="4" placeholder="เช่น ช่วงนี้ฉันควรให้ความสำคัญกับเรื่องใดมากที่สุด?"></textarea>
+<div class="question-meta"><span>ถามแบบเปิดจะช่วยให้ได้มุมมองที่ลึกขึ้น</span><span id="charCount">0 / 500</span></div>
+<div style="display:grid;grid-template-columns:minmax(0,1fr);gap:12px;margin:22px 0">
+<label class="question-label" for="readingCategory">เก็บไว้ในหมวด</label>
+<select id="readingCategory" style="font:inherit;padding:12px 14px;border:1px solid #d7d7d7;border-radius:12px;background:#fff;color:#111">
+<option value="personal">ส่วนตัว</option><option value="work">งาน</option><option value="love">ความรัก</option><option value="study">การเรียน</option><option value="money">การเงิน</option><option value="other">อื่น ๆ</option>
+</select>
+<label style="display:flex;align-items:flex-start;gap:10px;font-size:14px;line-height:1.55"><input id="privateMode" type="checkbox" style="margin-top:4px"><span><strong>โหมดส่วนตัว</strong><br><span style="color:#6d6d6d">ไม่บันทึกคำถาม คำอ่าน หรือรายการนี้ในไทม์ไลน์</span></span></label>
 </div>
 <button class="primary" id="startButton" type="button" disabled>เลือกไพ่ของฉัน</button>
 </section>
 <section class="deck-section" id="deckStep" hidden>
-<div class="section-head">
-<div>
-<p class="eyebrow">CHOOSE FIVE</p>
-<h2 id="deckTitle" tabindex="-1">เลือกไพ่ที่ดึงดูดคุณ</h2>
-</div>
-<button class="text-button" id="resetSelection" type="button">เริ่มเลือกใหม่</button>
-</div>
+<div class="section-head"><div><p class="eyebrow">CHOOSE FIVE</p><h2 id="deckTitle" tabindex="-1">เลือกไพ่ที่ดึงดูดคุณ</h2></div><button class="text-button" id="resetSelection" type="button">เริ่มเลือกใหม่</button></div>
 <p class="instruction" id="deckInstruction" role="status" aria-live="polite">แตะไพ่เพื่อเลือก แตะอีกครั้งเพื่อยกเลิก ไพ่จะยังคว่ำหน้าจนกว่าคุณจะเลือกครบ 5 ใบ</p>
-<div class="shuffle-stage" id="shuffleStage" role="status" aria-live="polite" aria-label="กำลังสับไพ่" hidden>
-<div class="shuffle-stack" aria-hidden="true">
-<span></span><span></span><span></span><span></span><span></span><span></span>
-</div>
-<p>กำลังสับไพ่ให้คุณ…</p>
-</div>
-<div class="deck" id="deck" aria-label="สำรับไพ่ 78 ใบ" hidden>
-</div>
-<div class="selected-strip" id="selectedStrip">
-</div>
+<div class="shuffle-stage" id="shuffleStage" role="status" aria-live="polite" aria-label="กำลังสับไพ่" hidden><div class="shuffle-stack" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span><span></span></div><p>กำลังสับไพ่ให้คุณ…</p></div>
+<div class="deck" id="deck" aria-label="สำรับไพ่ 78 ใบ" hidden></div>
+<div class="selected-strip" id="selectedStrip"></div>
 </section>
 <section class="reading-section" id="readingStep" hidden>
-<div class="section-head">
-<div>
-<p class="eyebrow">YOUR READING</p>
-<h2 id="readingTitle">การอ่านไพ่ของคุณ</h2>
-</div>
-<button class="text-button" id="newReading" type="button">ถามคำถามใหม่</button>
-</div>
-<p class="question-display" id="questionDisplay">
-</p>
-<div class="reading-grid" id="readingGrid">
-</div>
+<div class="section-head"><div><p class="eyebrow">YOUR READING</p><h2 id="readingTitle">การอ่านไพ่ของคุณ</h2></div><button class="text-button" id="newReading" type="button">ถามคำถามใหม่</button></div>
+<p class="question-display" id="questionDisplay"></p>
+<p id="historyStatus" role="status" aria-live="polite" style="font-size:14px;color:#6d6d6d"></p>
+<div class="reading-grid" id="readingGrid"></div>
 <p class="reading-error" id="readingError" role="alert" tabindex="-1" hidden></p>
-<section class="reading-copy" id="readingCopy">
-</section>
+<section class="reading-copy" id="readingCopy"></section>
 </section>
 </main>
-<div class="sticky-action" id="stickyAction" hidden>
-<button class="primary" id="revealButton" type="button">เปิดไพ่ทั้ง 5 ใบ</button>
-</div>
-<div class="loading" id="loading" role="status" aria-live="polite" hidden>
-<div class="loading-inner">
-<span class="loader">
-</span>
-<p id="loadingText">กำลังพิจารณาคำถามของคุณ</p>
-</div>
-</div>
-<script src="../portal.js?v=20260828-payments1">
-</script>
-<script src="../config.js">
-</script>
-<script src="../app.js?v=20260827-capacity1" defer>
-</script>
-<script src="../tts-reading.js?v=20260830-tts1" defer>
-</script>
+<div class="sticky-action" id="stickyAction" hidden><button class="primary" id="revealButton" type="button">เปิดไพ่ทั้ง 5 ใบ</button></div>
+<div class="loading" id="loading" role="status" aria-live="polite" hidden><div class="loading-inner"><span class="loader"></span><p id="loadingText">กำลังพิจารณาคำถามของคุณ</p></div></div>
+<script src="../portal.js?v=20260828-payments1"></script>
+<script src="../config.js"></script>
+<script src="../app.js?v=20260830-history1" defer></script>
+<script src="../tts-reading.js?v=20260830-tts1" defer></script>
 </body>
 </html>
