@@ -41,12 +41,7 @@
     window.TarotPortal.setButtonBusy(button,true,"กำลังเปิดหน้าชำระเงิน…");$("billingMessage").textContent="กำลังพาคุณไปยังหน้าชำระเงินที่ปลอดภัย";
     try{const response=await billingApi("/api/billing/checkout/membership",{period,paymentType,requestId:crypto.randomUUID()}),data=await response.json();if(!response.ok)throw window.TarotPortal.apiError(data,"เริ่มชำระเงินไม่สำเร็จ");if(!/^https:\/\/checkout\.stripe\.com\//.test(data.url||""))throw new Error("ลิงก์ชำระเงินไม่ถูกต้อง");location.assign(data.url)}catch(error){if(error?.code==="MANAGE_EXISTING_SUBSCRIPTION"){location.assign("../me/?manage=membership");return}window.TarotPortal.renderError($("billingMessage"),error);window.TarotPortal.setButtonBusy(button,false)}
   }
-  async function accountAction(){
-    if(!member?.success){location.assign(`https://api.sorasukt.com/auth/login?returnTo=${encodeURIComponent(location.href)}`);return}
-    if(member?.membership?.paymentType!=="subscription"){location.assign("../me/");return}
-    const button=$("portalButton");window.TarotPortal.setButtonBusy(button,true,"กำลังเปิด…");
-    try{const response=await window.TarotPortal.api("/api/billing/portal",{method:"POST",timeout:15000}),data=await response.json();if(!response.ok)throw window.TarotPortal.apiError(data,"เปิดหน้าจัดการการชำระเงินไม่สำเร็จ");if(!/^https:\/\/billing\.stripe\.com\//.test(data.url||""))throw new Error("ลิงก์จัดการการชำระเงินไม่ถูกต้อง");location.assign(data.url)}catch(error){window.TarotPortal.renderError($("billingMessage"),error);window.TarotPortal.setButtonBusy(button,false)}
-  }
+  function accountAction(){if(!member?.success){location.assign(`https://api.sorasukt.com/auth/login?returnTo=${encodeURIComponent(location.href)}`);return}location.assign(member?.membership?.paymentType==="subscription"?"../me/?openBilling=1":"../me/")}
   function billingApi(path,body){return window.TarotPortal.api(path,{method:"POST",headers:policyHeaders(),body:JSON.stringify(body),timeout:20000})}
   function policyHeaders(){return {"Content-Type":"application/json","X-Tarot-Policy-Version":window.TarotPortal.policyVersion}}
   function formatMoney(amount,currency){if(!Number.isFinite(amount)||!currency)return "—";return new Intl.NumberFormat("th-TH",{style:"currency",currency:currency.toUpperCase(),maximumFractionDigits:2}).format(amount/100)}
