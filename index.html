@@ -1,0 +1,219 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#fff">
+<title>ดูดวงวันนี้ ไพ่ทาโรต์ และเครื่องมือสะท้อนใจ | sorasukt Tarot</title>
+<meta name="description" content="ดูไพ่และดวงประจำวัน เปิดไพ่ทาโรต์ เช็กราศี สีมงคล สำรวจตัวเลข และค้นหามุมมองใหม่สำหรับคุณ">
+<meta name="robots" content="index,follow,max-image-preview:large">
+<link rel="canonical" href="https://sorasukt.com/tarot/">
+<meta property="og:type" content="website">
+<meta property="og:locale" content="th_TH">
+<meta property="og:title" content="ดูดวงวันนี้ ไพ่ทาโรต์ และเครื่องมือสะท้อนใจ | sorasukt Tarot">
+<meta property="og:description" content="พื้นที่สำหรับสะท้อนมุมมองผ่านไพ่ทาโรต์ ดวงดาว ราศี สีมงคล และตัวเลข">
+<meta property="og:url" content="https://sorasukt.com/tarot/">
+<meta property="og:image" content="https://sorasukt.com/img/logo.png">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="ดูดวงวันนี้ ไพ่ทาโรต์ และเครื่องมือสะท้อนใจ | sorasukt Tarot">
+<meta name="twitter:description" content="พื้นที่สำหรับสะท้อนมุมมองผ่านไพ่ทาโรต์ ดวงดาว ราศี สีมงคล และตัวเลข">
+<meta name="twitter:image" content="https://sorasukt.com/img/logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="./portal.css">
+<link rel="stylesheet" href="./experience.css?v=20260829-reading1">
+<link rel="stylesheet" href="./interaction.css">
+<link rel="stylesheet" href="./lucky-colors.css">
+</head>
+<body>
+<div class="portal">
+<header class="portal-header">
+<a class="portal-brand" href="./">
+<em>/</em>sorasukt</a>
+<nav class="portal-nav" aria-label="เมนูหลัก">
+<a href="./" aria-current="page">วันนี้</a>
+<a href="./reading/">เปิดไพ่</a>
+<a href="./astrology/">ดวงดาว</a>
+<a href="./zodiac/">ราศี</a>
+<a href="./colors/">สีมงคล</a>
+<a href="./numbers/">ตัวเลข</a>
+<a href="./naming/">ตั้งชื่อ</a>
+<a href="./membership/">สมาชิกพิเศษ</a>
+</nav>
+<div class="portal-account">
+<button id="portalSignIn" type="button">ลงชื่อใช้งาน</button>
+<a id="portalMe" href="./me/" hidden>ฉัน</a>
+<button id="portalLogout" class="secondary" type="button" hidden>ออก</button>
+</div>
+</header>
+<main>
+<section class="page-hero">
+<p class="eyebrow">TODAY FOR YOU</p>
+<h1>ดวงของคุณ<br>วันนี้</h1>
+<p class="lead">พื้นที่เล็ก ๆ สำหรับเริ่มวันด้วยมุมมองใหม่ ดูสิ่งที่ควรให้ความสำคัญ และเก็บคำถามบางอย่างไว้คิดต่อระหว่างวัน</p>
+</section>
+<section class="daily-shell" id="dailyMember" hidden>
+<div class="daily-top">
+<div>
+<p class="eyebrow">DAILY READING</p>
+<h2>ไพ่และดวงประจำวัน</h2>
+</div>
+<div class="daily-meta">
+<span id="dailyDate">
+</span>
+<span>ไพ่: <strong id="dailyCard">
+</strong>
+</span>
+</div>
+</div>
+<div class="daily-content" id="dailyContent" hidden>
+<h3 id="dailyTitle">
+</h3>
+<p id="dailySummary">
+</p>
+<div class="daily-grid">
+<div>
+<span>พลังงานวันนี้</span>
+<p id="dailyEnergy">
+</p>
+</div>
+<div>
+<span>สิ่งที่ควรโฟกัส</span>
+<p id="dailyFocus">
+</p>
+</div>
+<div>
+<span>สิ่งที่ควรระวัง</span>
+<p id="dailyAvoid">
+</p>
+</div>
+<div>
+<span>คำแนะนำ</span>
+<p id="dailyAdvice">
+</p>
+</div>
+</div>
+<section class="daily-lucky-color" aria-labelledby="dailyLuckyHeading">
+<div class="lucky-swatch" id="dailyLuckySwatch" aria-hidden="true"></div>
+<div>
+<p class="personal-only">สำหรับคุณเท่านั้น</p>
+<h3 id="dailyLuckyHeading">สีมงคลประจำวัน: <span id="dailyLuckyColor"></span></h3>
+<p id="dailyLuckyMeaning"></p>
+<p><strong>ลองใช้วันนี้:</strong> <span id="dailyLuckyUse"></span></p>
+</div>
+</section>
+</div>
+<p class="member-status" id="memberStatus" role="status" aria-live="polite">
+</p>
+</section>
+<section class="daily-shell" id="dailyGuest">
+<p class="eyebrow">YOUR DAILY READING</p>
+<h2>มีดวงประจำวันรอคุณอยู่</h2>
+<p class="lead">ลงชื่อใช้งานเพื่อดูไพ่ประจำวันและข้อความสำหรับคุณในวันนี้</p>
+</section>
+<section class="quick-calc">
+<div class="quick-calc-head">
+<div>
+<p class="eyebrow">QUICK LOOK</p>
+<h2>ลองดูจากวันเกิดของคุณ</h2>
+</div>
+<p>กรอกวันเดือนปีเกิดเพื่อดูราศีและเลขเส้นทางชีวิตแบบพื้นฐานได้ทันที โดยไม่ต้องลงชื่อใช้งาน</p>
+</div>
+<form class="quick-form" id="quickBirthForm">
+<input id="quickBirthDate" type="date" autocomplete="bday" required aria-label="วันเดือนปีเกิด">
+<button type="submit">คำนวณ</button>
+</form>
+<div class="quick-result" id="quickResult" role="status" aria-live="polite" tabindex="-1" hidden>
+</div>
+</section>
+<section class="systems">
+<div class="systems-head">
+<div>
+<p class="eyebrow">EXPLORE</p>
+<h2>ดูแบบที่เป็นคุณ</h2>
+</div>
+<p>แต่ละเครื่องมือมองคำถามจากคนละมุม เลือกวิธีที่ตรงกับสิ่งที่คุณกำลังสนใจได้เลย</p>
+</div>
+<div class="system-grid">
+<a class="system-card" href="./reading/">
+<span class="num">01</span>
+<h3>เปิดไพ่ทาโรต์</h3>
+<p>ตั้งคำถาม เลือกไพ่ 5 ใบ แล้วดูความหมายร่วมกัน</p>
+</a>
+<a class="system-card" href="./astrology/">
+<span class="num">02</span>
+<h3>ดวงดาว</h3>
+<p>สำรวจภาพรวมจากวันและเวลาเกิดในมุมของโหราศาสตร์</p>
+</a>
+<a class="system-card" href="./zodiac/">
+<span class="num">03</span>
+<h3>ราศี</h3>
+<p>ดูราศีและธีมที่มักเชื่อมโยงกับช่วงวันเกิดของคุณ</p>
+</a>
+<a class="system-card" href="./colors/">
+<span class="num">04</span>
+<h3>สีมงคล</h3>
+<p>เลือกวันที่เพื่อดูสีและแนวทางเชิงสัญลักษณ์สำหรับวันนั้น</p>
+</a>
+<a class="system-card" href="./numbers/">
+<span class="num">05</span>
+<h3>ตัวเลข</h3>
+<p>คำนวณเลขจากเบอร์โทร ทะเบียนรถ และบ้าน พร้อมคำอธิบาย</p>
+</a>
+<a class="system-card" href="./naming/">
+<span class="num">06</span>
+<h3>คิดชื่อ</h3>
+<p>ทดลองดูจังหวะและค่าตัวเลขของชื่อเพื่อเป็นไอเดียประกอบการเลือก</p>
+</a>
+<a class="system-card" href="./me/">
+<span class="num">07</span>
+<h3>ฉัน</h3>
+<p>ดูและแก้ไขข้อมูลที่ใช้สำหรับประสบการณ์ส่วนตัวของคุณ</p>
+</a>
+<a class="system-card" href="./membership/">
+<span class="num">08</span>
+<h3>Tarot for your daily</h3>
+<p>เลือกสมาชิกพิเศษแบบรายสัปดาห์ รายเดือน หรือรายปี</p>
+</a>
+<a class="system-card" href="./support/">
+<span class="num">09</span>
+<h3>สนับสนุนเรา</h3>
+<p>ร่วมสนับสนุนการดูแลพื้นที่นี้ผ่าน PromptPay หรือบัตร พร้อมรับสิ่งตอบแทน</p>
+</a>
+</div>
+</section>
+</main>
+<footer class="footer">
+<span>เพื่อความบันเทิงและการสะท้อนมุมมอง</span>
+<span>
+<a href="/privacy/">Privacy</a> · <a href="/terms/">Terms</a>
+</span>
+</footer>
+</div>
+<div class="modal-backdrop" id="birthModal" hidden>
+<section class="modal-card" role="dialog" aria-modal="true" aria-labelledby="birthModalTitle">
+<p class="eyebrow">A LITTLE ABOUT YOU</p>
+<h2 id="birthModalTitle">วันเกิดของคุณ</h2>
+<p>เพิ่มวันเดือนปีเกิดเพื่อเริ่มดวงประจำวันและประสบการณ์ที่เป็นส่วนตัวมากขึ้น เวลาเกิดใส่ภายหลังก็ได้</p>
+<form id="birthModalForm">
+<label>วันเดือนปีเกิด<input id="modalBirthDate" type="date" required>
+</label>
+<label>เวลาเกิด <span class="profile-note">ไม่บังคับ</span>
+<input id="modalBirthTime" type="time">
+</label>
+<p class="modal-status" id="modalStatus" role="status" aria-live="polite">
+</p>
+<div class="modal-actions">
+<button class="modal-secondary" id="modalLater" type="button">ไว้ทีหลัง</button>
+<button class="modal-primary" id="modalSave" type="submit">บันทึกและเริ่มดูดวง</button>
+</div>
+</form>
+</section>
+</div>
+<script src="./portal.js?v=20260828-payments1">
+</script>
+<script src="./home.js?v=20260828-colors1">
+</script>
+</body>
+</html>

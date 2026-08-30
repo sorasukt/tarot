@@ -1,0 +1,86 @@
+.shuffle-stage {
+  min-height: 360px;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 34px;
+  margin-top: 28px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 24px;
+  background: linear-gradient(145deg, #fafafa, #fff);
+}
+
+.shuffle-stage[hidden] { display: none !important; }
+
+.shuffle-stage p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.shuffle-stack {
+  position: relative;
+  width: 124px;
+  height: 190px;
+}
+
+.shuffle-stack span {
+  position: absolute;
+  inset: 0;
+  border: 1.5px solid #111;
+  border-radius: 13px;
+  background: #fff;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, .08);
+  animation: shuffle-card 1.15s cubic-bezier(.45, 0, .2, 1) infinite;
+}
+
+.shuffle-stack span::before {
+  content: "";
+  position: absolute;
+  inset: 9px;
+  border: 1px solid #111;
+  border-radius: 8px;
+}
+
+.shuffle-stack span::after {
+  content: "✦";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 20px;
+}
+
+.shuffle-stack span:nth-child(2) { animation-delay: -.18s; }
+.shuffle-stack span:nth-child(3) { animation-delay: -.36s; }
+.shuffle-stack span:nth-child(4) { animation-delay: -.54s; }
+.shuffle-stack span:nth-child(5) { animation-delay: -.72s; }
+.shuffle-stack span:nth-child(6) { animation-delay: -.9s; }
+
+.deck.is-dealing .card {
+  animation: deal-card .46s cubic-bezier(.2, .75, .25, 1) both;
+  animation-delay: calc(var(--deal-index) * 22ms);
+}
+
+@keyframes shuffle-card {
+  0%, 100% { z-index: 1; transform: translate(0, 0) rotate(0); }
+  25% { z-index: 6; transform: translate(-74px, -8px) rotate(-8deg); }
+  50% { z-index: 6; transform: translate(0, -14px) rotate(2deg); }
+  75% { z-index: 1; transform: translate(74px, 5px) rotate(8deg); }
+}
+
+@keyframes deal-card {
+  from { opacity: 0; transform: translateY(-28px) scale(.82) rotate(-3deg); }
+  to { opacity: 1; transform: translateY(0) scale(1) rotate(0); }
+}
+
+@media (max-width: 560px) {
+  .shuffle-stage { min-height: 300px; }
+  .shuffle-stack { width: 96px; height: 150px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .shuffle-stack span,
+  .deck.is-dealing .card { animation: none; }
+}
