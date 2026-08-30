@@ -1,5 +1,5 @@
-const DEFAULT_MODEL="gemini-3.6-flash";
-const RATE_LIMIT_FALLBACKS=["gemini-2.5-flash","gemini-2.5-flash-lite","gemini-3.5-flash","gemini-3.1-flash-lite","gemini-3.5-flash-lite"];
+const DEFAULT_MODEL="gemini-3.7-flash";
+const RATE_LIMIT_FALLBACKS=["gemini-3.6-flash","gemini-3.5-flash","gemini-3.5-flash-lite","gemini-3.1-flash-lite","gemini-2.5-flash","gemini-2.5-flash-lite"];
 
 export class GeminiCapacityError extends Error{
   constructor(){super("All Gemini models are temporarily unavailable");this.name="GeminiCapacityError";this.code="AI_CAPACITY_EXHAUSTED"}
@@ -31,11 +31,12 @@ export async function generateGeminiJson(env,{system,prompt,schema,maxOutputToke
       const response=await fetch(endpoint,{method:"POST",headers:{"Content-Type":"application/json"},body,signal:controller.signal});
       if(isRetryableStatus(response.status)){
         if(response.body)await response.body.cancel().catch(()=>undefined);
-        console.warn(JSON.stringify({message:"Gemini model unavailable; trying fallback",model,status:response.status,fallbackAvailable}));
+        console.warn(JSON.stringify({message:"Gemini model unavailable; trying fallback",model,status:response.status,reason:retryReason(response.status),fallbackAvailable}));
         continue;
       }
       if(!response.ok){
         if(response.body)await response.body.cancel().catch(()=>undefined);
+        console.error(JSON.stringify({message:"Gemini request failed without fallback",model,status:response.status}));
         throw new GeminiHttpError(response.status);
       }
       const raw=await response.json();
@@ -58,7 +59,15 @@ export async function generateGeminiJson(env,{system,prompt,schema,maxOutputToke
   throw new GeminiCapacityError();
 }
 
-function isRetryableStatus(status){return [400,404,408,409,429,500,502,503,504].includes(status)}
+function isRetryableStatus(status){return [404,408,409,429,500,502,503,504].includes(status)}
+function retryReason(status){
+  if(status===404)return "MODEL_NOT_AVAILABLE";
+  if(status===429)return "RATE_LIMITED";
+  if(status>=500)return "UPSTREAM_UNAVAILABLE";
+  if(status===408)return "TIMEOUT";
+  if(status===409)return "CONFLICT";
+  return "TRANSIENT_ERROR";
+}
 function isRetryableError(error){return error?.name==="AbortError"||error?.name==="SyntaxError"||error?.name==="TypeError"||error?.message==="Gemini response is invalid"}
 function matchesSchema(value,schema){
   if(!schema||typeof schema!=="object")return true;
