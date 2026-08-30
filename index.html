@@ -31,12 +31,12 @@
 <link rel="stylesheet" href="./experience.css?v=20260829-reading1">
 <link rel="stylesheet" href="./interaction.css">
 <link rel="stylesheet" href="./lucky-colors.css">
+<link rel="stylesheet" href="./home.css?v=20260831-clean1">
 </head>
 <body>
 <div class="portal">
 <header class="portal-header">
-<a class="portal-brand" href="./">
-<em>/</em>sorasukt</a>
+<a class="portal-brand" href="./"><em>/</em>sorasukt</a>
 <nav class="portal-nav" aria-label="เมนูหลัก">
 <a href="./" aria-current="page">วันนี้</a>
 <a href="./reading/">เปิดไพ่</a>
@@ -53,174 +53,124 @@
 <button id="portalLogout" class="secondary" type="button" hidden>ออก</button>
 </div>
 </header>
-<main>
-<section class="page-hero">
+
+<main class="home-main">
+<section class="home-hero">
+<div>
 <p class="eyebrow">TODAY FOR YOU</p>
-<h1>ดวงของคุณ<br>วันนี้</h1>
-<p class="lead">พื้นที่เล็ก ๆ สำหรับเริ่มวันด้วยมุมมองใหม่ ดูสิ่งที่ควรให้ความสำคัญ และเก็บคำถามบางอย่างไว้คิดต่อระหว่างวัน</p>
+<h1>ดูวันนี้<br>ในแบบของคุณ</h1>
+</div>
+<div>
+<p class="home-hero-copy">เริ่มจากไพ่ ดวงดาว สี หรือตัวเลข แล้วเลือกสิ่งที่ตรงกับคำถามของคุณตอนนี้</p>
+<div class="home-primary-actions">
+<a class="primary" href="./reading/">เปิดไพ่</a>
+<a class="secondary" href="./astrology/">ดูดวงดาว</a>
+</div>
+</div>
 </section>
-<section class="daily-shell" id="dailyMember" hidden>
+
+<section class="daily-shell compact" id="dailyMember" hidden>
 <div class="daily-top">
 <div>
-<p class="eyebrow">DAILY READING</p>
-<h2>ไพ่และดวงประจำวัน</h2>
+<p class="eyebrow">DAILY</p>
+<h2>วันนี้ของคุณ</h2>
 </div>
 <div class="daily-meta">
-<span id="dailyDate">
-</span>
-<span>ไพ่: <strong id="dailyCard">
-</strong>
-</span>
+<span id="dailyDate"></span>
+<span>ไพ่ <strong id="dailyCard"></strong></span>
 </div>
 </div>
 <div class="daily-content" id="dailyContent" hidden>
-<h3 id="dailyTitle">
-</h3>
-<p id="dailySummary">
-</p>
+<h3 id="dailyTitle"></h3>
+<p id="dailySummary"></p>
 <div class="daily-grid">
-<div>
-<span>พลังงานวันนี้</span>
-<p id="dailyEnergy">
-</p>
-</div>
-<div>
-<span>สิ่งที่ควรโฟกัส</span>
-<p id="dailyFocus">
-</p>
-</div>
-<div>
-<span>สิ่งที่ควรระวัง</span>
-<p id="dailyAvoid">
-</p>
-</div>
-<div>
-<span>คำแนะนำ</span>
-<p id="dailyAdvice">
-</p>
-</div>
+<div><span>พลังงาน</span><p id="dailyEnergy"></p></div>
+<div><span>โฟกัส</span><p id="dailyFocus"></p></div>
+<div><span>ระวัง</span><p id="dailyAvoid"></p></div>
+<div><span>คำแนะนำ</span><p id="dailyAdvice"></p></div>
 </div>
 <section class="daily-lucky-color" aria-labelledby="dailyLuckyHeading">
 <div class="lucky-swatch" id="dailyLuckySwatch" aria-hidden="true"></div>
 <div>
-<p class="personal-only">สำหรับคุณเท่านั้น</p>
-<h3 id="dailyLuckyHeading">สีมงคลประจำวัน: <span id="dailyLuckyColor"></span></h3>
+<p class="personal-only">สำหรับคุณ</p>
+<h3 id="dailyLuckyHeading">สีวันนี้: <span id="dailyLuckyColor"></span></h3>
 <p id="dailyLuckyMeaning"></p>
-<p><strong>ลองใช้วันนี้:</strong> <span id="dailyLuckyUse"></span></p>
+<p><strong>ลองใช้:</strong> <span id="dailyLuckyUse"></span></p>
 </div>
 </section>
 </div>
-<p class="member-status" id="memberStatus" role="status" aria-live="polite">
-</p>
+<p class="member-status" id="memberStatus" role="status" aria-live="polite"></p>
 </section>
-<section class="daily-shell" id="dailyGuest">
-<p class="eyebrow">YOUR DAILY READING</p>
-<h2>มีดวงประจำวันรอคุณอยู่</h2>
-<p class="lead">ลงชื่อใช้งานเพื่อดูไพ่ประจำวันและข้อความสำหรับคุณในวันนี้</p>
+
+<section class="home-guest-card" id="dailyGuest">
+<p class="eyebrow">DAILY</p>
+<h2>มีดวงประจำวันรออยู่</h2>
+<p>ลงชื่อใช้งานเพื่อดูไพ่และข้อความสำหรับวันนี้</p>
 </section>
-<section class="quick-calc">
+
+<section class="home-section" aria-labelledby="exploreTitle">
+<div class="home-section-head">
+<div>
+<p class="eyebrow">EXPLORE</p>
+<h2 id="exploreTitle">เลือกสิ่งที่อยากดู</h2>
+</div>
+<p>เครื่องมือหลักทั้งหมดอยู่ตรงนี้ เลือกแล้วเริ่มได้ทันที</p>
+</div>
+<div class="home-tools">
+<a class="home-tool featured" href="./reading/"><span>01</span><h3>เปิดไพ่ทาโรต์</h3></a>
+<a class="home-tool" href="./astrology/"><span>02</span><h3>ดวงดาว</h3></a>
+<a class="home-tool" href="./zodiac/"><span>03</span><h3>ราศี</h3></a>
+<a class="home-tool" href="./colors/"><span>04</span><h3>สีมงคล</h3></a>
+<a class="home-tool" href="./numbers/"><span>05</span><h3>ตัวเลข</h3></a>
+<a class="home-tool" href="./naming/"><span>06</span><h3>คิดชื่อ</h3></a>
+</div>
+</section>
+
+<section class="quick-calc home-quick">
 <div class="quick-calc-head">
 <div>
 <p class="eyebrow">QUICK LOOK</p>
-<h2>ลองดูจากวันเกิดของคุณ</h2>
+<h2>ดูจากวันเกิด</h2>
 </div>
-<p>กรอกวันเดือนปีเกิดเพื่อดูราศีและเลขเส้นทางชีวิตแบบพื้นฐานได้ทันที โดยไม่ต้องลงชื่อใช้งาน</p>
+<p>ดูราศีและเลขเส้นทางชีวิตแบบสั้น ๆ โดยไม่ต้องลงชื่อใช้งาน</p>
 </div>
 <form class="quick-form" id="quickBirthForm">
 <input id="quickBirthDate" type="date" autocomplete="bday" required aria-label="วันเดือนปีเกิด">
-<button type="submit">คำนวณ</button>
+<button type="submit">ดูผล</button>
 </form>
-<div class="quick-result" id="quickResult" role="status" aria-live="polite" tabindex="-1" hidden>
-</div>
+<div class="quick-result" id="quickResult" role="status" aria-live="polite" tabindex="-1" hidden></div>
 </section>
-<section class="systems">
-<div class="systems-head">
-<div>
-<p class="eyebrow">EXPLORE</p>
-<h2>ดูแบบที่เป็นคุณ</h2>
-</div>
-<p>แต่ละเครื่องมือมองคำถามจากคนละมุม เลือกวิธีที่ตรงกับสิ่งที่คุณกำลังสนใจได้เลย</p>
-</div>
-<div class="system-grid">
-<a class="system-card" href="./reading/">
-<span class="num">01</span>
-<h3>เปิดไพ่ทาโรต์</h3>
-<p>ตั้งคำถาม เลือกไพ่ 5 ใบ แล้วดูความหมายร่วมกัน</p>
-</a>
-<a class="system-card" href="./astrology/">
-<span class="num">02</span>
-<h3>ดวงดาว</h3>
-<p>สำรวจภาพรวมจากวันและเวลาเกิดในมุมของโหราศาสตร์</p>
-</a>
-<a class="system-card" href="./zodiac/">
-<span class="num">03</span>
-<h3>ราศี</h3>
-<p>ดูราศีและธีมที่มักเชื่อมโยงกับช่วงวันเกิดของคุณ</p>
-</a>
-<a class="system-card" href="./colors/">
-<span class="num">04</span>
-<h3>สีมงคล</h3>
-<p>เลือกวันที่เพื่อดูสีและแนวทางเชิงสัญลักษณ์สำหรับวันนั้น</p>
-</a>
-<a class="system-card" href="./numbers/">
-<span class="num">05</span>
-<h3>ตัวเลข</h3>
-<p>คำนวณเลขจากเบอร์โทร ทะเบียนรถ และบ้าน พร้อมคำอธิบาย</p>
-</a>
-<a class="system-card" href="./naming/">
-<span class="num">06</span>
-<h3>คิดชื่อ</h3>
-<p>ทดลองดูจังหวะและค่าตัวเลขของชื่อเพื่อเป็นไอเดียประกอบการเลือก</p>
-</a>
-<a class="system-card" href="./me/">
-<span class="num">07</span>
-<h3>ฉัน</h3>
-<p>ดูและแก้ไขข้อมูลที่ใช้สำหรับประสบการณ์ส่วนตัวของคุณ</p>
-</a>
-<a class="system-card" href="./membership/">
-<span class="num">08</span>
-<h3>Tarot for your daily</h3>
-<p>เลือกสมาชิกพิเศษแบบรายสัปดาห์ รายเดือน หรือรายปี</p>
-</a>
-<a class="system-card" href="./support/">
-<span class="num">09</span>
-<h3>สนับสนุนเรา</h3>
-<p>ร่วมสนับสนุนการดูแลพื้นที่นี้ผ่านผู้ให้บริการชำระเงิน พร้อมรับสิ่งตอบแทน</p>
-</a>
-</div>
+
+<section class="home-bottom" aria-label="บัญชีและสมาชิก">
+<a href="./me/"><h3>ฉัน</h3><p>ข้อมูลส่วนตัวและประวัติของคุณ</p></a>
+<a href="./membership/"><h3>สมาชิกพิเศษ</h3><p>ดูสิทธิ์และแพ็กเกจสมาชิก</p></a>
 </section>
 </main>
+
 <footer class="footer">
 <span>เพื่อความบันเทิงและการสะท้อนมุมมอง</span>
-<span>
-<a href="/privacy/">Privacy</a> · <a href="/terms/">Terms</a>
-</span>
+<span><a href="./support/">สนับสนุนเรา</a> · <a href="/privacy/">Privacy</a> · <a href="/terms/">Terms</a></span>
 </footer>
 </div>
+
 <div class="modal-backdrop" id="birthModal" hidden>
 <section class="modal-card" role="dialog" aria-modal="true" aria-labelledby="birthModalTitle">
-<p class="eyebrow">A LITTLE ABOUT YOU</p>
+<p class="eyebrow">ABOUT YOU</p>
 <h2 id="birthModalTitle">วันเกิดของคุณ</h2>
-<p>เพิ่มวันเดือนปีเกิดเพื่อเริ่มดวงประจำวันและประสบการณ์ที่เป็นส่วนตัวมากขึ้น เวลาเกิดใส่ภายหลังก็ได้</p>
+<p>เพิ่มวันเกิดเพื่อเริ่มดวงประจำวัน เวลาเกิดใส่ภายหลังก็ได้</p>
 <form id="birthModalForm">
-<label>วันเดือนปีเกิด<input id="modalBirthDate" type="date" required>
-</label>
-<label>เวลาเกิด <span class="profile-note">ไม่บังคับ</span>
-<input id="modalBirthTime" type="time">
-</label>
-<p class="modal-status" id="modalStatus" role="status" aria-live="polite">
-</p>
+<label>วันเดือนปีเกิด<input id="modalBirthDate" type="date" required></label>
+<label>เวลาเกิด <span class="profile-note">ไม่บังคับ</span><input id="modalBirthTime" type="time"></label>
+<p class="modal-status" id="modalStatus" role="status" aria-live="polite"></p>
 <div class="modal-actions">
 <button class="modal-secondary" id="modalLater" type="button">ไว้ทีหลัง</button>
-<button class="modal-primary" id="modalSave" type="submit">บันทึกและเริ่มดูดวง</button>
+<button class="modal-primary" id="modalSave" type="submit">บันทึก</button>
 </div>
 </form>
 </section>
 </div>
-<script src="./portal.js?v=20260828-payments1">
-</script>
-<script src="./home.js?v=20260828-colors1">
-</script>
+<script src="./portal.js?v=20260828-payments1"></script>
+<script src="./home.js?v=20260828-colors1"></script>
 <script src="./install-app.js?v=20260830-install1" defer></script>
 </body>
 </html>
