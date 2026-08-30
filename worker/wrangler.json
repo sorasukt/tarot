@@ -24,8 +24,7 @@
     "ALLOWED_ORIGINS": "https://sorasukt.com,https://www.sorasukt.com",
     "AUTH0_DOMAIN": "auth.sorasukt.com",
     "AUTH0_CLIENT_ID": "NbMkuqqsuljnBKcAKVDr8bICryQZR4MI",
-    "ADMIN_USER_SUBS": "",
-    "ADMIN_EMAILS": ""
+    "AUTH0_ROLES_CLAIM": "https://sorasukt.com/roles"
   },
   "ratelimits": [
     {
