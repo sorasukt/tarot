@@ -1,6 +1,5 @@
 import {readJsonBody,RequestBodyError} from "./request.js";
 
-const STRIPE_API="https://api.stripe.com/v1";
 const CASE_STATUSES=new Set(["open","pending","resolved","closed"]);
 const CASE_PRIORITIES=new Set(["low","normal","high","urgent"]);
 
@@ -65,7 +64,7 @@ async function memberships(env,headers,url){
 async function customers(env,headers,url){
   const limit=clamp(url.searchParams.get("limit"),1,100,50); const q=(url.searchParams.get("q")||"").trim();
   let result;
-  if(q){const like=`%${q.replace(/[%_]/g,"")} %`.trim();result=await env.DB.prepare(`SELECT a.user_sub,a.display_name,a.email,a.last_seen_at,a.created_at,m.plan_period,m.payment_type,m.status AS membership_status FROM member_accounts a LEFT JOIN tarot_memberships m ON m.user_sub=a.user_sub WHERE a.email LIKE ? OR a.display_name LIKE ? OR a.user_sub LIKE ? ORDER BY a.last_seen_at DESC LIMIT ?`).bind(like,like,like,limit).all();}
+  if(q){const like=`%${q.replace(/[%_]/g,"")}%`;result=await env.DB.prepare(`SELECT a.user_sub,a.display_name,a.email,a.last_seen_at,a.created_at,m.plan_period,m.payment_type,m.status AS membership_status FROM member_accounts a LEFT JOIN tarot_memberships m ON m.user_sub=a.user_sub WHERE a.email LIKE ? OR a.display_name LIKE ? OR a.user_sub LIKE ? ORDER BY a.last_seen_at DESC LIMIT ?`).bind(like,like,like,limit).all();}
   else result=await env.DB.prepare(`SELECT a.user_sub,a.display_name,a.email,a.last_seen_at,a.created_at,m.plan_period,m.payment_type,m.status AS membership_status FROM member_accounts a LEFT JOIN tarot_memberships m ON m.user_sub=a.user_sub ORDER BY a.last_seen_at DESC LIMIT ?`).bind(limit).all();
   return json({success:true,customers:result.results||[]},200,headers);
 }
