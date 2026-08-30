@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>เปิดไพ่ทาโรต์ 5 ใบ ออนไลน์ | sorasukt Tarot</title>
+<meta name="description" content="ตั้งคำถาม เลือกไพ่ทาโรต์ 5 ใบ และรับมุมมองเพื่อทบทวนสิ่งที่คุณกำลังสนใจ">
+<meta name="robots" content="index,follow,max-image-preview:large"><link rel="canonical" href="https://sorasukt.com/tarot/reading/">
+<meta property="og:type" content="website"><meta property="og:locale" content="th_TH"><meta property="og:title" content="เปิดไพ่ทาโรต์ 5 ใบ ออนไลน์ | sorasukt Tarot"><meta property="og:description" content="ตั้งคำถาม เลือกไพ่ 5 ใบ และเปิดมุมมองใหม่ให้ตัวเอง"><meta property="og:url" content="https://sorasukt.com/tarot/reading/"><meta property="og:image" content="https://sorasukt.com/img/logo.png">
+<meta name="twitter:card" content="summary"><meta name="twitter:title" content="เปิดไพ่ทาโรต์ 5 ใบ ออนไลน์ | sorasukt Tarot"><meta name="twitter:description" content="ตั้งคำถาม เลือกไพ่ 5 ใบ และเปิดมุมมองใหม่ให้ตัวเอง"><meta name="twitter:image" content="https://sorasukt.com/img/logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../portal.css">
+<link rel="stylesheet" href="../style.css">
+<link rel="stylesheet" href="../experience.css?v=20260829-reading1">
+<link rel="stylesheet" href="../interaction.css">
+<link rel="stylesheet" href="../shuffle.css?v=20260827-shuffle1">
+</head>
+<body>
+<div class="portal">
+<header class="portal-header">
+<a class="portal-brand" href="../">
+<em>/</em>sorasukt</a>
+<nav class="portal-nav" aria-label="เมนูหลัก">
+<a href="../">วันนี้</a>
+<a href="./" aria-current="page">เปิดไพ่</a>
+<a href="../astrology/">ดวงดาว</a>
+<a href="../zodiac/">ราศี</a>
+<a href="../colors/">สีมงคล</a>
+<a href="../numbers/">ตัวเลข</a>
+<a href="../naming/">ตั้งชื่อ</a>
+<a href="../membership/">สมาชิกพิเศษ</a>
+</nav>
+<div class="portal-account">
+<span id="counter" hidden>0 / 5 selected</span>
+<button id="portalSignIn" type="button">ลงชื่อใช้งาน</button>
+<a id="portalMe" href="../me/" hidden>ฉัน</a>
+<button id="portalLogout" class="secondary" type="button" hidden>ออก</button>
+</div>
+</header>
+</div>
+<main class="shell">
+<section class="hero" id="questionStep">
+<p class="eyebrow">TAROT READING</p>
+<h1>ตั้งคำถามไว้ในใจ<br>แล้วเลือกไพ่ของคุณ</h1>
+<p class="lead">ไพ่ไม่ได้กำหนดอนาคต แต่ช่วยเปิดมุมมองใหม่ต่อสิ่งที่คุณกำลังคิดอยู่</p>
+<label class="question-label" for="question">คุณอยากถามอะไรกับไพ่?</label>
+<textarea id="question" maxlength="500" rows="4" placeholder="เช่น ช่วงนี้ฉันควรให้ความสำคัญกับเรื่องใดมากที่สุด?">
+</textarea>
+<div class="question-meta">
+<span>ถามแบบเปิดจะช่วยให้ได้มุมมองที่ลึกขึ้น</span>
+<span id="charCount">0 / 500</span>
+</div>
+<button class="primary" id="startButton" type="button" disabled>เลือกไพ่ของฉัน</button>
+</section>
+<section class="deck-section" id="deckStep" hidden>
+<div class="section-head">
+<div>
+<p class="eyebrow">CHOOSE FIVE</p>
+<h2 id="deckTitle" tabindex="-1">เลือกไพ่ที่ดึงดูดคุณ</h2>
+</div>
+<button class="text-button" id="resetSelection" type="button">เริ่มเลือกใหม่</button>
+</div>
+<p class="instruction" id="deckInstruction" role="status" aria-live="polite">แตะไพ่เพื่อเลือก แตะอีกครั้งเพื่อยกเลิก ไพ่จะยังคว่ำหน้าจนกว่าคุณจะเลือกครบ 5 ใบ</p>
+<div class="shuffle-stage" id="shuffleStage" role="status" aria-live="polite" aria-label="กำลังสับไพ่" hidden>
+<div class="shuffle-stack" aria-hidden="true">
+<span></span><span></span><span></span><span></span><span></span><span></span>
+</div>
+<p>กำลังสับไพ่ให้คุณ…</p>
+</div>
+<div class="deck" id="deck" aria-label="สำรับไพ่ 78 ใบ" hidden>
+</div>
+<div class="selected-strip" id="selectedStrip">
+</div>
+</section>
+<section class="reading-section" id="readingStep" hidden>
+<div class="section-head">
+<div>
+<p class="eyebrow">YOUR READING</p>
+<h2 id="readingTitle">การอ่านไพ่ของคุณ</h2>
+</div>
+<button class="text-button" id="newReading" type="button">ถามคำถามใหม่</button>
+</div>
+<p class="question-display" id="questionDisplay">
+</p>
+<div class="reading-grid" id="readingGrid">
+</div>
+<p class="reading-error" id="readingError" role="alert" tabindex="-1" hidden></p>
+<section class="reading-copy" id="readingCopy">
+</section>
+</section>
+</main>
+<div class="sticky-action" id="stickyAction" hidden>
+<button class="primary" id="revealButton" type="button">เปิดไพ่ทั้ง 5 ใบ</button>
+</div>
+<div class="loading" id="loading" role="status" aria-live="polite" hidden>
+<div class="loading-inner">
+<span class="loader">
+</span>
+<p id="loadingText">กำลังพิจารณาคำถามของคุณ</p>
+</div>
+</div>
+<script src="../portal.js?v=20260828-payments1">
+</script>
+<script src="../config.js">
+</script>
+<script src="../app.js?v=20260827-capacity1" defer>
+</script>
+</body>
+</html>
