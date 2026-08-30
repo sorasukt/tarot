@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Tarot Timeline | sorasukt Tarot</title>
+<meta name="description" content="ดูประวัติการเปิดไพ่ ไพ่ที่ปรากฏซ้ำ และจัดหมวดคำอ่านของคุณ">
+<meta name="robots" content="noindex,nofollow">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../portal.css">
+<link rel="stylesheet" href="../style.css">
+<link rel="stylesheet" href="../experience.css">
+<link rel="stylesheet" href="./history.css?v=20260830-phase1">
+</head>
+<body>
+<div class="portal"><header class="portal-header">
+<a class="portal-brand" href="../"><em>/</em>sorasukt</a>
+<nav class="portal-nav" aria-label="เมนูหลัก">
+<a href="../">วันนี้</a><a href="../reading/">เปิดไพ่</a><a href="./" aria-current="page">ไทม์ไลน์</a><a href="../astrology/">ดวงดาว</a><a href="../membership/">สมาชิกพิเศษ</a>
+</nav>
+<div class="portal-account"><button id="portalSignIn" type="button">ลงชื่อใช้งาน</button><a id="portalMe" href="../me/" hidden>ฉัน</a><button id="portalLogout" class="secondary" type="button" hidden>ออก</button></div>
+</header></div>
+<main class="timeline-shell">
+<section class="timeline-hero">
+<p class="eyebrow">YOUR TAROT TIMELINE</p>
+<h1>เรื่องราวจากไพ่ที่ผ่านมา</h1>
+<p>ย้อนดูไพ่ที่คุณเปิด จัดหมวดหมู่ และสังเกตไพ่ที่ปรากฏซ้ำ โดยสถิติเป็นเพียงรูปแบบจากประวัติของคุณ ไม่ใช่การยืนยันเหตุการณ์ในอนาคต</p>
+</section>
+<section class="timeline-toolbar" aria-label="ตัวกรองประวัติ">
+<div><label for="rangeFilter">ช่วงเวลา</label><select id="rangeFilter"><option value="30">30 วัน</option><option value="90">90 วัน</option><option value="all">ทั้งหมดที่ยังเก็บไว้</option></select></div>
+<div><label for="categoryFilter">หมวด</label><select id="categoryFilter"><option value="">ทั้งหมด</option><option value="personal">ส่วนตัว</option><option value="work">งาน</option><option value="love">ความรัก</option><option value="study">การเรียน</option><option value="money">การเงิน</option><option value="other">อื่น ๆ</option></select></div>
+</section>
+<p id="timelineStatus" class="timeline-status" role="status" aria-live="polite">กำลังโหลดไทม์ไลน์…</p>
+<section id="recurringSection" class="recurring-panel" hidden><div class="section-head"><div><p class="eyebrow">RECURRING CARDS</p><h2>ไพ่ที่ปรากฏซ้ำ</h2></div></div><div id="recurringCards" class="recurring-grid"></div><p class="timeline-note">จำนวนครั้งคำนวณจากประวัติที่บันทึกไว้เท่านั้น และไม่ได้หมายความว่าเหตุการณ์ใดจะเกิดขึ้นแน่นอน</p></section>
+<section aria-labelledby="timelineHeading"><div class="section-head"><div><p class="eyebrow">SAVED READINGS</p><h2 id="timelineHeading">คำอ่านของคุณ</h2></div><a class="text-button" href="../reading/">เปิดไพ่ใหม่</a></div><div id="timelineList" class="timeline-list"></div></section>
+</main>
+<script src="../portal.js?v=20260828-payments1"></script>
+<script src="./history.js?v=20260830-phase1" defer></script>
+</body>
+</html>
