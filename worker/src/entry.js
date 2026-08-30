@@ -6,6 +6,7 @@ import {enforceAiRateLimit} from "./rate-limit.js";
 import {handleUsage,hasCurrentPolicy,loadPolicyAcceptance,purgeExpiredUserData} from "./usage.js";
 import {handleBilling,handleStripeWebhook,loadMembership} from "./stripe.js";
 import {handleAdmin} from "./admin.js";
+import {handleTts} from "./tts.js";
 
 const MAJOR=["The Fool","The Magician","The High Priestess","The Empress","The Emperor","The Hierophant","The Lovers","The Chariot","Strength","The Hermit","Wheel of Fortune","Justice","The Hanged Man","Death","Temperance","The Devil","The Tower","The Star","The Moon","The Sun","Judgement","The World"];
 const RANKS=["Ace","Two","Three","Four","Five","Six","Seven","Eight","Nine","Ten","Page","Knight","Queen","King"];
@@ -60,6 +61,20 @@ export default {
       let session=null;
       try{session=await getSession(request,env)}catch(error){console.error(JSON.stringify({message:"Optional billing session failed",error:error?.message||"error"}))}
       return handleBilling(request,env,headers,session);
+    }
+
+    if(url.pathname==="/api/tts/reading"){
+      const origin=request.headers.get("Origin")||"";
+      const corsOrigin=allowedOrigin(origin,env);
+      if(request.method==="OPTIONS")return preflight(corsOrigin);
+      const headers=baseHeaders(request,env);
+      if(origin&&!corsOrigin)return json({success:false,error:{code:"ORIGIN_NOT_ALLOWED",message:"Origin not allowed"}},403,headers);
+      if(!hasCurrentPolicy(request))return policyRequired(headers);
+      let session=null;
+      try{session=await getSession(request,env)}catch(error){console.error(JSON.stringify({message:"Optional TTS member context failed",error:error?.message||"error"}))}
+      const limit=await enforceAiRateLimit(request,env,session?.sub||"");
+      if(!limit.allowed)return limited(limit,headers);
+      return handleTts(request,env,headers);
     }
 
     if(url.pathname==="/api/tarot/reading"&&request.method==="POST"){
