@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="robots" content="noindex,nofollow">
+  <title>Tarot Admin Console</title>
+  <link rel="stylesheet" href="./admin.css">
+</head>
+<body>
+  <div class="shell">
+    <aside class="sidebar">
+      <div class="brand"><span class="brand-mark">✦</span><div><strong>Tarot</strong><small>Admin Console</small></div></div>
+      <nav id="nav">
+        <button class="nav-item active" data-view="overview">ภาพรวม</button>
+        <button class="nav-item" data-view="payments">การชำระเงิน</button>
+        <button class="nav-item" data-view="memberships">สมาชิก</button>
+        <button class="nav-item" data-view="customers">ลูกค้า</button>
+        <button class="nav-item" data-view="support">บริการลูกค้า</button>
+        <button class="nav-item" data-view="audit">ประวัติการดำเนินการ</button>
+      </nav>
+      <div class="sidebar-footer"><a href="/tarot/">กลับไปหน้าหลัก</a><a href="https://api.sorasukt.com/auth/logout?returnTo=https%3A%2F%2Fsorasukt.com%2Ftarot%2F">ออกจากระบบ</a></div>
+    </aside>
+    <main>
+      <header><div><p class="eyebrow">Operations</p><h1 id="pageTitle">ภาพรวมระบบ</h1></div><div class="admin-chip" id="adminChip">กำลังตรวจสอบสิทธิ์…</div></header>
+      <section id="notice" class="notice hidden"></section>
+      <section id="overview" class="view active">
+        <div class="metrics" id="metrics"></div>
+        <div class="panel"><div class="panel-head"><div><h2>การจัดการระบบ</h2><p>เข้าถึงเครื่องมือที่ใช้บ่อย</p></div></div><div class="quick-actions"><button id="openStripe">เปิด Stripe Dashboard</button><button data-jump="support">สร้างเคสบริการลูกค้า</button><button data-refresh="overview">รีเฟรชข้อมูล</button></div></div>
+      </section>
+      <section id="payments" class="view"><div class="panel"><div class="panel-head"><div><h2>Payments</h2><p>รายการชำระเงินล่าสุดจากฐานข้อมูล</p></div><button data-refresh="payments">รีเฟรช</button></div><div class="table-wrap"><table><thead><tr><th>ลูกค้า</th><th>ประเภท</th><th>ยอด</th><th>สถานะ</th><th>วันที่</th><th>Receipt</th></tr></thead><tbody id="paymentsBody"></tbody></table></div></div></section>
+      <section id="memberships" class="view"><div class="panel"><div class="panel-head"><div><h2>Memberships</h2><p>Subscription และสิทธิ์สมาชิก</p></div><button data-refresh="memberships">รีเฟรช</button></div><div class="table-wrap"><table><thead><tr><th>ลูกค้า</th><th>แพ็กเกจ</th><th>รูปแบบ</th><th>สถานะ</th><th>สิ้นสุดรอบ</th></tr></thead><tbody id="membershipsBody"></tbody></table></div></div></section>
+      <section id="customers" class="view"><div class="panel"><div class="panel-head"><div><h2>Customers</h2><p>ค้นหาบัญชีและสถานะสมาชิก</p></div><div class="search"><input id="customerSearch" placeholder="ชื่อ อีเมล หรือ User ID"><button id="searchCustomers">ค้นหา</button></div></div><div class="table-wrap"><table><thead><tr><th>ลูกค้า</th><th>อีเมล</th><th>สมาชิก</th><th>ใช้งานล่าสุด</th></tr></thead><tbody id="customersBody"></tbody></table></div></div></section>
+      <section id="support" class="view"><div class="support-grid"><div class="panel"><div class="panel-head"><div><h2>Customer Support</h2><p>เคสที่กำลังดูแล</p></div><button data-refresh="support">รีเฟรช</button></div><div id="caseList" class="case-list"></div></div><div class="panel"><h2>สร้างเคสใหม่</h2><form id="caseForm"><label>หัวข้อ<input name="subject" maxlength="160" required></label><label>อีเมลลูกค้า<input name="customerEmail" type="email"></label><label>User ID<input name="userSub"></label><label>ความสำคัญ<select name="priority"><option value="normal">Normal</option><option value="low">Low</option><option value="high">High</option><option value="urgent">Urgent</option></select></label><label>รายละเอียด<textarea name="description" rows="6" maxlength="4000"></textarea></label><button type="submit" class="primary">สร้างเคส</button></form></div></div></section>
+      <section id="audit" class="view"><div class="panel"><div class="panel-head"><div><h2>Admin Audit Log</h2><p>ประวัติ action สำคัญในระบบ</p></div><button data-refresh="audit">รีเฟรช</button></div><div class="table-wrap"><table><thead><tr><th>ผู้ดำเนินการ</th><th>Action</th><th>Target</th><th>เวลา</th></tr></thead><tbody id="auditBody"></tbody></table></div></div></section>
+    </main>
+  </div>
+  <script src="./admin.js" defer></script>
+</body>
+</html>
