@@ -4,6 +4,7 @@ on:
   pull_request:
     branches:
       - main
+      - feature/tts-card-reading
     paths:
       - "worker/**"
       - ".github/workflows/deploy-tarot-worker.yml"
