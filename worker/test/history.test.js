@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import {authoritativeRetentionDays,recurringCardStats,saveReadingHistory} from "../src/history.js";
+import {recurringCardStats,retentionDaysForTier,saveReadingHistory} from "../src/history.js";
 
 test("recurring card insight is deterministic and only returns repeats",()=>{
   const items=recurringCardStats([
@@ -9,11 +9,14 @@ test("recurring card insight is deterministic and only returns repeats",()=>{
   assert.deepEqual(items,[{cardName:"The Hermit",count:3},{cardName:"The Star",count:2}]);
 });
 
-test("history retention defaults to 60 days and is bounded",()=>{
-  assert.equal(authoritativeRetentionDays({}),60);
-  assert.equal(authoritativeRetentionDays({HISTORY_RETENTION_DAYS:"30"}),30);
-  assert.equal(authoritativeRetentionDays({HISTORY_RETENTION_DAYS:"999"}),365);
-  assert.equal(authoritativeRetentionDays({HISTORY_RETENTION_DAYS:"0"}),1);
+test("history retention follows membership tiers and stays bounded",()=>{
+  assert.equal(retentionDaysForTier("free",{}),30);
+  assert.equal(retentionDaysForTier("member",{}),180);
+  assert.equal(retentionDaysForTier("annual_member",{}),730);
+  assert.equal(retentionDaysForTier("free",{HISTORY_RETENTION_FREE_DAYS:"45"}),45);
+  assert.equal(retentionDaysForTier("member",{HISTORY_RETENTION_MEMBER_DAYS:"365"}),365);
+  assert.equal(retentionDaysForTier("annual_member",{HISTORY_RETENTION_ANNUAL_DAYS:"9999"}),1095);
+  assert.equal(retentionDaysForTier("free",{HISTORY_RETENTION_FREE_DAYS:"0"}),1);
 });
 
 test("private mode never writes reading history",async()=>{
