@@ -12,14 +12,14 @@ const positions = [
   ["guidance","แนวทาง"],
   ["direction","แนวโน้ม"]
 ];
-const state={question:"",selected:[]};
+const state={question:"",selected:[],category:"personal",privateMode:false};
 const $=id=>document.getElementById(id);
-const els={question:$("question"),charCount:$("charCount"),start:$("startButton"),counter:$("counter"),questionStep:$("questionStep"),deckStep:$("deckStep"),deckTitle:$("deckTitle"),deckInstruction:$("deckInstruction"),shuffleStage:$("shuffleStage"),deck:$("deck"),selectedStrip:$("selectedStrip"),sticky:$("stickyAction"),reveal:$("revealButton"),readingStep:$("readingStep"),readingGrid:$("readingGrid"),readingCopy:$("readingCopy"),readingTitle:$("readingTitle"),questionDisplay:$("questionDisplay"),loading:$("loading"),loadingText:$("loadingText"),error:$("readingError")};
+const els={question:$("question"),charCount:$("charCount"),start:$("startButton"),counter:$("counter"),questionStep:$("questionStep"),deckStep:$("deckStep"),deckTitle:$("deckTitle"),deckInstruction:$("deckInstruction"),shuffleStage:$("shuffleStage"),deck:$("deck"),selectedStrip:$("selectedStrip"),sticky:$("stickyAction"),reveal:$("revealButton"),readingStep:$("readingStep"),readingGrid:$("readingGrid"),readingCopy:$("readingCopy"),readingTitle:$("readingTitle"),questionDisplay:$("questionDisplay"),historyStatus:$("historyStatus"),category:$("readingCategory"),privateMode:$("privateMode"),loading:$("loading"),loadingText:$("loadingText"),error:$("readingError")};
 
 function shuffledDeck(){return [...cards].sort(()=>Math.random()-.5)}
 function updateQuestion(){const q=els.question.value.trim(); els.charCount.textContent=`${els.question.value.length} / 500`; els.start.disabled=!q;}
 els.question.addEventListener("input",updateQuestion);
-els.start.addEventListener("click",()=>{state.question=els.question.value.trim(); if(!state.question)return; els.questionStep.hidden=true; els.deckStep.hidden=false; window.scrollTo({top:0,behavior:"smooth"});void beginShuffle();});
+els.start.addEventListener("click",()=>{state.question=els.question.value.trim();state.category=els.category?.value||"personal";state.privateMode=Boolean(els.privateMode?.checked);if(!state.question)return;els.questionStep.hidden=true;els.deckStep.hidden=false;window.scrollTo({top:0,behavior:"smooth"});void beginShuffle();});
 
 async function beginShuffle(){
   state.selected=[];updateSelectionUI();els.deck.replaceChildren();els.deck.hidden=true;els.deck.setAttribute("inert","");els.selectedStrip.hidden=true;$("resetSelection").hidden=true;els.shuffleStage.hidden=false;els.deckStep.dataset.phase="shuffling";els.deckTitle.textContent="กำลังสับไพ่ของคุณ";els.deckInstruction.textContent="รอสักครู่ เมื่อสับไพ่เสร็จแล้วคุณจะเลือกได้ 5 ใบ";
@@ -57,15 +57,20 @@ async function createReading(){
   let mi=0; const timer=setInterval(()=>{mi=(mi+1)%messages.length;els.loadingText.textContent=messages[mi]},1400);
   try{
     const endpoint=window.TAROT_CONFIG?.endpoint||"/api/tarot/reading";
-    const res=await window.TarotPortal.ai("tarot",endpoint,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({question:state.question,language:"th",cards:state.selected.map(c=>({cardId:c.id,orientation:"upright"}))})});
+    const res=await window.TarotPortal.ai("tarot",endpoint,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({question:state.question,language:"th",category:state.category,privateMode:state.privateMode,cards:state.selected.map(c=>({cardId:c.id,orientation:"upright"}))})});
     const data=await res.json().catch(()=>null);
     if(!res.ok||!data?.success)throw window.TarotPortal.apiError(data,"ไม่สามารถสร้างคำอ่านไพ่ได้");
-    renderReading(data.reading);
+    renderReading(data.reading,data.history);
   }catch(err){window.TarotPortal.renderError(els.error,err);els.error.focus();els.sticky.hidden=false;}
   finally{clearInterval(timer);showLoading(false)}
 }
-function renderReading(reading){
+function renderReading(reading,history){
   els.deckStep.hidden=true; els.readingStep.hidden=false; els.questionDisplay.textContent=`“${state.question}”`;els.readingTitle.textContent=reading.readingTitle||"การอ่านไพ่ของคุณ";els.readingGrid.replaceChildren();
+  if(els.historyStatus){
+    if(state.privateMode)els.historyStatus.textContent="โหมดส่วนตัว · คำอ่านนี้ไม่ได้ถูกบันทึกลงไทม์ไลน์";
+    else if(history?.saved)els.historyStatus.innerHTML='บันทึกในไทม์ไลน์แล้ว · <a href="/tarot/history/">ดูไทม์ไลน์ของฉัน</a>';
+    else els.historyStatus.innerHTML='ลงชื่อใช้งานเพื่อเก็บคำอ่านใน <a href="/tarot/history/">Tarot Timeline</a>';
+  }
   state.selected.forEach((card,i)=>{const ai=reading.cards?.[i]||{}; const wrap=document.createElement("article");wrap.className="revealed-card";const face=document.createElement("div");face.className="card-face";const pos=document.createElement("div");pos.className="card-position";pos.textContent=positions[i][1];const symbol=document.createElement("div");symbol.className="card-symbol";symbol.textContent=card.arcana==="major"?"✦":"◇";const name=document.createElement("div");name.className="card-name";name.textContent=card.name;const keys=document.createElement("div");keys.className="keywords";keys.textContent=(ai.keywords||[]).join(" · ");face.append(pos,symbol,name,keys);wrap.append(face);els.readingGrid.append(wrap)});
   els.readingCopy.replaceChildren();
   addSection("ภาพรวม",reading.overallReading||reading.summary||"");
