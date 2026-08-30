@@ -2,30 +2,37 @@ import {readJsonBody,RequestBodyError} from "./request.js";
 
 const CASE_STATUSES=new Set(["open","pending","resolved","closed"]);
 const CASE_PRIORITIES=new Set(["low","normal","high","urgent"]);
+const ROLE_PERMISSIONS={
+  admin:["overview:read","payments:read","memberships:read","customers:read","support:read","support:write","audit:read","stripe:open"],
+  support:["overview:read","customers:read","support:read","support:write"],
+  billing:["overview:read","payments:read","memberships:read","customers:read","stripe:open"],
+  viewer:["overview:read","payments:read","memberships:read","customers:read","support:read"]
+};
 
 export async function handleAdmin(request,env,headers,session){
   if(!session)return json({success:false,error:{code:"UNAUTHORIZED",message:"Authentication required"}},401,headers);
-  if(!isAdmin(session,env))return json({success:false,error:{code:"FORBIDDEN",message:"Admin access required"}},403,headers);
+  const access=adminAccess(session);
+  if(!access.roles.length)return json({success:false,error:{code:"FORBIDDEN",message:"Admin Console role required"}},403,headers);
   if(!env.DB)return json({success:false,error:{code:"STORAGE_NOT_CONFIGURED",message:"Storage is not configured"}},503,headers);
   const url=new URL(request.url);
   try{
-    if(url.pathname==="/api/admin/session")return only(request,"GET",headers,()=>json({success:true,admin:{sub:session.sub,name:session.name,email:session.email}},200,headers));
-    if(url.pathname==="/api/admin/overview")return only(request,"GET",headers,()=>overview(env,headers));
-    if(url.pathname==="/api/admin/payments")return only(request,"GET",headers,()=>payments(env,headers,url));
-    if(url.pathname==="/api/admin/memberships")return only(request,"GET",headers,()=>memberships(env,headers,url));
-    if(url.pathname==="/api/admin/customers")return only(request,"GET",headers,()=>customers(env,headers,url));
+    if(url.pathname==="/api/admin/session")return only(request,"GET",headers,()=>json({success:true,admin:{sub:session.sub,name:session.name,email:session.email,roles:access.roles,permissions:access.permissions}},200,headers));
+    if(url.pathname==="/api/admin/overview")return guarded(request,"GET",headers,access,"overview:read",()=>overview(env,headers));
+    if(url.pathname==="/api/admin/payments")return guarded(request,"GET",headers,access,"payments:read",()=>payments(env,headers,url));
+    if(url.pathname==="/api/admin/memberships")return guarded(request,"GET",headers,access,"memberships:read",()=>memberships(env,headers,url));
+    if(url.pathname==="/api/admin/customers")return guarded(request,"GET",headers,access,"customers:read",()=>customers(env,headers,url));
     if(url.pathname==="/api/admin/support/cases"){
-      if(request.method==="GET")return supportCases(env,headers,url);
-      if(request.method==="POST")return createCase(request,env,headers,session);
+      if(request.method==="GET")return requirePermission(access,"support:read",headers,()=>supportCases(env,headers,url));
+      if(request.method==="POST")return requirePermission(access,"support:write",headers,()=>createCase(request,env,headers,session));
       return methodNotAllowed(headers);
     }
     const match=url.pathname.match(/^\/api\/admin\/support\/cases\/(\d+)$/);
     if(match){
       if(request.method!=="PUT")return methodNotAllowed(headers);
-      return updateCase(request,env,headers,session,Number(match[1]));
+      return requirePermission(access,"support:write",headers,()=>updateCase(request,env,headers,session,Number(match[1])));
     }
-    if(url.pathname==="/api/admin/audit")return only(request,"GET",headers,()=>auditLog(env,headers,url));
-    if(url.pathname==="/api/admin/stripe/portal")return only(request,"POST",headers,()=>stripeDashboard(headers));
+    if(url.pathname==="/api/admin/audit")return guarded(request,"GET",headers,access,"audit:read",()=>auditLog(env,headers,url));
+    if(url.pathname==="/api/admin/stripe/portal")return guarded(request,"POST",headers,access,"stripe:open",()=>stripeDashboard(headers));
     return json({success:false,error:{code:"NOT_FOUND",message:"Not found"}},404,headers);
   }catch(error){
     console.error(JSON.stringify({message:"Admin route failed",path:url.pathname,error:error?.name||"error"}));
@@ -34,9 +41,10 @@ export async function handleAdmin(request,env,headers,session){
   }
 }
 
-export function isAdmin(session,env){
-  const subs=csv(env.ADMIN_USER_SUBS); const emails=csv(env.ADMIN_EMAILS).map(x=>x.toLowerCase());
-  return Boolean((session?.sub&&subs.includes(session.sub))||(session?.email&&emails.includes(String(session.email).toLowerCase())));
+export function adminAccess(session){
+  const roles=[...new Set((Array.isArray(session?.roles)?session.roles:[]).map(role=>String(role||"").trim().toLowerCase()).filter(role=>ROLE_PERMISSIONS[role]))];
+  const permissions=[...new Set(roles.flatMap(role=>ROLE_PERMISSIONS[role]))];
+  return {roles,permissions};
 }
 
 async function overview(env,headers){
@@ -97,9 +105,10 @@ async function auditLog(env,headers,url){const limit=clamp(url.searchParams.get(
 async function audit(env,session,action,target,metadata){await env.DB.prepare("INSERT INTO admin_audit_log(actor_sub,actor_email,action,target,metadata) VALUES(?,?,?,?,?)").bind(session.sub,session.email||null,action,target||null,JSON.stringify(metadata||{})).run()}
 async function firstValue(env,sql){const row=await env.DB.prepare(sql).first();return Number(row?.value||0)}
 function stripeDashboard(headers){return json({success:true,url:"https://dashboard.stripe.com/"},200,headers)}
+function guarded(request,method,headers,access,permission,fn){if(request.method!==method)return methodNotAllowed(headers);return requirePermission(access,permission,headers,fn)}
+function requirePermission(access,permission,headers,fn){return access.permissions.includes(permission)?fn():json({success:false,error:{code:"FORBIDDEN",message:"You do not have permission for this action"}},403,headers)}
 function only(request,method,headers,fn){return request.method===method?fn():methodNotAllowed(headers)}
 function methodNotAllowed(headers){return json({success:false,error:{code:"METHOD_NOT_ALLOWED",message:"Method not allowed"}},405,headers)}
 function json(data,status,headers){return new Response(JSON.stringify(data),{status,headers})}
-function csv(value){return String(value||"").split(",").map(x=>x.trim()).filter(Boolean)}
 function clamp(value,min,max,fallback){const n=Number(value);return Number.isInteger(n)?Math.min(max,Math.max(min,n)):fallback}
 function text(value,max){return typeof value==="string"?value.trim().slice(0,max):""}
