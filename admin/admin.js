@@ -1,0 +1,97 @@
+const API="https://api.sorasukt.com";
+const titles={overview:"ภาพรวมระบบ",payments:"การชำระเงิน",memberships:"สมาชิก",customers:"ลูกค้า",support:"บริการลูกค้า",audit:"ประวัติการดำเนินการ"};
+const state={loaded:new Set()};
+
+document.addEventListener("DOMContentLoaded",init);
+
+async function init(){
+  bindNavigation(); bindActions();
+  try{
+    const data=await api("/api/admin/session");
+    document.getElementById("adminChip").textContent=data.admin.email||data.admin.name||"Admin";
+    await load("overview");
+  }catch(error){
+    if(error.status===401){location.href=`${API}/auth/login?returnTo=${encodeURIComponent(location.href)}`;return;}
+    showNotice(error.status===403?"บัญชีนี้ไม่มีสิทธิ์เข้า Admin Console":"ไม่สามารถโหลด Admin Console ได้",true);
+    document.querySelectorAll("button,input,select,textarea").forEach(el=>el.disabled=true);
+  }
+}
+
+function bindNavigation(){
+  document.querySelectorAll(".nav-item").forEach(button=>button.addEventListener("click",()=>switchView(button.dataset.view)));
+  document.querySelectorAll("[data-jump]").forEach(button=>button.addEventListener("click",()=>switchView(button.dataset.jump)));
+}
+function bindActions(){
+  document.querySelectorAll("[data-refresh]").forEach(button=>button.addEventListener("click",()=>load(button.dataset.refresh,true)));
+  document.getElementById("openStripe").addEventListener("click",async()=>{try{const result=await api("/api/admin/stripe/portal",{method:"POST"});window.open(result.url,"_blank","noopener");}catch(e){showNotice(e.message,true)}});
+  document.getElementById("searchCustomers").addEventListener("click",()=>loadCustomers());
+  document.getElementById("customerSearch").addEventListener("keydown",e=>{if(e.key==="Enter")loadCustomers()});
+  document.getElementById("caseForm").addEventListener("submit",createCase);
+}
+async function switchView(name){
+  document.querySelectorAll(".view").forEach(v=>v.classList.toggle("active",v.id===name));
+  document.querySelectorAll(".nav-item").forEach(v=>v.classList.toggle("active",v.dataset.view===name));
+  document.getElementById("pageTitle").textContent=titles[name]||"Admin Console";
+  await load(name);
+}
+async function load(name,force=false){
+  if(state.loaded.has(name)&&!force)return;
+  try{
+    if(name==="overview")await loadOverview();
+    if(name==="payments")await loadPayments();
+    if(name==="memberships")await loadMemberships();
+    if(name==="customers")await loadCustomers();
+    if(name==="support")await loadSupport();
+    if(name==="audit")await loadAudit();
+    state.loaded.add(name);
+  }catch(e){showNotice(e.message||"โหลดข้อมูลไม่สำเร็จ",true)}
+}
+async function loadOverview(){
+  const {metrics:m}=await api("/api/admin/overview");
+  const cards=[
+    ["ลูกค้าทั้งหมด",num(m.customers)],
+    ["สมาชิก Active",num(m.activeMemberships)],
+    ["Payments สำเร็จ",num(m.paidPayments)],
+    ["รายรับที่บันทึก",money(m.revenueMinor,m.currency)],
+    ["เคสที่ต้องดูแล",num(m.openCases)]
+  ];
+  document.getElementById("metrics").innerHTML=cards.map(([label,value])=>`<article class="metric"><span>${esc(label)}</span><strong>${esc(value)}</strong></article>`).join("");
+}
+async function loadPayments(){
+  const {payments}=await api("/api/admin/payments?limit=100");
+  fill("paymentsBody",payments.map(p=>`<tr><td>${customer(p)}</td><td>${esc(p.kind||"-")}</td><td>${money(p.amount,p.currency)}</td><td><span class="badge ${esc(p.payment_status)}">${esc(p.payment_status||"-")}</span></td><td>${date(p.created_at)}</td><td>${p.receipt_url?`<a href="${safeUrl(p.receipt_url)}" target="_blank" rel="noopener">เปิด</a>`:"-"}</td></tr>`));
+}
+async function loadMemberships(){
+  const {memberships}=await api("/api/admin/memberships?limit=100");
+  fill("membershipsBody",memberships.map(m=>`<tr><td>${customer(m)}</td><td>${esc(m.plan_period||"-")}</td><td>${esc(m.payment_type||"-")}</td><td><span class="badge ${esc(m.status)}">${esc(m.status||"-")}</span></td><td>${date(m.current_period_end)}</td></tr>`));
+}
+async function loadCustomers(){
+  const q=document.getElementById("customerSearch").value.trim();
+  const {customers}=await api(`/api/admin/customers?limit=100${q?`&q=${encodeURIComponent(q)}`:""}`);
+  fill("customersBody",customers.map(c=>`<tr><td>${esc(c.display_name||c.user_sub||"-")}</td><td>${esc(c.email||"-")}</td><td><span class="badge ${esc(c.membership_status||"")}">${esc(c.membership_status||"none")}</span></td><td>${date(c.last_seen_at)}</td></tr>`));
+}
+async function loadSupport(){
+  const {cases}=await api("/api/admin/support/cases?limit=100"); const root=document.getElementById("caseList");
+  if(!cases.length){root.innerHTML='<div class="empty">ยังไม่มีเคสบริการลูกค้า</div>';return;}
+  root.innerHTML=cases.map(c=>`<article class="case"><div class="case-top"><div><h3>#${c.id} ${esc(c.subject)}</h3><p>${esc(c.display_name||c.customer_email||c.user_sub||"ไม่ระบุลูกค้า")}</p></div><span class="badge ${esc(c.priority)}">${esc(c.priority)}</span></div><div class="case-actions"><select data-case-status="${c.id}">${["open","pending","resolved","closed"].map(s=>`<option value="${s}" ${s===c.status?"selected":""}>${s}</option>`).join("")}</select><button data-save-case="${c.id}">บันทึกสถานะ</button><small>${date(c.updated_at)}</small></div></article>`).join("");
+  root.querySelectorAll("[data-save-case]").forEach(button=>button.addEventListener("click",()=>saveCase(button.dataset.saveCase)));
+}
+async function saveCase(id){const select=document.querySelector(`[data-case-status="${id}"]`);await api(`/api/admin/support/cases/${id}`,{method:"PUT",body:JSON.stringify({status:select.value})});showNotice("อัปเดตเคสแล้ว");await load("support",true);state.loaded.delete("overview")}
+async function createCase(event){event.preventDefault();const form=new FormData(event.currentTarget);const body=Object.fromEntries(form.entries());await api("/api/admin/support/cases",{method:"POST",body:JSON.stringify(body)});event.currentTarget.reset();showNotice("สร้างเคสแล้ว");await load("support",true);state.loaded.delete("overview")}
+async function loadAudit(){
+  const {events}=await api("/api/admin/audit?limit=100");
+  fill("auditBody",events.map(e=>`<tr><td>${esc(e.actor_email||e.actor_sub)}</td><td>${esc(e.action)}</td><td>${esc(e.target||"-")}</td><td>${date(e.created_at)}</td></tr>`));
+}
+async function api(path,options={}){
+  const response=await fetch(API+path,{credentials:"include",headers:{"Content-Type":"application/json",...(options.headers||{})},...options});
+  let data={}; try{data=await response.json()}catch{}
+  if(!response.ok){const error=new Error(data?.error?.message||`Request failed (${response.status})`);error.status=response.status;throw error} return data;
+}
+function fill(id,rows){document.getElementById(id).innerHTML=rows.length?rows.join(""):'<tr><td colspan="8" class="empty">ไม่มีข้อมูล</td></tr>'}
+function customer(row){return `${esc(row.display_name||row.email||row.user_sub||"-")}${row.display_name&&row.email?`<br><small>${esc(row.email)}</small>`:""}`}
+function money(minor,currency="THB"){const value=Number(minor||0)/100;try{return new Intl.NumberFormat("th-TH",{style:"currency",currency:(currency||"THB").toUpperCase()}).format(value)}catch{return `${value.toFixed(2)} ${currency||"THB"}`}}
+function num(value){return new Intl.NumberFormat("th-TH").format(Number(value||0))}
+function date(value){if(!value)return"-";const parsed=new Date(String(value).includes("T")?value:`${String(value).replace(" ","T")}Z`);return Number.isNaN(parsed.getTime())?esc(value):parsed.toLocaleString("th-TH",{dateStyle:"medium",timeStyle:"short",timeZone:"Asia/Bangkok"})}
+function esc(value){return String(value??"").replace(/[&<>'"]/g,ch=>({"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;",'"':"&quot;"}[ch]))}
+function safeUrl(value){try{const u=new URL(value);return u.protocol==="https:"?esc(u.href):"#"}catch{return"#"}}
+function showNotice(message,error=false){const el=document.getElementById("notice");el.textContent=message;el.classList.remove("hidden");el.classList.toggle("error",error);setTimeout(()=>el.classList.add("hidden"),5000)}
