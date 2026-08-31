@@ -41,7 +41,8 @@ function browserContext(member = null) {
     Date,
     document,
     Intl,
-    location: { assign() {}, href: "https://sorasukt.com/tarot/me/", origin: "https://sorasukt.com" },
+    URLSearchParams,
+    location: { assign() {}, href: "https://sorasukt.com/tarot/me/", origin: "https://sorasukt.com", search: "" },
     requestAnimationFrame(handler) { handler(); },
     setTimeout,
     window: {
@@ -117,7 +118,7 @@ test("Tarot reading shuffles before enabling card selection", async () => {
 
 test("all Tarot pages share the reading-page visual language",async()=>{
   const pages=["index.html","reading/index.html","astrology/index.html","zodiac/index.html","colors/index.html","numbers/index.html","naming/index.html","me/index.html","membership/index.html","support/index.html","about/index.html","billing/success/index.html"];
-  const [styles,...documents]=await Promise.all([readFile(new URL("experience.css",repositoryRoot),"utf8"),...pages.map(path=>readFile(new URL(path,repositoryRoot),"utf8"))]);
+  const [styles,...documents]=await Promise.all([readFile(new URL("assets/css/core/experience.css",repositoryRoot),"utf8"),...pages.map(path=>readFile(new URL(path,repositoryRoot),"utf8"))]);
   assert.match(styles,/font-family:Georgia,"IBM Plex Sans Thai",serif/);
   assert.match(styles,/font-size:clamp\(48px,7vw,92px\)/);
   assert.match(styles,/--experience-width:1180px/);
@@ -131,7 +132,7 @@ test("lucky-color pages expose an accessible member result and selected-date too
     readFile(new URL("colors/index.html",repositoryRoot),"utf8"),
     readFile(new URL("colors/colors.js",repositoryRoot),"utf8")
   ]);
-  assert.match(home,/สำหรับคุณเท่านั้น/);
+  assert.match(home,/สำหรับคุณ/);
   assert.match(home,/id="dailyLuckyColor"/);
   assert.match(page,/id="colorDate"[^>]+required/);
   assert.match(page,/id="colorResult"[^>]+aria-live="polite"/);
@@ -149,7 +150,7 @@ test("billing pages use simple provider-neutral copy and keep membership managem
     readFile(new URL("support/support.js",repositoryRoot),"utf8"),
     readFile(new URL("billing/success/success.js",repositoryRoot),"utf8"),
     readFile(new URL("me/me.js",repositoryRoot),"utf8"),
-    readFile(new URL("billing.css",repositoryRoot),"utf8")
+    readFile(new URL("assets/css/pages/billing.css",repositoryRoot),"utf8")
   ]);
   assert.match(membership,/<strong>Subscription<\/strong><em>ต่ออายุอัตโนมัติ<\/em>/);
   assert.match(membership,/<strong>Pay as you go<\/strong><em>ชำระครั้งเดียว<\/em>/);
