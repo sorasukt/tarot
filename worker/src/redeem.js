@@ -6,12 +6,14 @@ const PERIODS=new Set(["weekly","monthly","yearly"]);
 export async function handleRedeem(request,env,headers,session){
   const url=new URL(request.url);
   if(url.pathname!=="/api/redeem")return null;
-  if(!session)return json({success:false,error:{code:"UNAUTHORIZED",message:"กรุณาลงชื่อใช้งานก่อนใช้โค้ด"}},401,headers);
   if(!env.DB)return json({success:false,error:{code:"STORAGE_NOT_CONFIGURED",message:"ระบบแลกสิทธิ์ยังไม่พร้อมใช้งาน"}},503,headers);
 
   try{
     if(request.method==="GET")return preview(url,env,headers);
-    if(request.method==="POST")return redeem(request,env,headers,session);
+    if(request.method==="POST"){
+      if(!session)return json({success:false,error:{code:"UNAUTHORIZED",message:"กรุณาลงชื่อใช้งานก่อนใช้โค้ด"}},401,headers);
+      return redeem(request,env,headers,session);
+    }
     return json({success:false,error:{code:"METHOD_NOT_ALLOWED",message:"Method not allowed"}},405,headers);
   }catch(error){
     console.error(JSON.stringify({message:"Redeem route failed",error:error?.name||"error"}));
