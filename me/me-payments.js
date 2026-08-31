@@ -2,9 +2,34 @@
   const API_HISTORY = '/api/billing/account';
   const API_PORTAL = '/api/billing/account/portal';
 
+  function ensureStyles() {
+    if (document.querySelector('style[data-payment-account-styles]')) return;
+    const style = document.createElement('style');
+    style.dataset.paymentAccountStyles = 'true';
+    style.textContent = `
+      .payment-account-head{align-items:center}
+      .payment-account-actions{display:flex;flex-wrap:wrap;gap:8px;justify-content:flex-end}
+      .payment-account-actions button{margin:0;min-height:44px;padding:10px 16px}
+      .payment-history-list{margin-top:14px}
+      .payment-row{align-items:center;gap:16px}
+      .payment-row-main{display:grid;gap:4px;min-width:0}
+      .payment-row-main span{color:#777;font-size:13px}
+      .payment-empty{padding:18px;border-radius:16px;background:var(--soft)}
+      .payment-empty p{margin:6px 0 0;color:#666;line-height:1.55}
+      @media(max-width:760px){
+        .payment-account-head{display:grid;gap:14px}
+        .payment-account-actions{display:grid;grid-template-columns:1fr 1fr;justify-content:stretch}
+        .payment-account-actions button{width:100%}
+      }
+      @media(max-width:420px){.payment-account-actions{grid-template-columns:1fr}}
+    `;
+    document.head.append(style);
+  }
+
   function init() {
     const billingPanel = document.querySelector('[data-me-panel="billing"]');
     if (!billingPanel || document.getElementById('paymentAccountPanel')) return;
+    ensureStyles();
 
     const legacy = document.getElementById('invoiceSection');
     if (legacy) {
