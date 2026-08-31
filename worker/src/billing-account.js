@@ -47,6 +47,7 @@ export async function handleBillingAccount(request, env, headers, session) {
           amount: Number(item.amount_paid || item.amount_due || 0),
           currency: item.currency || "thb",
           created: unixIso(item.created),
+          paymentIntent: typeof item.payment_intent === "string" ? item.payment_intent : null,
           hostedInvoiceUrl: safeStripeDocumentUrl(item.hosted_invoice_url),
           invoicePdf: safeStripeDocumentUrl(item.invoice_pdf),
           source: "invoice"
