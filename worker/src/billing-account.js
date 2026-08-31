@@ -56,6 +56,8 @@ export async function handleBillingAccount(request, env, headers, session) {
         console.error(JSON.stringify({message:"Billing account invoice sync failed",error:error?.message||"error",userSub:session.sub}));
         providerWarning = "โหลดใบแจ้งหนี้จากผู้ให้บริการไม่สำเร็จ แต่ยังแสดงรายการชำระเงินที่บันทึกไว้ได้";
       }
+    } else if (customerId && !env.STRIPE_SECRET_KEY) {
+      providerWarning = "ยังเชื่อมต่อข้อมูลใบแจ้งหนี้จากผู้ให้บริการไม่ได้ แต่รายการชำระเงินที่บันทึกไว้ยังแสดงได้";
     }
 
     return json({
