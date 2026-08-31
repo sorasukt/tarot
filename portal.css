@@ -1,2 +1,3 @@
-/* Compatibility entrypoint. Canonical source: assets/css/core/portal.css */
+/* Compatibility entrypoint. Shared foundation + canonical portal styles. */
+@import url("./assets/css/core/design-system.css");
 @import url("./assets/css/core/portal.css");
