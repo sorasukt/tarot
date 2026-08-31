@@ -1,7 +1,91 @@
 (() => {
   const $=id=>document.getElementById(id),periods=["weekly","monthly","yearly"],labels={weekly:"รายสัปดาห์",monthly:"รายเดือน",yearly:"รายปี"};
   let plans=[],member=null;
-  addEventListener("DOMContentLoaded",()=>{document.querySelectorAll('input[name="paymentType"]').forEach(input=>input.addEventListener("change",renderPlans));$("portalButton").addEventListener("click",accountAction);load()});
+
+  addEventListener("DOMContentLoaded",()=>{
+    document.querySelectorAll('input[name="paymentType"]').forEach(input=>input.addEventListener("change",renderPlans));
+    initPaymentTabs();
+    $("portalButton").addEventListener("click",accountAction);
+    load();
+  });
+
+  function initPaymentTabs(){
+    const group=document.querySelector('.payment-choice-grid');
+    if(!group||group.dataset.tabsReady==='true')return;
+    const choices=[...group.querySelectorAll('.payment-choice')];
+    if(choices.length<2)return;
+    group.dataset.tabsReady='true';
+    group.classList.add('payment-choice-details');
+
+    const tabs=document.createElement('div');
+    tabs.className='t-tabs payment-type-tabs';
+    tabs.setAttribute('role','tablist');
+    tabs.setAttribute('aria-label','เลือกรูปแบบการชำระเงิน');
+    const pill=document.createElement('span');
+    pill.className='t-tabs-pill';
+    pill.setAttribute('aria-hidden','true');
+    tabs.append(pill);
+
+    const buttons=choices.map((choice,index)=>{
+      const input=choice.querySelector('input[name="paymentType"]');
+      const label=choice.querySelector('strong')?.textContent?.trim()||`ตัวเลือก ${index+1}`;
+      const button=document.createElement('button');
+      button.type='button';
+      button.className='t-tab';
+      button.setAttribute('role','tab');
+      button.dataset.value=input?.value||'';
+      button.textContent=label;
+      tabs.append(button);
+      button.addEventListener('click',()=>select(button,true));
+      button.addEventListener('keydown',event=>{
+        if(!['ArrowLeft','ArrowRight','Home','End'].includes(event.key))return;
+        event.preventDefault();
+        let next=index;
+        if(event.key==='ArrowLeft')next=(index-1+buttons.length)%buttons.length;
+        if(event.key==='ArrowRight')next=(index+1)%buttons.length;
+        if(event.key==='Home')next=0;
+        if(event.key==='End')next=buttons.length-1;
+        buttons[next].focus();
+        select(buttons[next],true);
+      });
+      input?.addEventListener('change',()=>{if(input.checked)select(button,false)});
+      return button;
+    });
+
+    group.before(tabs);
+
+    function placePill(button,animate=true){
+      if(!button)return;
+      const write=()=>{
+        pill.style.transform=`translateX(${button.offsetLeft}px)`;
+        pill.style.width=`${button.offsetWidth}px`;
+      };
+      if(animate){write();return;}
+      const transition=pill.style.transition;
+      pill.style.transition='none';
+      write();
+      void pill.offsetWidth;
+      pill.style.transition=transition;
+    }
+
+    function select(button,emit){
+      const value=button?.dataset.value;
+      const input=choices.map(choice=>choice.querySelector('input[name="paymentType"]')).find(item=>item?.value===value);
+      buttons.forEach(item=>item.setAttribute('aria-selected',String(item===button)));
+      choices.forEach(choice=>choice.classList.toggle('is-active',choice.querySelector('input[name="paymentType"]')?.value===value));
+      placePill(button,true);
+      if(input&&!input.checked){input.checked=true;if(emit)input.dispatchEvent(new Event('change',{bubbles:true}));}
+    }
+
+    const initialInput=group.querySelector('input[name="paymentType"]:checked')||group.querySelector('input[name="paymentType"]');
+    const initialButton=buttons.find(button=>button.dataset.value===initialInput?.value)||buttons[0];
+    buttons.forEach(item=>item.setAttribute('aria-selected',String(item===initialButton)));
+    choices.forEach(choice=>choice.classList.toggle('is-active',choice.querySelector('input[name="paymentType"]')?.value===initialButton?.dataset.value));
+    requestAnimationFrame(()=>placePill(initialButton,false));
+    if('ResizeObserver'in window)new ResizeObserver(()=>placePill(buttons.find(item=>item.getAttribute('aria-selected')==='true'),false)).observe(tabs);
+    else addEventListener('resize',()=>placePill(buttons.find(item=>item.getAttribute('aria-selected')==='true'),false));
+  }
+
   async function load(){
     member=await window.TarotPortal.getMember();renderStatus(member?.membership||null);
     try{const response=await window.TarotPortal.api("/api/billing/plans",{timeout:15000}),data=await response.json();if(!response.ok)throw window.TarotPortal.apiError(data,"โหลดราคาไม่สำเร็จ");plans=data.plans||[];renderPlans()}catch(error){window.TarotPortal.renderError($("planGrid"),error,{title:"ยังโหลดแผนไม่ได้"})}
