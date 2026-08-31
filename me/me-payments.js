@@ -132,7 +132,7 @@
   }
 
   function paymentKind(value) { return ({membership:'สมาชิกพิเศษ',support:'การสนับสนุน',payment:'การชำระเงิน'})[value] || 'การชำระเงิน'; }
-  function paymentStatus(value) { return ({paid:'ชำระแล้ว',succeeded:'ชำระแล้ว',complete:'สำเร็จ',open:'รอชำระ',pending:'กำลังดำเนินการ',failed:'ไม่สำเร็จ',expired:'หมดอายุ',refunded:'คืนเงินแล้ว',partially_refunded:'คืนเงินบางส่วน',draft:'ฉบับร่าง',void:'ยกเลิก',uncollectible:'เรียกเก็บไม่ได้'})[value] || value || '-'; }
+  function paymentStatus(value) { return ({paid:'ชำระแล้ว',succeeded:'ชำระแล้ว',complete:'สำเร็จ',open:'รอชำระ',pending:'กำลังดำเนินการ',failed:'ไม่สำเร็จ',expired:'หมดอายุ',refund_pending:'กำลังคืนเงิน',refunded:'คืนเงินแล้ว',partially_refunded:'คืนเงินบางส่วน',draft:'ฉบับร่าง',void:'ยกเลิก',uncollectible:'เรียกเก็บไม่ได้'})[value] || value || '-'; }
   function formatMoney(amount,currency='thb') { try { return new Intl.NumberFormat('th-TH',{style:'currency',currency:String(currency || 'thb').toUpperCase()}).format(Number(amount || 0)/100); } catch { return `${Number(amount || 0)/100} ${currency || 'THB'}`; } }
   function formatDate(value) { try { return new Intl.DateTimeFormat('th-TH',{dateStyle:'medium',timeZone:'Asia/Bangkok'}).format(new Date(value)); } catch { return value || '-'; } }
   function safeUrl(value) { try { const url = new URL(String(value || '')); return url.protocol === 'https:' ? url.href : ''; } catch { return ''; } }

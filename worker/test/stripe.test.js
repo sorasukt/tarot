@@ -155,3 +155,23 @@ test("membership status refresh reconciles the latest subscription before respon
     assert.equal(data.membership.active,true);
   }finally{globalThis.fetch=originalFetch}
 });
+
+test("refund webhooks reconcile pending payment state",async()=>{
+  const secret="whsec_test",timestamp=Math.floor(Date.now()/1000),paymentStatuses=[];
+  const event={id:"evt_refund_update",type:"refund.updated",data:{object:{id:"re_pending",payment_intent:"pi_refund",amount:5000,currency:"thb",status:"succeeded",reason:"requested_by_customer",metadata:{admin_sub:"auth0|admin",request_id:"123e4567-e89b-12d3-a456-426614174222"}}}};
+  const payload=JSON.stringify(event),digest=await signature(payload,secret,timestamp);
+  const DB={prepare(sql){let values=[];return {bind(...bound){values=bound;return this},async first(){
+    if(sql.includes("FROM stripe_payments"))return {stripe_checkout_session_id:"cs_refund",user_sub:"auth0|member",amount:10000,currency:"thb",payment_status:"refund_pending"};
+    if(sql.includes("FROM stripe_refunds WHERE stripe_refund_id"))return {stripe_checkout_session_id:"cs_refund",user_sub:"auth0|member",currency:"thb",admin_sub:"auth0|admin",request_id:event.data.object.metadata.request_id};
+    if(sql.includes("SUM(CASE WHEN status='succeeded'"))return {succeeded:5000,pending:0};
+    return null;
+  },async run(){
+    if(sql.startsWith("INSERT OR IGNORE INTO stripe_webhook_events"))return {meta:{changes:1}};
+    if(sql.startsWith("UPDATE stripe_payments"))paymentStatuses.push(values[0]);
+    return {meta:{changes:1}};
+  }}}};
+  const request=new Request("https://api.sorasukt.com/api/stripe/webhook",{method:"POST",headers:{"Stripe-Signature":`t=${timestamp},v1=${digest}`},body:payload});
+  const response=await handleStripeWebhook(request,{DB,STRIPE_WEBHOOK_SECRET:secret});
+  assert.equal(response.status,200);
+  assert.deepEqual(paymentStatuses,["partially_refunded"]);
+});
