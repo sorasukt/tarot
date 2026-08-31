@@ -17,7 +17,7 @@
 <link rel="stylesheet" href="../interaction.css">
 <link rel="stylesheet" href="../billing.css">
 <link rel="stylesheet" href="./billing-phase2.css?v=20260830-1">
-<link rel="stylesheet" href="./me-polish.css?v=20260831-1">
+<link rel="stylesheet" href="./me-polish.css?v=20260831-2">
 </head>
 <body>
 <div class="portal">
@@ -31,13 +31,35 @@
 <main class="tool-shell me-shell">
 <section class="me-hero"><div><p class="eyebrow">MY ACCOUNT</p><h1>ทุกอย่างของคุณ<br>อยู่ที่นี่</h1><p class="lead">จัดการข้อมูลส่วนตัว สมาชิก การชำระเงิน และใบแจ้งหนี้ได้จากที่เดียว</p></div><div class="member-badge" id="memberBadge" hidden>สมาชิก</div></section>
 <section class="account-card" id="accountCard"><div class="account-avatar-wrap"><img id="accountAvatar" class="account-avatar" alt="" hidden><div class="account-avatar-fallback" id="accountAvatarFallback" aria-hidden="true">S</div></div><div class="account-copy"><p class="account-kicker">บัญชีผู้ใช้</p><h2 id="accountName">กำลังโหลด…</h2><p id="accountEmail" class="account-email"></p><div class="profile-health" id="profileHealth" hidden></div></div></section>
+
+<section class="me-section-nav" aria-label="หมวดบัญชี">
+  <div class="t-tabs me-tabs" role="tablist" data-me-tabs>
+    <span class="t-tabs-pill" aria-hidden="true"></span>
+    <button class="t-tab" type="button" role="tab" aria-selected="true" data-tab-target="profile">ข้อมูลส่วนตัว</button>
+    <button class="t-tab" type="button" role="tab" aria-selected="false" tabindex="-1" data-tab-target="membership">สมาชิก</button>
+    <button class="t-tab" type="button" role="tab" aria-selected="false" tabindex="-1" data-tab-target="billing">การชำระเงิน</button>
+    <button class="t-tab" type="button" role="tab" aria-selected="false" tabindex="-1" data-tab-target="data">ข้อมูลของฉัน</button>
+  </div>
+</section>
+
+<div class="me-panel" data-me-panel="profile">
 <section class="tool-card profile-card" id="profileCard"><div class="section-title-row"><div><p class="eyebrow">BIRTH PROFILE</p><h2>ข้อมูลเกิดของฉัน</h2></div><span class="save-state" id="profileSavedAt"></span></div><p class="profile-intro">เพิ่มข้อมูลเท่าที่สะดวกเพื่อรับคำอ่านที่เหมาะกับคุณมากขึ้น และกลับมาแก้ไขได้ทุกเมื่อ</p><form id="profileForm" hidden><div class="profile-grid"><label>วันเดือนปีเกิด<input id="birthDate" type="date" required autocomplete="bday"></label><label>เวลาเกิด <span class="profile-note">ไม่บังคับ</span><input id="birthTime" type="time"></label><label class="full place-field">สถานที่เกิด <span class="profile-note">ไม่บังคับ · เลือกจากรายการแนะนำ</span><input id="birthPlace" type="search" maxlength="160" autocomplete="off" role="combobox" aria-autocomplete="list" aria-controls="placeSuggestions" aria-expanded="false" placeholder="ค้นหาเมือง จังหวัด หรือรหัสไปรษณีย์"><input id="birthPlaceId" type="hidden"><div class="place-suggestions" id="placeSuggestions" hidden role="listbox" aria-label="สถานที่แนะนำ"></div><span class="profile-note">ข้อมูลสถานที่โดย <a href="https://open-meteo.com/" target="_blank" rel="noopener noreferrer">Open-Meteo / GeoNames</a></span></label></div><div class="profile-actions"><p class="profile-note">สถานที่เกิดช่วยให้การอ่านเชิงลึกเหมาะกับข้อมูลเกิดของคุณมากขึ้น</p><button id="saveProfile" type="submit">บันทึกข้อมูล</button></div></form><div class="profile-status" id="profileStatus" role="status" aria-live="polite">กำลังโหลดข้อมูล…</div></section>
+</div>
+
+<div class="me-panel" data-me-panel="membership" hidden>
 <section class="tool-card billing-status" id="accountMembership"><div><p class="eyebrow">TAROT FOR YOUR DAILY</p><h2 id="accountMembershipTitle">กำลังตรวจสอบสมาชิกพิเศษ…</h2><p id="accountMembershipDetail"></p></div><div class="billing-main-actions"><a class="deep-button" href="../membership/">ดูแผนสมาชิก</a><button class="billing-action" id="accountPortalButton" type="button" hidden>เปลี่ยนแพ็กเกจหรือยกเลิกสมาชิก</button></div></section>
-<section class="billing-recovery" id="billingRecovery" hidden role="status" aria-live="polite"><div><strong>การชำระเงินรอบล่าสุดยังไม่สำเร็จ</strong><p id="billingRecoveryText">กรุณาอัปเดตวิธีชำระเงินเพื่อให้สมาชิกใช้งานต่อเนื่อง</p></div><a id="billingRecoveryLink" class="deep-button" href="#" target="_blank" rel="noopener" hidden>ชำระเงิน / อัปเดต</a></section>
 <section class="tool-card" id="subscriptionManager" hidden><div class="section-title-row"><div><p class="eyebrow">SUBSCRIPTION</p><h2>จัดการแพ็กเกจ</h2></div></div><p class="profile-intro">เปลี่ยนแพ็กเกจได้โดยไม่ต้องยกเลิกสมาชิกเดิม ระบบจะคำนวณส่วนต่างตามรอบบิลโดยอัตโนมัติ</p><div class="subscription-controls"><label>แพ็กเกจ<select id="subscriptionPeriod"><option value="weekly">รายสัปดาห์</option><option value="monthly">รายเดือน</option><option value="yearly">รายปี</option></select></label><button id="changeSubscription" type="button">เปลี่ยนแพ็กเกจ</button></div><div class="retention-box"><div><strong>กำลังคิดจะยกเลิก?</strong><p>เปิดขั้นตอนยกเลิกเพื่อดูทางเลือกที่มีให้ก่อนตัดสินใจ และคุณยังควบคุมการยกเลิกได้เอง</p></div><button id="cancelSubscription" class="secondary" type="button">จัดการการยกเลิก</button></div><div id="subscriptionMessage" class="profile-status" role="status" aria-live="polite"></div></section>
+</div>
+
+<div class="me-panel" data-me-panel="billing" hidden>
+<section class="billing-recovery" id="billingRecovery" hidden role="status" aria-live="polite"><div><strong>การชำระเงินรอบล่าสุดยังไม่สำเร็จ</strong><p id="billingRecoveryText">กรุณาอัปเดตวิธีชำระเงินเพื่อให้สมาชิกใช้งานต่อเนื่อง</p></div><a id="billingRecoveryLink" class="deep-button" href="#" target="_blank" rel="noopener" hidden>ชำระเงิน / อัปเดต</a></section>
 <section class="tool-card" id="invoiceSection" hidden><div class="section-title-row"><div><p class="eyebrow">BILLING HISTORY</p><h2>ใบแจ้งหนี้และการชำระเงิน</h2></div><button id="refreshInvoices" class="secondary" type="button">รีเฟรช</button></div><div id="invoiceList" class="invoice-list"><p class="profile-note">กำลังโหลด…</p></div></section>
+</div>
+
+<div class="me-panel" data-me-panel="data" hidden>
 <section class="data-usage-card"><p class="eyebrow">YOUR DATA</p><h2>ข้อมูลนี้ถูกใช้ที่ไหน</h2><div class="usage-grid"><div><strong>ดวงประจำวัน</strong><p>ใช้วันเกิดเพื่อปรับบริบทของข้อความสำหรับสมาชิก</p></div><div><strong>ดวงดาวเชิงลึก</strong><p>ใช้วันเกิด เวลาเกิด และสถานที่เกิดเมื่อมีข้อมูลครบ</p></div><div><strong>เครื่องมืออื่น</strong><p>ข้อมูลที่บันทึกจะพร้อมใช้ในหน้าที่เกี่ยวข้อง โดยไม่ต้องกรอกใหม่</p></div></div></section>
+</div>
 </main><footer class="footer"></footer></div>
-<script src="../portal.js?v=20260829-simplecopy1"></script><script src="./me.js?v=20260830-billing-phase2-2"></script>
+<script src="../portal.js?v=20260829-simplecopy1"></script><script src="./me-tabs.js?v=20260831-1"></script><script src="./me.js?v=20260830-billing-phase2-2"></script>
 </body>
 </html>
