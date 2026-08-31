@@ -196,7 +196,7 @@ async function customerPortal(env,headers,session){
   if(!row?.stripe_customer_id)return json({success:false,error:{code:"CUSTOMER_NOT_FOUND",message:"ยังไม่พบข้อมูลการชำระเงินของบัญชีนี้"}},404,headers);
   const params=new URLSearchParams({customer:row.stripe_customer_id,return_url:`${siteUrl(env)}/tarot/me/?billing=updated`});
   const portal=await stripeRequest(env,"/billing_portal/sessions",{method:"POST",body:params});
-  if(typeof portal.url!=="string"||!portal.url.startsWith("https://billing.stripe.com/"))throw new StripeApiError(502,"INVALID_PORTAL_URL");
+  if(typeof portal.url!=="string"||!portal.url.startsWith("https://billing.stripe.com/"))throw new StripeApiError(502,"INVALID_CHECKOUT_URL");
   return json({success:true,url:portal.url},200,headers);
 }
 
@@ -238,10 +238,29 @@ async function processStripeEvent(event,env){
   }
   if(event.type==="checkout.session.async_payment_failed"){await recordCheckout(object,env,"failed");return}
   if(event.type==="checkout.session.expired"){await recordCheckout(object,env,"expired");return}
+  if(event.type==="refund.updated"){await syncRefund(env,object);return}
   if(event.type.startsWith("customer.subscription.")){await syncSubscription(env,object);return}
   if(["invoice.paid","invoice.payment_action_required","invoice.payment_failed"].includes(event.type)&&subscriptionIdFromInvoice(object)){const subscription=await stripeRequest(env,`/subscriptions/${encodeURIComponent(subscriptionIdFromInvoice(object))}`);await syncSubscription(env,subscription);return}
   if(event.type==="invoice.payment_failed"){await env.DB.prepare("UPDATE tarot_memberships SET status='past_due',updated_at=CURRENT_TIMESTAMP WHERE stripe_customer_id=?").bind(idOf(object.customer)).run();return}
   if((event.type==="charge.succeeded"||event.type==="charge.updated")&&object.payment_intent){await env.DB.prepare("UPDATE stripe_payments SET receipt_url=?,updated_at=CURRENT_TIMESTAMP WHERE stripe_payment_intent_id=?").bind(safeStripeDocumentUrl(object.receipt_url||""),idOf(object.payment_intent)).run()}
+}
+
+async function syncRefund(env,refund){
+  const paymentIntentId=idOf(refund.payment_intent);
+  if(!refund?.id||!paymentIntentId)return;
+  const payment=await env.DB.prepare("SELECT stripe_checkout_session_id,user_sub,amount,currency,payment_status FROM stripe_payments WHERE stripe_payment_intent_id=?").bind(paymentIntentId).first();
+  if(!payment)return;
+  const existing=await env.DB.prepare("SELECT stripe_checkout_session_id,user_sub,currency,admin_sub,request_id FROM stripe_refunds WHERE stripe_refund_id=?").bind(refund.id).first();
+  const requestId=refund.metadata?.request_id||existing?.request_id||null;
+  const adminSub=refund.metadata?.admin_sub||existing?.admin_sub||null;
+  await env.DB.prepare(`INSERT INTO stripe_refunds(stripe_refund_id,stripe_payment_intent_id,stripe_checkout_session_id,user_sub,amount,currency,status,reason,admin_sub,request_id,created_at,updated_at)
+    VALUES(?,?,?,?,?,?,?,?,?,?,CURRENT_TIMESTAMP,CURRENT_TIMESTAMP)
+    ON CONFLICT(stripe_refund_id) DO UPDATE SET amount=excluded.amount,currency=excluded.currency,status=excluded.status,reason=excluded.reason,admin_sub=COALESCE(excluded.admin_sub,stripe_refunds.admin_sub),request_id=COALESCE(excluded.request_id,stripe_refunds.request_id),updated_at=CURRENT_TIMESTAMP`)
+    .bind(refund.id,paymentIntentId,existing?.stripe_checkout_session_id||payment.stripe_checkout_session_id||null,existing?.user_sub||payment.user_sub||null,Number(refund.amount||0),String(refund.currency||existing?.currency||payment.currency||"thb"),refund.status||"pending",refund.reason||null,adminSub,requestId).run();
+  const totals=await env.DB.prepare("SELECT COALESCE(SUM(CASE WHEN status='succeeded' THEN amount ELSE 0 END),0) AS succeeded,COALESCE(SUM(CASE WHEN status='pending' THEN amount ELSE 0 END),0) AS pending FROM stripe_refunds WHERE stripe_payment_intent_id=?").bind(paymentIntentId).first();
+  const succeeded=Number(totals?.succeeded||0),pending=Number(totals?.pending||0),paid=Number(payment.amount||0);
+  const status=succeeded>=paid&&paid>0?"refunded":succeeded>0?"partially_refunded":pending>0?"refund_pending":payment.payment_status||"paid";
+  await env.DB.prepare("UPDATE stripe_payments SET payment_status=?,updated_at=CURRENT_TIMESTAMP WHERE stripe_payment_intent_id=?").bind(status,paymentIntentId).run();
 }
 
 async function recordCheckout(checkout,env,status){

@@ -4,6 +4,7 @@ import {adminAccess} from "./admin.js";
 
 const STRIPE_API="https://api.stripe.com/v1";
 const PERIODS=new Set(["weekly","monthly","yearly"]);
+const RETRY_SAFE_ID=/^[0-9a-f-]{16,64}$/i;
 
 export async function handleAdvancedBilling(request,env,headers,session){
   const url=new URL(request.url);
@@ -49,21 +50,33 @@ export async function handleAdvancedAdmin(request,env,headers,session){
     const body=await readJsonBody(request,4_096);
     const paymentIntentId=cleanId(body?.paymentIntentId,"pi_");
     const requestedAmount=body?.amount==null?null:Number(body.amount);
-    if(!paymentIntentId||requestedAmount!==null&&(!Number.isInteger(requestedAmount)||requestedAmount<=0))return json({success:false,error:{code:"INVALID_REFUND",message:"ข้อมูลการคืนเงินไม่ถูกต้อง"}},400,headers);
+    const requestId=validRequestId(body?.requestId);
+    if(!paymentIntentId||!requestId||requestedAmount!==null&&(!Number.isInteger(requestedAmount)||requestedAmount<=0))return json({success:false,error:{code:"INVALID_REFUND",message:"ข้อมูลการคืนเงินไม่ถูกต้อง"}},400,headers);
+
+    const replay=await env.DB.prepare("SELECT stripe_refund_id,amount,currency,status FROM stripe_refunds WHERE request_id=?").bind(requestId).first();
+    if(replay)return json({success:true,replayed:true,refund:{id:replay.stripe_refund_id,amount:Number(replay.amount||0),currency:replay.currency||"thb",status:replay.status||"pending"}},200,headers);
+
     const payment=await env.DB.prepare("SELECT stripe_checkout_session_id,user_sub,amount,currency,payment_status,stripe_payment_intent_id FROM stripe_payments WHERE stripe_payment_intent_id=?").bind(paymentIntentId).first();
     if(!payment)return json({success:false,error:{code:"PAYMENT_NOT_FOUND",message:"ไม่พบรายการชำระเงินนี้"}},404,headers);
     const totals=await env.DB.prepare("SELECT COALESCE(SUM(amount),0) AS refunded FROM stripe_refunds WHERE stripe_payment_intent_id=? AND status IN ('pending','succeeded')").bind(paymentIntentId).first();
     const remaining=Math.max(0,Number(payment.amount||0)-Number(totals?.refunded||0));
     const amount=requestedAmount===null?remaining:requestedAmount;
     if(amount<=0||amount>remaining)return json({success:false,error:{code:"REFUND_AMOUNT_INVALID",message:"ยอดคืนเงินสูงกว่ายอดที่สามารถคืนได้"}},409,headers);
+
     const params=new URLSearchParams({payment_intent:paymentIntentId,amount:String(amount),reason:"requested_by_customer"});
     params.set("metadata[admin_sub]",session.sub);
     params.set("metadata[source]","tarot_admin");
-    const refund=await stripe(env,"/refunds",{method:"POST",body:params,idempotencyKey:`refund-${paymentIntentId}-${amount}-${Date.now()}`});
-    await env.DB.prepare("INSERT OR REPLACE INTO stripe_refunds(stripe_refund_id,stripe_payment_intent_id,stripe_checkout_session_id,user_sub,amount,currency,status,reason,admin_sub,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?,?,CURRENT_TIMESTAMP,CURRENT_TIMESTAMP)").bind(refund.id,paymentIntentId,payment.stripe_checkout_session_id||null,payment.user_sub||null,Number(refund.amount||amount),String(refund.currency||payment.currency||"thb"),refund.status||"pending",refund.reason||"requested_by_customer",session.sub).run();
-    const afterRemaining=Math.max(0,remaining-Number(refund.amount||amount));
-    await env.DB.prepare("UPDATE stripe_payments SET payment_status=?,updated_at=CURRENT_TIMESTAMP WHERE stripe_payment_intent_id=?").bind(afterRemaining===0?"refunded":"partially_refunded",paymentIntentId).run();
-    return json({success:true,refund:{id:refund.id,amount:Number(refund.amount||amount),currency:refund.currency||payment.currency,status:refund.status||"pending",remaining:afterRemaining}},200,headers);
+    params.set("metadata[request_id]",requestId);
+    const idempotencyKey=`refund-${await sha256(`${session.sub}:${requestId}`)}`;
+    const refund=await stripe(env,"/refunds",{method:"POST",body:params,idempotencyKey});
+    const refundAmount=Number(refund.amount||amount);
+    const refundStatus=refund.status||"pending";
+    const afterRemaining=Math.max(0,remaining-refundAmount);
+    const paymentStatus=refundStatus==="pending"?"refund_pending":afterRemaining===0?"refunded":"partially_refunded";
+    const insert=env.DB.prepare("INSERT INTO stripe_refunds(stripe_refund_id,stripe_payment_intent_id,stripe_checkout_session_id,user_sub,amount,currency,status,reason,admin_sub,request_id,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?,?,?,CURRENT_TIMESTAMP,CURRENT_TIMESTAMP)").bind(refund.id,paymentIntentId,payment.stripe_checkout_session_id||null,payment.user_sub||null,refundAmount,String(refund.currency||payment.currency||"thb"),refundStatus,refund.reason||"requested_by_customer",session.sub,requestId);
+    const update=env.DB.prepare("UPDATE stripe_payments SET payment_status=?,updated_at=CURRENT_TIMESTAMP WHERE stripe_payment_intent_id=?").bind(paymentStatus,paymentIntentId);
+    await env.DB.batch([insert,update]);
+    return json({success:true,replayed:false,refund:{id:refund.id,amount:refundAmount,currency:refund.currency||payment.currency,status:refundStatus,remaining:afterRemaining}},200,headers);
   }catch(error){
     console.error(JSON.stringify({message:"Stripe refund failed",error:error?.name||"error",status:error?.status||null}));
     if(error instanceof RequestBodyError)return json({success:false,error:{code:error.code,message:"ข้อมูลคำขอไม่ถูกต้อง"}},error.status,headers);
@@ -172,9 +185,11 @@ async function stripe(env,path,{method="GET",body=null,idempotencyKey=""}={}){
   return data;
 }
 function cleanId(value,prefix){const text=typeof value==="string"?value.trim():"";return text.startsWith(prefix)&&/^[A-Za-z0-9_]+$/.test(text)?text:""}
+function validRequestId(value){return typeof value==="string"&&RETRY_SAFE_ID.test(value)?value:""}
 function unixIso(value){const n=Number(value);return Number.isFinite(n)&&n>0?new Date(n*1000).toISOString():null}
 function httpsUrl(value){try{const url=new URL(value);return url.protocol==="https:"?url.href:null}catch{return null}}
 function unauthorized(headers){return json({success:false,error:{code:"UNAUTHORIZED",message:"Authentication required"}},401,headers)}
 function methodNotAllowed(headers){return json({success:false,error:{code:"METHOD_NOT_ALLOWED",message:"Method not allowed"}},405,headers)}
 function json(data,status,headers){return new Response(JSON.stringify(data),{status,headers})}
+async function sha256(value){const digest=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(value));return [...new Uint8Array(digest)].map(byte=>byte.toString(16).padStart(2,"0")).join("")}
 class StripeAdvancedError extends Error{constructor(status,code,publicMessage){super(code);this.name="StripeAdvancedError";this.status=status;this.code=code;this.publicMessage=publicMessage}}
