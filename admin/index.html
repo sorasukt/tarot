@@ -16,6 +16,7 @@
         <button class="nav-item active" data-view="overview">ภาพรวม</button>
         <button class="nav-item" data-view="payments">การชำระเงิน</button>
         <button class="nav-item" data-view="memberships">สมาชิก</button>
+        <button class="nav-item" data-view="codes">Redeem Codes</button>
         <button class="nav-item" data-view="customers">ลูกค้า</button>
         <button class="nav-item" data-view="support">บริการลูกค้า</button>
         <button class="nav-item" data-view="audit">ประวัติการดำเนินการ</button>
@@ -27,10 +28,30 @@
       <section id="notice" class="notice hidden"></section>
       <section id="overview" class="view active">
         <div class="metrics" id="metrics"></div>
-        <div class="panel"><div class="panel-head"><div><h2>การจัดการระบบ</h2><p>เข้าถึงเครื่องมือที่ใช้บ่อย</p></div></div><div class="quick-actions"><button id="openStripe">เปิด Stripe Dashboard</button><button data-jump="support">สร้างเคสบริการลูกค้า</button><button data-refresh="overview">รีเฟรชข้อมูล</button></div></div>
+        <div class="panel"><div class="panel-head"><div><h2>การจัดการระบบ</h2><p>เข้าถึงเครื่องมือที่ใช้บ่อย</p></div></div><div class="quick-actions"><button id="openStripe">เปิด Stripe Dashboard</button><button data-jump="codes">จัดการ Redeem Codes</button><button data-jump="support">สร้างเคสบริการลูกค้า</button><button data-refresh="overview">รีเฟรชข้อมูล</button></div></div>
       </section>
       <section id="payments" class="view"><div class="panel"><div class="panel-head"><div><h2>Payments</h2><p>รายการชำระเงินล่าสุด คืนเงินเต็มจำนวนหรือบางส่วนได้จากที่นี่</p></div><button data-refresh="payments">รีเฟรช</button></div><div class="table-wrap"><table><thead><tr><th>ลูกค้า</th><th>ประเภท</th><th>ยอด</th><th>สถานะ</th><th>วันที่</th><th>Receipt</th><th>การจัดการ</th></tr></thead><tbody id="paymentsBody"></tbody></table></div></div></section>
       <section id="memberships" class="view"><div class="panel"><div class="panel-head"><div><h2>Memberships</h2><p>Subscription และสิทธิ์สมาชิก</p></div><button data-refresh="memberships">รีเฟรช</button></div><div class="table-wrap"><table><thead><tr><th>ลูกค้า</th><th>แพ็กเกจ</th><th>รูปแบบ</th><th>สถานะ</th><th>สิ้นสุดรอบ</th></tr></thead><tbody id="membershipsBody"></tbody></table></div></div></section>
+      <section id="codes" class="view">
+        <div class="code-grid">
+          <div class="panel">
+            <div class="panel-head"><div><h2>Redeem Codes จาก Stripe</h2><p>ดึง Promotion Codes จาก Stripe และคัดลอกลิงก์ Redeem ได้ทันที</p></div><button data-refresh="codes">รีเฟรชจาก Stripe</button></div>
+            <div class="table-wrap"><table><thead><tr><th>โค้ด</th><th>แพ็กเกจ</th><th>สถานะ</th><th>ใช้แล้ว</th><th>หมดอายุ</th><th>การจัดการ</th></tr></thead><tbody id="codesBody"></tbody></table></div>
+          </div>
+          <div class="panel">
+            <h2>สร้างโค้ดใหม่ใน Stripe</h2>
+            <p class="form-help">ระบบจะสร้าง Promotion Code ใน Stripe และลงทะเบียนโค้ดเดียวกันกับระบบ Redeem โดยอัตโนมัติ</p>
+            <form id="codeForm">
+              <label>แพ็กเกจ<select name="plan" required><option value="weekly">Weekly</option><option value="monthly">Monthly</option><option value="yearly">Yearly</option></select></label>
+              <label>โค้ด<input name="code" maxlength="64" pattern="[A-Za-z0-9-]{6,64}" placeholder="เว้นว่างเพื่อให้ระบบสร้างให้อัตโนมัติ"></label>
+              <label>วันหมดอายุ<input name="expiresAt" type="datetime-local"></label>
+              <label>หมายเหตุ<input name="note" maxlength="500" placeholder="สำหรับทีม Admin เท่านั้น"></label>
+              <button type="submit" class="primary">สร้างใน Stripe</button>
+            </form>
+            <div id="createdCode" class="created-code hidden"></div>
+          </div>
+        </div>
+      </section>
       <section id="customers" class="view"><div class="panel"><div class="panel-head"><div><h2>Customers</h2><p>ค้นหาบัญชีและสถานะสมาชิก</p></div><div class="search"><input id="customerSearch" placeholder="ชื่อ อีเมล หรือ User ID"><button id="searchCustomers">ค้นหา</button></div></div><div class="table-wrap"><table><thead><tr><th>ลูกค้า</th><th>อีเมล</th><th>สมาชิก</th><th>ใช้งานล่าสุด</th></tr></thead><tbody id="customersBody"></tbody></table></div></div></section>
       <section id="support" class="view"><div class="support-grid"><div class="panel"><div class="panel-head"><div><h2>Customer Support</h2><p>เคสที่กำลังดูแล</p></div><button data-refresh="support">รีเฟรช</button></div><div id="caseList" class="case-list"></div></div><div class="panel"><h2>สร้างเคสใหม่</h2><form id="caseForm"><label>หัวข้อ<input name="subject" maxlength="160" required></label><label>อีเมลลูกค้า<input name="customerEmail" type="email"></label><label>User ID<input name="userSub"></label><label>ความสำคัญ<select name="priority"><option value="normal">Normal</option><option value="low">Low</option><option value="high">High</option><option value="urgent">Urgent</option></select></label><label>รายละเอียด<textarea name="description" rows="6" maxlength="4000"></textarea></label><button type="submit" class="primary">สร้างเคส</button></form></div></div></section>
       <section id="audit" class="view"><div class="panel"><div class="panel-head"><div><h2>Admin Audit Log</h2><p>ประวัติ action สำคัญในระบบ</p></div><button data-refresh="audit">รีเฟรช</button></div><div class="table-wrap"><table><thead><tr><th>ผู้ดำเนินการ</th><th>Action</th><th>Target</th><th>เวลา</th></tr></thead><tbody id="auditBody"></tbody></table></div></div></section>
