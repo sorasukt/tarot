@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import {recurringCardStats,retentionDaysForTier,saveReadingHistory} from "../src/history.js";
+import {handleHistory,recurringCardStats,retentionDaysForTier,saveReadingHistory} from "../src/history.js";
 
 test("recurring card insight is deterministic and only returns repeats",()=>{
   const items=recurringCardStats([
@@ -30,4 +30,10 @@ test("private mode never writes reading history",async()=>{
 test("anonymous readings are not persisted",async()=>{
   const result=await saveReadingHistory({DB:{}},null,{question:"guest",selected:[],reading:{},privateMode:false});
   assert.deepEqual(result,{saved:false,reason:"anonymous"});
+});
+
+test("malformed encoded history ids return a client error",async()=>{
+  const response=await handleHistory(new Request("https://api.sorasukt.com/api/member/history/%E0%A4%A"),{DB:{}},new Headers(),{sub:"auth0|member"});
+  assert.equal(response.status,400);
+  assert.equal((await response.json()).error.code,"INVALID_HISTORY_ID");
 });
