@@ -8,6 +8,7 @@ export default {
     const url=new URL(request.url);
     if(url.pathname==="/api/stripe/webhook")return handleStripeWebhookWithRecovery(request,env);
 
+    // Consolidated account-facing payment history and Payment Portal access.
     const billingAccount=new Set([
       "/api/billing/account",
       "/api/billing/account/portal"
