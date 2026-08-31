@@ -78,6 +78,7 @@
       renderHistory(data.payments || [], data.invoices || []);
       if (data.warning) status.textContent = data.warning;
       else if (!data.customerLinked && !(data.payments || []).length) status.textContent = 'ยังไม่พบข้อมูลการชำระเงินของบัญชีนี้';
+      else if (data.customerLinked && !data.portalAvailable) status.textContent = 'พบข้อมูลการชำระเงินแล้ว แต่ Payment Portal ยังไม่พร้อมใช้งาน';
       else status.textContent = `อัปเดตล่าสุด ${new Intl.DateTimeFormat('th-TH',{timeStyle:'short'}).format(new Date())}`;
     } catch (error) {
       list.innerHTML = `<p class="profile-note">${escapeHtml(error?.message || 'โหลดข้อมูลการชำระเงินไม่สำเร็จ')}</p>`;
