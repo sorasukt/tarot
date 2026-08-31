@@ -31,7 +31,9 @@ export async function handleHistory(request,env,headers,session){
     if(request.method!=="GET")return methodNotAllowed(headers);
     return recurringInsights(url,env,headers,session);
   }
-  const id=decodeURIComponent(suffix.replace(/^\//,""));
+  let id="";
+  try{id=decodeURIComponent(suffix.replace(/^\//,""))}
+  catch{return json({success:false,error:{code:"INVALID_HISTORY_ID",message:"History id is invalid"}},400,headers)}
   if(!id||id.includes("/"))return json({success:false,error:{code:"NOT_FOUND",message:"Not found"}},404,headers);
   if(request.method==="DELETE"){
     const result=await env.DB.prepare("DELETE FROM tarot_reading_history WHERE id=? AND user_sub=?").bind(id,session.sub).run();
