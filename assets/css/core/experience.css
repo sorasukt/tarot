@@ -1,0 +1,30 @@
+:root{--experience-width:1180px;--experience-content:760px;--experience-radius:24px}
+body{font-family:Inter,"IBM Plex Sans Thai",ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+.portal{width:min(var(--experience-width),calc(100% - 32px))}
+.eyebrow{font-size:11px;letter-spacing:.18em;font-weight:800;margin:0 0 18px}
+.page-hero,.billing-hero{max-width:var(--experience-content);padding:96px 0 64px}
+.tool-shell{width:100%;max-width:var(--experience-width);padding:96px 0 120px}
+.tool-shell>h1,.page-hero h1,.billing-hero h1,.me-hero h1,.success-card h1,.wrap>.hero h1{font-family:Georgia,"IBM Plex Sans Thai",serif;font-size:clamp(48px,7vw,92px);font-weight:400;line-height:.95;letter-spacing:-.035em;margin:0}
+.tool-shell>.lead,.page-hero .lead,.billing-hero .lead,.me-hero .lead,.wrap>.hero .lead{max-width:620px;margin:28px 0 54px;color:var(--muted,#6d6d6d);font-size:18px;line-height:1.65}
+.tool-shell>.tool-card{width:min(100%,var(--experience-content));margin-top:0}
+.tool-card,.daily-shell,.quick-calc,.billing-panel,.account-card,.data-usage-card,.plan-card,.payment-choice>span,.success-card{border-radius:var(--experience-radius)}
+.tool-card{padding:28px;border-color:#d9d9d9}
+.tool-card input,.tool-card select,.tool-card textarea{border-radius:18px;padding:16px 18px;min-height:56px}
+.tool-card button,.quick-form button,.deep-button,.billing-action{min-height:50px;padding:14px 24px;border-radius:999px}
+.daily-top h2,.quick-calc h2,.systems h2,.section-title-row h2,.data-usage-card h2,.billing-status h2,.result h2,.modal-card h2,.wrap .section h2{font-family:Georgia,"IBM Plex Sans Thai",serif;font-weight:400;letter-spacing:-.035em}
+.daily-top h2,.systems h2{font-size:clamp(38px,5vw,68px);line-height:1;margin:0}
+.quick-calc h2,.section-title-row h2,.data-usage-card h2,.billing-status h2{font-size:clamp(32px,4vw,52px);line-height:1.05}
+.system-card{border-radius:var(--experience-radius);background:#fff}
+.system-card h3,.account-copy h2,.plan-card h2,.payment-choice strong{font-family:Georgia,"IBM Plex Sans Thai",serif;font-weight:400;letter-spacing:-.025em}
+.me-shell{max-width:var(--experience-width)}
+.me-hero{max-width:900px;margin-bottom:54px}
+.billing-hero{padding-bottom:48px}
+.success-card{margin-top:72px}
+.wrap{max-width:var(--experience-width)}
+.wrap>.hero{max-width:var(--experience-content);padding:96px 0 64px}
+.wrap>.hero .actions{margin-bottom:0}
+.wrap .section{padding:64px 0}
+.wrap .section h2{font-size:clamp(38px,5vw,68px);line-height:1;margin-bottom:24px}
+.wrap .card{border-radius:var(--experience-radius)}
+@media(max-width:760px){.portal{width:min(100% - 24px,var(--experience-width))}.page-hero,.billing-hero,.tool-shell,.wrap>.hero{padding-top:64px;padding-bottom:40px}.tool-shell>h1,.page-hero h1,.billing-hero h1,.me-hero h1,.wrap>.hero h1{font-size:52px}.tool-shell>.lead,.page-hero .lead,.billing-hero .lead,.me-hero .lead,.wrap>.hero .lead{font-size:16px;margin-bottom:36px}.tool-card{padding:20px}.wrap .section{padding:48px 0}.wrap .section h2{font-size:44px}}
+@media(max-width:420px){.tool-shell>h1,.page-hero h1,.billing-hero h1,.me-hero h1,.wrap>.hero h1{font-size:45px}}

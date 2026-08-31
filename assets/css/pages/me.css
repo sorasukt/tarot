@@ -1,0 +1,102 @@
+/* Account page refinement: clearer hierarchy, tighter mobile rhythm, calmer controls */
+.me-shell{padding-top:56px;padding-bottom:84px}
+.me-hero{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:24px;align-items:end;max-width:920px;margin-bottom:28px}
+.me-hero h1{font-size:clamp(48px,6.6vw,78px);max-width:760px}
+.me-hero .lead{margin:20px 0 0;max-width:560px;font-size:17px;line-height:1.6}
+.member-badge{align-self:end;margin-bottom:4px;border:1px solid var(--line);border-radius:999px;padding:8px 13px;font-size:13px;font-weight:700;background:#fff}
+
+.me-shell>section,.me-panel{width:min(100%,860px)}
+.account-card,.data-usage-card,.me-panel>.tool-card,.billing-recovery{margin:0 0 14px}
+.account-card{display:grid;grid-template-columns:auto minmax(0,1fr);align-items:center;gap:16px;padding:20px 22px;border:1px solid var(--line);background:#fff}
+.account-avatar,.account-avatar-fallback{width:52px;height:52px;border-radius:50%}
+.account-avatar{display:block;object-fit:cover}
+.account-avatar-fallback{display:grid;place-items:center;background:#8f9b9d;color:#fff;font-size:16px}
+.account-copy{min-width:0}
+.account-kicker{margin:0 0 2px;color:#777;font-size:12px}
+.account-copy h2{margin:0;font-size:clamp(23px,3vw,30px);line-height:1.12;overflow-wrap:anywhere}
+.account-email{margin:3px 0 0;color:#777;font-size:14px;overflow-wrap:anywhere}
+.profile-health{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.profile-health>*{margin:0}
+
+.me-section-nav{margin:18px 0 14px;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.me-section-nav::-webkit-scrollbar{display:none}
+.me-tabs{min-width:max-content}
+.me-tabs .t-tab{height:36px;padding:6px 14px;font-size:14px;white-space:nowrap}
+.me-tabs .t-tabs-pill{height:36px}
+.me-panel{animation:me-panel-in .2s ease both}
+.me-panel[hidden]{display:none!important}
+@keyframes me-panel-in{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+
+.me-panel>.tool-card,.data-usage-card{padding:22px;border:1px solid var(--line);border-radius:20px;background:#fff}
+.section-title-row{display:flex;justify-content:space-between;align-items:flex-start;gap:16px}
+.section-title-row h2,.billing-status h2,.data-usage-card h2{font-size:clamp(28px,3.6vw,38px);margin:3px 0 0}
+.save-state{color:#777;font-size:12px;white-space:nowrap;padding-top:5px}
+.profile-intro{margin:8px 0 20px;color:#666;line-height:1.55;max-width:660px}
+
+.profile-grid{grid-template-columns:1fr 1fr;gap:14px}
+.profile-grid label{margin:0;font-size:14px}
+.profile-grid .full{grid-column:1/-1}
+.tool-card input,.tool-card select{min-height:50px;padding:12px 14px;border-radius:14px;font-size:16px}
+.place-suggestions{border-radius:14px}
+.profile-actions{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:16px;margin-top:18px;padding-top:18px;border-top:1px solid var(--line)}
+.profile-actions .profile-note{margin:0;line-height:1.5}
+.profile-actions button{margin:0;min-width:160px}
+.profile-status{margin-top:12px;color:#777;font-size:13px;line-height:1.45}
+
+.billing-status{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:20px;background:var(--soft)}
+.billing-status p{line-height:1.5}
+.billing-main-actions{justify-content:flex-end;min-width:180px}
+.billing-main-actions .deep-button,.billing-main-actions .billing-action{margin:0;min-height:46px;padding:11px 18px}
+.billing-recovery{width:min(100%,860px);padding:18px 20px;border-radius:18px}
+.billing-recovery .deep-button{margin:0}
+
+.subscription-controls{margin-top:16px}
+.retention-box{margin-top:16px;padding:16px;border-radius:16px;background:var(--soft)}
+.invoice-list{margin-top:8px}
+.invoice-row{padding:14px 0}
+
+.data-usage-card{background:var(--soft)}
+.data-usage-card>.eyebrow{margin-bottom:8px}
+.data-usage-card h2{margin:0 0 16px}
+.usage-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.usage-grid>div{padding:16px;border:1px solid var(--line);border-radius:16px;background:#fff}
+.usage-grid strong{display:block;font-size:15px;margin-bottom:5px}
+.usage-grid p{margin:0;color:#666;font-size:13px;line-height:1.5}
+
+.me-shell .eyebrow{margin-bottom:8px;font-size:10px;letter-spacing:.2em}
+.me-shell .deep-button,.me-shell .billing-action,.me-shell button{font-weight:600}
+
+@media(max-width:760px){
+  .me-shell{padding-top:38px;padding-bottom:64px}
+  .me-hero{display:block;margin-bottom:22px}
+  .me-hero h1{font-size:50px;line-height:.96}
+  .me-hero .lead{margin-top:16px;font-size:15px}
+  .member-badge{display:inline-flex;margin-top:18px}
+  .account-card{padding:17px;gap:13px;border-radius:18px}
+  .account-avatar,.account-avatar-fallback{width:46px;height:46px}
+  .account-copy h2{font-size:23px}
+  .me-section-nav{margin-inline:-2px;padding-bottom:2px}
+  .me-tabs .t-tab{padding-inline:13px;font-size:13px}
+  .me-panel>.tool-card,.data-usage-card{padding:18px;border-radius:18px}
+  .section-title-row{display:block}
+  .save-state{display:block;margin-top:5px}
+  .profile-grid{grid-template-columns:1fr;gap:12px}
+  .profile-grid .full{grid-column:auto}
+  .profile-actions{grid-template-columns:1fr;gap:12px}
+  .profile-actions button{width:100%;min-width:0}
+  .billing-status{grid-template-columns:1fr;gap:14px}
+  .billing-main-actions{justify-content:stretch;min-width:0}
+  .billing-main-actions>*{width:100%;text-align:center}
+  .usage-grid{grid-template-columns:1fr}
+}
+
+@media(max-width:420px){
+  .me-shell{padding-top:30px}
+  .me-hero h1{font-size:43px}
+  .me-panel>.tool-card,.data-usage-card,.account-card{border-radius:16px}
+  .account-card{grid-template-columns:42px minmax(0,1fr);padding:15px}
+  .account-avatar,.account-avatar-fallback{width:42px;height:42px}
+  .account-copy h2{font-size:21px}
+  .section-title-row h2,.billing-status h2,.data-usage-card h2{font-size:28px}
+  .tool-card input,.tool-card select{min-height:48px}
+}
