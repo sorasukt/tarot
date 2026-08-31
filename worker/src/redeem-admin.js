@@ -1,5 +1,6 @@
 import {readJsonBody,RequestBodyError} from "./request.js";
 import {adminAccess} from "./admin.js";
+import {syncExistingStripePromotionCode} from "./redeem-stripe-sync.js";
 
 const PERIODS=new Set(["weekly","monthly","yearly"]);
 const STRIPE_API="https://api.stripe.com/v1";
@@ -25,6 +26,10 @@ export async function handleRedeemAdmin(request,env,headers,session){
       const body=await readJsonBody(request,8_192);
       const expiresAt=normalizeDate(body?.expiresAt);
       const note=typeof body?.note==="string"?body.note.trim().slice(0,500):null;
+      if(body?.source==="stripe_sync"){
+        const result=await syncExistingStripePromotionCode(env,body);
+        return json(result.data,result.status,headers);
+      }
       if(body?.source==="stripe"){
         let catalog=null;
         if(body?.catalogPriceId)catalog=await resolveCatalogPrice(env,String(body.catalogPriceId));
@@ -135,7 +140,7 @@ async function createStripeCode(env,headers,{code,plan,expiresAt,note,catalog}){
 async function insertLocalCode(env,{code,plan,expiresAt,note}){await env.DB.prepare("INSERT INTO redeem_codes(code,plan_period,status,expires_at,note) VALUES(?,?,'active',?,?)").bind(code,plan,expiresAt,note||null).run()}
 async function stripe(env,path,{method="GET",body=null}={}){assertStripe(env);const requestHeaders={Authorization:`Bearer ${env.STRIPE_SECRET_KEY}`,Accept:"application/json"};if(body)requestHeaders["Content-Type"]="application/x-www-form-urlencoded";const response=await fetch(`${STRIPE_API}${path}`,{method,headers:requestHeaders,body:body?body.toString():undefined});let data={};try{data=await response.json()}catch{}if(!response.ok){console.error(JSON.stringify({message:"Stripe redeem admin request failed",path,status:response.status,type:data?.error?.type||null,code:data?.error?.code||null}));throw new StripeRedeemError(response.status>=500?502:response.status,"STRIPE_REDEEM_ERROR",data?.error?.message||"Stripe ไม่สามารถดำเนินการโค้ดได้")}return data}
 function publicCode(row,env,source){return {...row,source,redeemUrl:redeemUrl(env,row.code,row.plan_period)}}
-function redeemUrl(env,code,plan){return `${siteUrl(env)}/redeem/?code=${encodeURIComponent(code)}&plan=${encodeURIComponent(plan)}`}
+function redeemUrl(env,code,plan){const base=siteUrl(env);const tarot=/\/tarot$/i.test(base)?base:`${base}/tarot`;return `${tarot}/redeem/?code=${encodeURIComponent(code)}&plan=${encodeURIComponent(plan)}`}
 function intervalPlan(recurring){if(!recurring)return"";if(recurring.interval==="week"&&Number(recurring.interval_count||1)===1)return"weekly";if(recurring.interval==="month"&&Number(recurring.interval_count||1)===1)return"monthly";if(recurring.interval==="year"&&Number(recurring.interval_count||1)===1)return"yearly";return""}
 function normalizePlan(value){const raw=String(value||"").trim().toLowerCase();const aliases={week:"weekly",weekly:"weekly",month:"monthly",monthly:"monthly",year:"yearly",annual:"yearly",yearly:"yearly"};const plan=aliases[raw]||"";return PERIODS.has(plan)?plan:""}
 function normalizeCode(value){const code=String(value||"").trim().toUpperCase();return /^[A-Z0-9][A-Z0-9-]{5,63}$/.test(code)?code:""}
