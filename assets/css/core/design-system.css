@@ -1,0 +1,76 @@
+/* sorasukt Tarot — shared visual foundation
+   Keep page-specific layout in assets/css/pages/. */
+:root{
+  --st-ink:#111;
+  --st-muted:#6f6f6f;
+  --st-subtle:#8a8a8a;
+  --st-line:#dedede;
+  --st-line-strong:#c8c8c8;
+  --st-paper:#fff;
+  --st-soft:#f6f6f4;
+  --st-accent:#d52218;
+  --st-content:1180px;
+  --st-reading:760px;
+  --st-page-gutter:32px;
+  --st-radius-sm:14px;
+  --st-radius-md:18px;
+  --st-radius-lg:24px;
+  --st-radius-xl:28px;
+  --st-pill:999px;
+  --st-space-1:4px;
+  --st-space-2:8px;
+  --st-space-3:12px;
+  --st-space-4:16px;
+  --st-space-5:20px;
+  --st-space-6:24px;
+  --st-space-8:32px;
+  --st-space-10:40px;
+  --st-space-12:48px;
+  --st-section:64px;
+  --st-font-sans:Inter,"IBM Plex Sans Thai",ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  --st-font-display:Georgia,"IBM Plex Sans Thai",serif;
+  --ink:var(--st-ink);
+  --muted:var(--st-muted);
+  --line:var(--st-line);
+  --paper:var(--st-paper);
+  --soft:var(--st-soft);
+  --bg:var(--st-paper);
+  --fg:var(--st-ink);
+}
+*,*::before,*::after{box-sizing:border-box}
+html{background:var(--st-paper);color:var(--st-ink);font-family:var(--st-font-sans);text-rendering:optimizeLegibility;-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--st-paper);color:var(--st-ink);font-family:var(--st-font-sans)}
+img,svg,video,canvas{max-width:100%;height:auto}
+button,input,select,textarea{font:inherit;color:inherit}
+button,a,input,select,textarea{-webkit-tap-highlight-color:transparent}
+a{color:inherit}
+:focus-visible{outline:3px solid var(--st-accent);outline-offset:3px}
+[hidden]{display:none!important}
+
+/* Shared page rhythm */
+.portal,.shell,.site-shell{width:min(var(--st-content),calc(100% - var(--st-page-gutter)));margin-inline:auto}
+.page-hero,.tool-shell>.hero,.billing-hero{max-width:var(--st-reading)}
+.eyebrow{font-size:11px;line-height:1.2;letter-spacing:.18em;font-weight:800;text-transform:uppercase}
+.display-title,.page-hero h1,.billing-hero h1,.me-hero h1{font-family:var(--st-font-display);font-weight:400;letter-spacing:-.035em;line-height:.96}
+.lead{color:var(--st-muted);line-height:1.65}
+
+/* Shared surfaces */
+.surface,.tool-card,.account-card,.data-usage-card,.billing-panel{border:1px solid var(--st-line);border-radius:var(--st-radius-lg);background:var(--st-paper)}
+.surface-soft{background:var(--st-soft)}
+
+/* Shared controls */
+input,select,textarea{border:1px solid var(--st-line-strong);border-radius:var(--st-radius-md);background:var(--st-paper)}
+input:focus,select:focus,textarea:focus{border-color:var(--st-ink)}
+.button,.deep-button,.billing-action{display:inline-flex;align-items:center;justify-content:center;min-height:48px;border-radius:var(--st-pill);font-weight:600;text-decoration:none;cursor:pointer}
+.button-primary,.deep-button,.billing-action{border:1px solid var(--st-ink);background:var(--st-ink);color:#fff}
+.button-secondary{border:1px solid var(--st-line-strong);background:var(--st-paper);color:var(--st-ink)}
+button:disabled,.button[aria-disabled="true"]{opacity:.48;cursor:not-allowed}
+
+/* Shared responsive rules */
+@media(max-width:760px){
+  :root{--st-page-gutter:24px;--st-section:48px}
+  .portal,.shell,.site-shell{width:min(var(--st-content),calc(100% - var(--st-page-gutter)))}
+}
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
+}
