@@ -1,25 +1,2 @@
-:where(a,button,input,select,textarea):focus-visible{outline:3px solid #d52218;outline-offset:3px}
-:where(button,input,select,textarea):disabled{cursor:wait;opacity:.68}
-button[aria-busy="true"]{position:relative}
-button[aria-busy="true"]::before{content:"";display:inline-block;width:.9em;height:.9em;margin-right:.55em;border:2px solid currentColor;border-right-color:transparent;border-radius:50%;vertical-align:-.12em;animation:tarot-spin .75s linear infinite}
-.result-loading{display:flex;align-items:center;gap:14px;min-height:88px}
-.result-loading p{margin:0;color:#555}
-.result-spinner{display:block;flex:0 0 auto;width:28px;height:28px;border:3px solid #d7d7d7;border-top-color:#111;border-radius:50%;animation:tarot-spin .8s linear infinite}
-[data-loading="true"]::before{content:"";display:inline-block;width:1em;height:1em;margin-right:.6em;border:2px solid #aaa;border-top-color:#111;border-radius:50%;vertical-align:-.15em;animation:tarot-spin .8s linear infinite}
-.reading-error{margin:20px 0;padding:14px 16px;border:1px solid #e5a29e;border-radius:12px;background:#fff5f4;color:#7b1e18}
-.support-button{display:inline-flex;align-items:center;justify-content:center;margin-top:14px;padding:10px 16px;border:1px solid #111;border-radius:999px;background:#111;color:#fff!important;font-weight:600;text-decoration:none}.support-button:hover{background:#333}
-.policy-backdrop[hidden]{display:none!important}
-.policy-backdrop{position:fixed;inset:0;z-index:2000;display:grid;place-items:center;padding:20px;background:rgba(0,0,0,.48);overflow:auto}
-.policy-dialog{width:min(560px,100%);background:#fff;border-radius:28px;padding:30px;box-shadow:0 30px 90px rgba(0,0,0,.24)}
-.policy-dialog h2{margin:4px 0 10px;font-size:clamp(28px,6vw,38px)}
-.policy-dialog>p{color:#606060;line-height:1.65}
-.policy-check{display:grid;grid-template-columns:auto 1fr;gap:12px;align-items:start;margin:22px 0;font-weight:500;line-height:1.55}
-.policy-check input{width:22px;height:22px;margin:2px 0 0;accent-color:#111}
-.policy-check a{color:#111;text-underline-offset:3px}
-.policy-status{min-height:24px;margin:0 0 10px!important;color:#8a1d16!important}
-.policy-dialog>button{width:100%;min-height:52px;border:0;border-radius:999px;background:#111;color:#fff;font:inherit;font-weight:600;padding:13px 20px}
-body.policy-open{overflow:hidden}
-[role="status"]:focus{outline:none}
-@keyframes tarot-spin{to{transform:rotate(360deg)}}
-@media(max-width:560px){.policy-backdrop{align-items:end;padding:12px}.policy-dialog{border-radius:26px;padding:24px 20px}}
-@media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
+/* Compatibility entrypoint. Canonical source: assets/css/core/interaction.css */
+@import url("./assets/css/core/interaction.css");
