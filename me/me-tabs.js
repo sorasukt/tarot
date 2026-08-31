@@ -57,4 +57,9 @@
     const active = tabs.find(tab => tab.getAttribute('aria-selected') === 'true');
     movePill(active, false);
   });
+
+  const paymentScript = document.createElement('script');
+  paymentScript.src = './me-payments.js?v=20260831-1';
+  paymentScript.defer = true;
+  document.head.append(paymentScript);
 })();
