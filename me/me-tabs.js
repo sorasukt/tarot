@@ -61,7 +61,7 @@
   const loadPayments = () => {
     if (document.querySelector('script[data-me-payments]')) return;
     const paymentScript = document.createElement('script');
-    paymentScript.src = './me-payments.js?v=20260831-2';
+    paymentScript.src = './me-payments.js?v=20260831-3';
     paymentScript.dataset.mePayments = 'true';
     document.head.append(paymentScript);
   };
