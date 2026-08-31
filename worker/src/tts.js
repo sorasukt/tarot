@@ -1,3 +1,5 @@
+import {readJsonBody,RequestBodyError} from "./request.js";
+
 const TTS_MODELS=[
   "gemini-3.1-flash-tts-preview",
   "gemini-2.5-flash-preview-tts",
@@ -24,13 +26,18 @@ const TAROT_VOICES=[
 
 const RETRYABLE_STATUS=new Set([404,408,409,429,500,502,503,504]);
 const MAX_TEXT_LENGTH=7000;
+const MAX_REQUEST_BYTES=12_000;
 
 export async function handleTts(request,env,headers){
   if(request.method!=="POST")return json({success:false,error:{code:"METHOD_NOT_ALLOWED",message:"Method not allowed"}},405,headers);
   if(!env.GEMINI_API_KEY)return json({success:false,error:{code:"TTS_NOT_CONFIGURED",message:"ระบบเสียงยังไม่พร้อมใช้งาน"}},503,headers);
 
   let body;
-  try{body=await request.json()}catch{return json({success:false,error:{code:"INVALID_JSON",message:"ข้อมูลเสียงไม่ถูกต้อง"}},400,headers)}
+  try{body=await readJsonBody(request,MAX_REQUEST_BYTES)}
+  catch(error){
+    if(error instanceof RequestBodyError)return json({success:false,error:{code:error.code,message:error.status===413?"ข้อมูลคำขอมีขนาดใหญ่เกินไป":"ข้อมูลเสียงไม่ถูกต้อง"}},error.status,headers);
+    return json({success:false,error:{code:"INVALID_JSON",message:"ข้อมูลเสียงไม่ถูกต้อง"}},400,headers);
+  }
   const text=String(body?.text||"").trim();
   if(!text)return json({success:false,error:{code:"TEXT_REQUIRED",message:"ไม่มีข้อความสำหรับอ่านออกเสียง"}},400,headers);
   if(text.length>MAX_TEXT_LENGTH)return json({success:false,error:{code:"TEXT_TOO_LONG",message:"ข้อความยาวเกินกว่าที่ระบบเสียงรองรับ"}},413,headers);
