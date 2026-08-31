@@ -2,6 +2,7 @@ import baseWorker from "./entry.js";
 import {getSession} from "./auth-web.js";
 import {handleAdvancedBilling,handleAdvancedAdmin,handleStripeWebhookWithRecovery} from "./stripe-advanced.js";
 import {handleBillingAccount} from "./billing-account.js";
+import {handleRedeem} from "./redeem.js";
 
 export default {
   async fetch(request,env,ctx){
@@ -19,8 +20,9 @@ export default {
       "/api/billing/subscription/change",
       "/api/billing/subscription/cancel"
     ]);
+    const redeemRoute=url.pathname==="/api/redeem";
     const advancedAdmin=url.pathname==="/api/admin/payments/refund";
-    if(!billingAccount.has(url.pathname)&&!advancedBilling.has(url.pathname)&&!advancedAdmin)return baseWorker.fetch(request,env,ctx);
+    if(!billingAccount.has(url.pathname)&&!advancedBilling.has(url.pathname)&&!advancedAdmin&&!redeemRoute)return baseWorker.fetch(request,env,ctx);
 
     const origin=request.headers.get("Origin")||"";
     const corsOrigin=allowedOrigin(origin,env);
@@ -30,6 +32,7 @@ export default {
 
     let session=null;
     try{session=await getSession(request,env)}catch(error){console.error(JSON.stringify({message:"Billing phase 2 session failed",error:error?.message||"error"}))}
+    if(redeemRoute){const response=await handleRedeem(request,env,headers,session);return response||baseWorker.fetch(request,env,ctx)}
     if(advancedAdmin){const response=await handleAdvancedAdmin(request,env,headers,session);return response||baseWorker.fetch(request,env,ctx)}
     if(billingAccount.has(url.pathname)){const response=await handleBillingAccount(request,env,headers,session);return response||baseWorker.fetch(request,env,ctx)}
     const response=await handleAdvancedBilling(request,env,headers,session);
