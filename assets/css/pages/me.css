@@ -5,8 +5,8 @@
 .me-hero .lead{margin:20px 0 0;max-width:560px;font-size:17px;line-height:1.6}
 .member-badge{align-self:end;margin-bottom:4px;border:1px solid var(--line);border-radius:999px;padding:8px 13px;font-size:13px;font-weight:700;background:#fff}
 
-.me-shell>section{width:min(100%,860px)}
-.account-card,.data-usage-card,.me-shell>.tool-card,.billing-recovery{margin:0 0 14px}
+.me-shell>section,.me-panel{width:min(100%,860px)}
+.account-card,.data-usage-card,.me-panel>.tool-card,.billing-recovery{margin:0 0 14px}
 .account-card{display:grid;grid-template-columns:auto minmax(0,1fr);align-items:center;gap:16px;padding:20px 22px;border:1px solid var(--line);background:#fff}
 .account-avatar,.account-avatar-fallback{width:52px;height:52px;border-radius:50%}
 .account-avatar{display:block;object-fit:cover}
@@ -18,7 +18,16 @@
 .profile-health{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
 .profile-health>*{margin:0}
 
-.me-shell>.tool-card,.data-usage-card{padding:22px;border:1px solid var(--line);border-radius:20px;background:#fff}
+.me-section-nav{margin:18px 0 14px;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.me-section-nav::-webkit-scrollbar{display:none}
+.me-tabs{min-width:max-content}
+.me-tabs .t-tab{height:36px;padding:6px 14px;font-size:14px;white-space:nowrap}
+.me-tabs .t-tabs-pill{height:36px}
+.me-panel{animation:me-panel-in .2s ease both}
+.me-panel[hidden]{display:none!important}
+@keyframes me-panel-in{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+
+.me-panel>.tool-card,.data-usage-card{padding:22px;border:1px solid var(--line);border-radius:20px;background:#fff}
 .section-title-row{display:flex;justify-content:space-between;align-items:flex-start;gap:16px}
 .section-title-row h2,.billing-status h2,.data-usage-card h2{font-size:clamp(28px,3.6vw,38px);margin:3px 0 0}
 .save-state{color:#777;font-size:12px;white-space:nowrap;padding-top:5px}
@@ -66,7 +75,9 @@
   .account-card{padding:17px;gap:13px;border-radius:18px}
   .account-avatar,.account-avatar-fallback{width:46px;height:46px}
   .account-copy h2{font-size:23px}
-  .me-shell>.tool-card,.data-usage-card{padding:18px;border-radius:18px}
+  .me-section-nav{margin-inline:-2px;padding-bottom:2px}
+  .me-tabs .t-tab{padding-inline:13px;font-size:13px}
+  .me-panel>.tool-card,.data-usage-card{padding:18px;border-radius:18px}
   .section-title-row{display:block}
   .save-state{display:block;margin-top:5px}
   .profile-grid{grid-template-columns:1fr;gap:12px}
@@ -82,7 +93,7 @@
 @media(max-width:420px){
   .me-shell{padding-top:30px}
   .me-hero h1{font-size:43px}
-  .me-shell>.tool-card,.data-usage-card,.account-card{border-radius:16px}
+  .me-panel>.tool-card,.data-usage-card,.account-card{border-radius:16px}
   .account-card{grid-template-columns:42px minmax(0,1fr);padding:15px}
   .account-avatar,.account-avatar-fallback{width:42px;height:42px}
   .account-copy h2{font-size:21px}
