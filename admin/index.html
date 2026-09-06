@@ -1,12 +1,344 @@
 <!doctype html>
 <html lang="th">
-<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><title>Tarot Admin Console</title><link rel="stylesheet" href="../assets/css/core/design-system.css"><link rel="stylesheet" href="./admin.css"><link rel="stylesheet" href="./admin-codes.css"></head>
-<body><div class="shell"><aside class="sidebar"><div class="brand"><span class="brand-mark">✦</span><div><strong>Tarot</strong><small>Admin Console</small></div></div><nav id="nav"><button class="nav-item active" data-view="overview">ภาพรวม</button><button class="nav-item" data-view="payments">การชำระเงิน</button><button class="nav-item" data-view="memberships">สมาชิก</button><button class="nav-item" data-view="codes">Redeem Codes</button><button class="nav-item" data-view="customers">ลูกค้า</button><button class="nav-item" data-view="support">บริการลูกค้า</button><button class="nav-item" data-view="audit">ประวัติการดำเนินการ</button></nav><div class="sidebar-footer"><a href="/tarot/">กลับไปหน้าหลัก</a><a href="https://api.sorasukt.com/auth/logout?returnTo=https%3A%2F%2Fsorasukt.com%2Ftarot%2F">ออกจากระบบ</a></div></aside><main><header><div><p class="eyebrow">Operations</p><h1 id="pageTitle">ภาพรวมระบบ</h1></div><div class="admin-chip" id="adminChip">กำลังตรวจสอบสิทธิ์…</div></header><section id="notice" class="notice hidden"></section>
-<section id="overview" class="view active"><div class="metrics" id="metrics"></div><div class="panel"><div class="panel-head"><div><h2>การจัดการระบบ</h2><p>เข้าถึงเครื่องมือที่ใช้บ่อย</p></div></div><div class="quick-actions"><button id="openStripe">เปิด Stripe Dashboard</button><button data-jump="codes">จัดการ Redeem Codes</button><button data-jump="support">สร้างเคสบริการลูกค้า</button><button data-refresh="overview">รีเฟรชข้อมูล</button></div></div></section>
-<section id="payments" class="view"><div class="panel"><div class="panel-head"><div><h2>Payments</h2><p>รายการชำระเงินล่าสุด คืนเงินเต็มจำนวนหรือบางส่วนได้จากที่นี่</p></div><button data-refresh="payments">รีเฟรช</button></div><div class="table-wrap"><table><thead><tr><th>ลูกค้า</th><th>ประเภท</th><th>ยอด</th><th>สถานะ</th><th>วันที่</th><th>Receipt</th><th>การจัดการ</th></tr></thead><tbody id="paymentsBody"></tbody></table></div></div></section>
-<section id="memberships" class="view"><div class="panel"><div class="panel-head"><div><h2>Memberships</h2><p>Subscription และสิทธิ์สมาชิก</p></div><button data-refresh="memberships">รีเฟรช</button></div><div class="table-wrap"><table><thead><tr><th>ลูกค้า</th><th>แพ็กเกจ</th><th>รูปแบบ</th><th>สถานะ</th><th>สิ้นสุดรอบ</th></tr></thead><tbody id="membershipsBody"></tbody></table></div></div></section>
-<section id="codes" class="view"><div class="code-grid"><div class="panel"><div class="panel-head"><div><h2>Redeem Codes จาก Stripe</h2><p>รองรับทั้ง Subscription และ Non-subscription จาก Stripe Catalog</p></div><button data-refresh="codes">รีเฟรชจาก Stripe</button></div><div class="table-wrap"><table><thead><tr><th>โค้ด</th><th>แพ็กเกจ</th><th>รูปแบบ</th><th>สถานะ</th><th>ใช้แล้ว</th><th>หมดอายุ</th><th>การจัดการ</th></tr></thead><tbody id="codesBody"></tbody></table></div></div><div class="panel"><h2>สร้างโค้ดจาก Stripe Catalog</h2><p class="form-help">เลือกรายการจาก Catalog ระบบจะตรวจว่าเป็น recurring subscription หรือ one-time payment และผูกโค้ดกับ Product นั้นโดยอัตโนมัติ</p><form id="codeForm"><label>Catalog item<select name="catalogPriceId" id="catalogPrice" required><option value="">กำลังโหลด Stripe Catalog…</option></select></label><label>ระยะเวลาสิทธิ์<select name="plan" id="catalogPlan"><option value="">ใช้ค่าจาก Catalog</option><option value="weekly">Weekly</option><option value="monthly">Monthly</option><option value="yearly">Yearly</option></select></label><small id="catalogHint" class="form-help">สำหรับ One-time price ที่ไม่มี plan_period ใน metadata ให้เลือกระยะเวลาสิทธิ์ด้านบน</small><label>โค้ด<input name="code" maxlength="64" pattern="[A-Za-z0-9-]{6,64}" placeholder="เว้นว่างเพื่อให้ระบบสร้างให้อัตโนมัติ"></label><label>วันหมดอายุ<input name="expiresAt" type="datetime-local"></label><label>หมายเหตุ<input name="note" maxlength="500" placeholder="สำหรับทีม Admin เท่านั้น"></label><button type="submit" class="primary">สร้างใน Stripe</button></form><div id="createdCode" class="created-code hidden"></div></div></div></section>
-<section id="customers" class="view"><div class="panel"><div class="panel-head"><div><h2>Customers</h2><p>ค้นหาบัญชีและสถานะสมาชิก</p></div><div class="search"><input id="customerSearch" placeholder="ชื่อ อีเมล หรือ User ID"><button id="searchCustomers">ค้นหา</button></div></div><div class="table-wrap"><table><thead><tr><th>ลูกค้า</th><th>อีเมล</th><th>สมาชิก</th><th>ใช้งานล่าสุด</th></tr></thead><tbody id="customersBody"></tbody></table></div></div></section>
-<section id="support" class="view"><div class="support-grid"><div class="panel"><div class="panel-head"><div><h2>Customer Support</h2><p>เคสที่กำลังดูแล</p></div><button data-refresh="support">รีเฟรช</button></div><div id="caseList" class="case-list"></div></div><div class="panel"><h2>สร้างเคสใหม่</h2><form id="caseForm"><label>หัวข้อ<input name="subject" maxlength="160" required></label><label>อีเมลลูกค้า<input name="customerEmail" type="email"></label><label>User ID<input name="userSub"></label><label>ความสำคัญ<select name="priority"><option value="normal">Normal</option><option value="low">Low</option><option value="high">High</option><option value="urgent">Urgent</option></select></label><label>รายละเอียด<textarea name="description" rows="6" maxlength="4000"></textarea></label><button type="submit" class="primary">สร้างเคส</button></form></div></div></section>
-<section id="audit" class="view"><div class="panel"><div class="panel-head"><div><h2>Admin Audit Log</h2><p>ประวัติ action สำคัญในระบบ</p></div><button data-refresh="audit">รีเฟรช</button></div><div class="table-wrap"><table><thead><tr><th>ผู้ดำเนินการ</th><th>Action</th><th>Target</th><th>เวลา</th></tr></thead><tbody id="auditBody"></tbody></table></div></div></section>
-</main></div><script src="../config.js"></script><script src="./admin.js"></script><script src="./admin-codes.js"></script></body></html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>ภาพรวมระบบ · Tarot Admin</title>
+<link rel="stylesheet" href="../assets/css/core/design-system.css">
+<link rel="stylesheet" href="./admin.css">
+<link rel="stylesheet" href="./admin-codes.css">
+</head>
+<body>
+<a class="skip-link" href="#mainContent">ข้ามไปยังเนื้อหา</a>
+<div class="shell">
+<aside class="sidebar" id="adminSidebar" aria-label="เมนูผู้ดูแลระบบ">
+<div class="brand">
+<span class="brand-mark" aria-hidden="true">/</span>
+<div>
+<strong>sorasukt <span>tarot</span>
+</strong>
+<small>ผู้ดูแลระบบ</small>
+</div>
+<button class="icon-button menu-close" id="closeMenu" type="button" aria-label="ปิดเมนู">×</button>
+</div>
+<nav id="nav" aria-label="ส่วนจัดการ">
+<p class="nav-label">พื้นที่ทำงาน</p>
+<button class="nav-item active" aria-current="page" data-view="overview">
+<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+<rect x="3" y="3" width="7" height="7" rx="1.5"/>
+<rect x="14" y="3" width="7" height="7" rx="1.5"/>
+<rect x="3" y="14" width="7" height="7" rx="1.5"/>
+<rect x="14" y="14" width="7" height="7" rx="1.5"/>
+</svg>
+<span>ภาพรวม</span>
+</button>
+<p class="nav-label">การชำระเงินและสิทธิ์</p>
+<button class="nav-item" data-view="payments">
+<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+<rect x="2" y="5" width="20" height="14" rx="3"/>
+<path d="M2 10h20M6 15h3"/>
+</svg>
+<span>การชำระเงิน</span>
+</button>
+<button class="nav-item" data-view="memberships">
+<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+<path d="m12 3 3 6 6 1-4.5 4.5 1 6.5-5.5-3-5.5 3 1-6.5L3 10l6-1Z"/>
+</svg>
+<span>สมาชิก</span>
+</button>
+<button class="nav-item" data-view="codes">
+<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+<path d="M3 7h18v4a2 2 0 0 0 0 4v4H3v-4a2 2 0 0 0 0-4ZM15 7v3m0 3v2m0 2v2"/>
+</svg>
+<span>โค้ดแลกสิทธิ์</span>
+</button>
+<p class="nav-label">ลูกค้าและการดูแล</p>
+<button class="nav-item" data-view="customers">
+<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+<circle cx="9" cy="8" r="3"/>
+<path d="M3 21v-2a6 6 0 0 1 12 0v2M16 5a3 3 0 0 1 0 6m2 4a5 5 0 0 1 3 4v2"/>
+</svg>
+<span>ลูกค้า</span>
+</button>
+<button class="nav-item" data-view="support">
+<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+<path d="M4 14V10a8 8 0 0 1 16 0v4M20 17v1a3 3 0 0 1-3 3h-3"/>
+<rect x="2" y="11" width="4" height="7" rx="2"/>
+<rect x="18" y="11" width="4" height="7" rx="2"/>
+</svg>
+<span>บริการลูกค้า</span>
+</button>
+<p class="nav-label">ระบบ</p>
+<button class="nav-item" data-view="audit">
+<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+<path d="M3 11a9 9 0 1 1 2 7M3 4v7h7m2-4v5l3 2"/>
+</svg>
+<span>ประวัติการดำเนินการ</span>
+</button>
+</nav>
+<div class="sidebar-footer">
+<a href="/tarot/">กลับไปหน้าหลัก</a>
+<a href="https://api.sorasukt.com/auth/logout?returnTo=https%3A%2F%2Fsorasukt.com%2Ftarot%2F">ออกจากระบบ</a>
+</div>
+</aside>
+<button type="button" class="menu-backdrop" id="menuBackdrop" aria-label="ปิดเมนู" tabindex="-1" hidden>
+</button>
+<main id="mainContent" tabindex="-1">
+<header class="page-header">
+<div class="page-heading">
+<button class="icon-button menu-toggle" id="menuToggle" type="button" aria-controls="adminSidebar" aria-expanded="false" aria-label="เปิดเมนู">
+<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true">
+<path d="M4 6h16M4 12h16M4 18h16"/>
+</svg>
+</button>
+<div>
+<p class="eyebrow">Tarot / Admin</p>
+<h1 id="pageTitle" tabindex="-1">ภาพรวมระบบ</h1>
+</div>
+</div>
+<div class="admin-chip" id="adminChip" role="status">กำลังตรวจสอบสิทธิ์…</div>
+</header>
+<section id="notice" class="notice hidden" role="status" aria-live="polite">
+</section>
+<section id="overview" class="view active">
+<div class="metrics" id="metrics">
+</div>
+<div class="panel">
+<div class="panel-head">
+<div>
+<h2>การจัดการระบบ</h2>
+<p>เข้าถึงเครื่องมือที่ใช้บ่อย</p>
+</div>
+</div>
+<div class="quick-actions">
+<button id="openStripe">เปิด Stripe Dashboard</button>
+<button data-jump="codes">
+<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+<path d="M3 7h18v4a2 2 0 0 0 0 4v4H3v-4a2 2 0 0 0 0-4ZM15 7v3m0 3v2m0 2v2"/>
+</svg>จัดการโค้ดแลกสิทธิ์</button>
+<button data-jump="support">
+<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+<path d="M4 14V10a8 8 0 0 1 16 0v4M20 17v1a3 3 0 0 1-3 3h-3"/>
+<rect x="2" y="11" width="4" height="7" rx="2"/>
+<rect x="18" y="11" width="4" height="7" rx="2"/>
+</svg>สร้างเคสบริการลูกค้า</button>
+<button data-refresh="overview">รีเฟรชข้อมูล</button>
+</div>
+</div>
+</section>
+<section id="payments" class="view">
+<div class="panel">
+<div class="panel-head">
+<div>
+<h2>รายการชำระเงิน</h2>
+<p>รายการชำระเงินล่าสุด คืนเงินเต็มจำนวนหรือบางส่วนได้จากที่นี่</p>
+</div>
+<button data-refresh="payments">รีเฟรช</button>
+</div>
+<div class="table-wrap" tabindex="0" role="region" aria-label="ตารางข้อมูล เลื่อนแนวนอนเพื่อดูเพิ่มเติม">
+<table>
+<thead>
+<tr>
+<th scope="col">ลูกค้า</th>
+<th scope="col">ประเภท</th>
+<th scope="col">ยอด</th>
+<th scope="col">สถานะ</th>
+<th scope="col">วันที่</th>
+<th scope="col">ใบเสร็จ</th>
+<th scope="col">การจัดการ</th>
+</tr>
+</thead>
+<tbody id="paymentsBody">
+</tbody>
+</table>
+</div>
+</div>
+</section>
+<section id="memberships" class="view">
+<div class="panel">
+<div class="panel-head">
+<div>
+<h2>สิทธิ์สมาชิก</h2>
+<p>ตรวจสอบแพ็กเกจ สถานะ และวันสิ้นสุดสิทธิ์</p>
+</div>
+<button data-refresh="memberships">รีเฟรช</button>
+</div>
+<div class="table-wrap" tabindex="0" role="region" aria-label="ตารางข้อมูล เลื่อนแนวนอนเพื่อดูเพิ่มเติม">
+<table>
+<thead>
+<tr>
+<th scope="col">ลูกค้า</th>
+<th scope="col">แพ็กเกจ</th>
+<th scope="col">รูปแบบ</th>
+<th scope="col">สถานะ</th>
+<th scope="col">สิ้นสุดรอบ</th>
+</tr>
+</thead>
+<tbody id="membershipsBody">
+</tbody>
+</table>
+</div>
+</div>
+</section>
+<section id="codes" class="view">
+<div class="code-grid">
+<div class="panel">
+<div class="panel-head">
+<div>
+<h2>โค้ดแลกสิทธิ์</h2>
+<p>รองรับทั้ง Subscription และ Non-subscription จาก Stripe Catalog</p>
+</div>
+<button data-refresh="codes">รีเฟรชจาก Stripe</button>
+</div>
+<div class="table-wrap" tabindex="0" role="region" aria-label="ตารางข้อมูล เลื่อนแนวนอนเพื่อดูเพิ่มเติม">
+<table>
+<thead>
+<tr>
+<th scope="col">โค้ด</th>
+<th scope="col">แพ็กเกจ</th>
+<th scope="col">รูปแบบ</th>
+<th scope="col">สถานะ</th>
+<th scope="col">ใช้แล้ว</th>
+<th scope="col">หมดอายุ</th>
+<th scope="col">การจัดการ</th>
+</tr>
+</thead>
+<tbody id="codesBody">
+</tbody>
+</table>
+</div>
+</div>
+<details class="panel create-panel">
+<summary>สร้างโค้ดแลกสิทธิ์<span>เลือกแพ็กเกจจาก Stripe Catalog</span>
+</summary>
+<p class="form-help">เลือกรายการจาก Catalog ระบบจะตรวจว่าเป็น recurring subscription หรือ one-time payment และผูกโค้ดกับ Product นั้นโดยอัตโนมัติ</p>
+<form id="codeForm">
+<label>Catalog item<select name="catalogPriceId" id="catalogPrice" required>
+<option value="">กำลังโหลด Stripe Catalog…</option>
+</select>
+</label>
+<label>ระยะเวลาสิทธิ์<select name="plan" id="catalogPlan">
+<option value="">ใช้ค่าจาก Catalog</option>
+<option value="weekly">Weekly</option>
+<option value="monthly">Monthly</option>
+<option value="yearly">Yearly</option>
+</select>
+</label>
+<small id="catalogHint" class="form-help">สำหรับ One-time price ที่ไม่มี plan_period ใน metadata ให้เลือกระยะเวลาสิทธิ์ด้านบน</small>
+<label>โค้ด<input name="code" maxlength="64" pattern="[A-Za-z0-9-]{6,64}" placeholder="เว้นว่างเพื่อให้ระบบสร้างให้อัตโนมัติ">
+</label>
+<label>วันหมดอายุ<input name="expiresAt" type="datetime-local">
+</label>
+<label>หมายเหตุ<input name="note" maxlength="500" placeholder="สำหรับทีม Admin เท่านั้น">
+</label>
+<button type="submit" class="primary">สร้างใน Stripe</button>
+</form>
+<div id="createdCode" class="created-code hidden" aria-live="polite">
+</div>
+</details>
+</div>
+</section>
+<section id="customers" class="view">
+<div class="panel">
+<div class="panel-head">
+<div>
+<h2>บัญชีลูกค้า</h2>
+<p>ค้นหาบัญชีและสถานะสมาชิก</p>
+</div>
+<div class="search">
+<input type="search" aria-label="ค้นหาลูกค้า" id="customerSearch" placeholder="ชื่อ อีเมล หรือ User ID">
+<button id="searchCustomers">ค้นหา</button>
+</div>
+</div>
+<div class="table-wrap" tabindex="0" role="region" aria-label="ตารางข้อมูล เลื่อนแนวนอนเพื่อดูเพิ่มเติม">
+<table>
+<thead>
+<tr>
+<th scope="col">ลูกค้า</th>
+<th scope="col">อีเมล</th>
+<th scope="col">สมาชิก</th>
+<th scope="col">ใช้งานล่าสุด</th>
+</tr>
+</thead>
+<tbody id="customersBody">
+</tbody>
+</table>
+</div>
+</div>
+</section>
+<section id="support" class="view">
+<div class="support-grid">
+<div class="panel">
+<div class="panel-head">
+<div>
+<h2>เคสบริการลูกค้า</h2>
+<p>เคสที่กำลังดูแล</p>
+</div>
+<button data-refresh="support">รีเฟรช</button>
+</div>
+<div id="caseList" class="case-list">
+</div>
+</div>
+<div class="panel">
+<h2>สร้างเคสใหม่</h2>
+<form id="caseForm">
+<label>หัวข้อ<input name="subject" maxlength="160" required>
+</label>
+<label>อีเมลลูกค้า<input name="customerEmail" type="email">
+</label>
+<label>User ID<input name="userSub">
+</label>
+<label>ความสำคัญ<select name="priority">
+<option value="normal">Normal</option>
+<option value="low">Low</option>
+<option value="high">High</option>
+<option value="urgent">Urgent</option>
+</select>
+</label>
+<label>รายละเอียด<textarea name="description" rows="6" maxlength="4000">
+</textarea>
+</label>
+<button type="submit" class="primary">สร้างเคส</button>
+</form>
+</div>
+</div>
+</section>
+<section id="audit" class="view">
+<div class="panel">
+<div class="panel-head">
+<div>
+<h2>ประวัติการดำเนินการ</h2>
+<p>ตรวจสอบผู้ดำเนินการและรายการเปลี่ยนแปลงในระบบ</p>
+</div>
+<button data-refresh="audit">รีเฟรช</button>
+</div>
+<div class="table-wrap" tabindex="0" role="region" aria-label="ตารางข้อมูล เลื่อนแนวนอนเพื่อดูเพิ่มเติม">
+<table>
+<thead>
+<tr>
+<th scope="col">ผู้ดำเนินการ</th>
+<th scope="col">การดำเนินการ</th>
+<th scope="col">รายการที่เกี่ยวข้อง</th>
+<th scope="col">เวลา</th>
+</tr>
+</thead>
+<tbody id="auditBody">
+</tbody>
+</table>
+</div>
+</div>
+</section>
+</main>
+</div>
+<script src="../config.js">
+</script>
+<script src="./admin-menu.js">
+</script>
+<script src="./admin.js">
+</script>
+<script src="./admin-codes.js">
+</script>
+</body>
+</html>
+

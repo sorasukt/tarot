@@ -1,5 +1,5 @@
 const API="https://api.sorasukt.com";
-const titles={overview:"ภาพรวมระบบ",payments:"การชำระเงิน",memberships:"สมาชิก",customers:"ลูกค้า",support:"บริการลูกค้า",audit:"ประวัติการดำเนินการ"};
+const titles={overview:"ภาพรวมระบบ",payments:"การชำระเงิน",memberships:"สมาชิก",codes:"โค้ดแลกสิทธิ์",customers:"ลูกค้า",support:"บริการลูกค้า",audit:"ประวัติการดำเนินการ"};
 const state={loaded:new Set()};
 
 document.addEventListener("DOMContentLoaded",init);
@@ -7,11 +7,11 @@ document.addEventListener("DOMContentLoaded",init);
 async function init(){
   bindNavigation();bindActions();
   try{const data=await api("/api/admin/session");document.getElementById("adminChip").textContent=data.admin.email||data.admin.name||"Admin";await load("overview")}
-  catch(error){if(error.status===401){location.href=`${API}/auth/login?returnTo=${encodeURIComponent(location.href)}`;return}showNotice(error.status===403?"บัญชีนี้ไม่มีสิทธิ์เข้า Admin Console":"ไม่สามารถโหลด Admin Console ได้",true);document.querySelectorAll("button,input,select,textarea").forEach(el=>el.disabled=true)}
+  catch(error){if(error.status===401){location.href=`${API}/auth/login?returnTo=${encodeURIComponent(location.href)}`;return}showNotice(error.status===403?"บัญชีนี้ไม่มีสิทธิ์เข้า Admin Console":"ไม่สามารถโหลด Admin Console ได้",true);document.querySelectorAll("button,input,select,textarea").forEach(el=>{if(!el.matches("#closeMenu,#menuToggle,#menuBackdrop"))el.disabled=true})}
 }
 function bindNavigation(){document.querySelectorAll(".nav-item").forEach(button=>button.addEventListener("click",()=>switchView(button.dataset.view)));document.querySelectorAll("[data-jump]").forEach(button=>button.addEventListener("click",()=>switchView(button.dataset.jump)))}
 function bindActions(){document.querySelectorAll("[data-refresh]").forEach(button=>button.addEventListener("click",()=>load(button.dataset.refresh,true)));document.getElementById("openStripe").addEventListener("click",async()=>{try{const result=await api("/api/admin/stripe/portal",{method:"POST"});window.open(result.url,"_blank","noopener")}catch(e){showNotice(e.message,true)}});document.getElementById("searchCustomers").addEventListener("click",()=>loadCustomers());document.getElementById("customerSearch").addEventListener("keydown",e=>{if(e.key==="Enter")loadCustomers()});document.getElementById("caseForm").addEventListener("submit",createCase)}
-async function switchView(name){document.querySelectorAll(".view").forEach(v=>v.classList.toggle("active",v.id===name));document.querySelectorAll(".nav-item").forEach(v=>v.classList.toggle("active",v.dataset.view===name));document.getElementById("pageTitle").textContent=titles[name]||"Admin Console";await load(name)}
+async function switchView(name){document.querySelectorAll(".view").forEach(v=>v.classList.toggle("active",v.id===name));document.querySelectorAll(".nav-item").forEach(v=>v.classList.toggle("active",v.dataset.view===name));document.getElementById("pageTitle").textContent=titles[name]||"Admin Console";document.title=`${titles[name]||"Admin Console"} · Tarot Admin`;document.dispatchEvent(new CustomEvent("admin:view",{detail:{name}}));await load(name)}
 async function load(name,force=false){if(state.loaded.has(name)&&!force)return;try{if(name==="overview")await loadOverview();if(name==="payments")await loadPayments();if(name==="memberships")await loadMemberships();if(name==="customers")await loadCustomers();if(name==="support")await loadSupport();if(name==="audit")await loadAudit();state.loaded.add(name)}catch(e){showNotice(e.message||"โหลดข้อมูลไม่สำเร็จ",true)}}
 async function loadOverview(){const {metrics:m}=await api("/api/admin/overview");const cards=[["ลูกค้าทั้งหมด",num(m.customers)],["สมาชิก Active",num(m.activeMemberships)],["Payments สำเร็จ",num(m.paidPayments)],["รายรับที่บันทึก",money(m.revenueMinor,m.currency)],["เคสที่ต้องดูแล",num(m.openCases)]];document.getElementById("metrics").innerHTML=cards.map(([label,value])=>`<article class="metric"><span>${esc(label)}</span><strong>${esc(value)}</strong></article>`).join("")}
 async function loadPayments(){
@@ -43,3 +43,4 @@ function date(value){if(!value)return"-";const parsed=new Date(String(value).inc
 function esc(value){return String(value??"").replace(/[&<>'"]/g,ch=>({"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;",'"':"&quot;"}[ch]))}
 function safeUrl(value){try{const u=new URL(value);return u.protocol==="https:"?esc(u.href):"#"}catch{return"#"}}
 function showNotice(message,error=false){const el=document.getElementById("notice");el.textContent=message;el.classList.remove("hidden");el.classList.toggle("error",error);setTimeout(()=>el.classList.add("hidden"),5000)}
+
