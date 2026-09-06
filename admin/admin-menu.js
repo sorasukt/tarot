@@ -1,4 +1,4 @@
-/* Mobile drawer; desktop navigation remains visible and keyboard accessible. */
+/* Hamburger drawer at every viewport size. */
 (() => {
   document.addEventListener('DOMContentLoaded', () => {
     const sidebar = document.getElementById('adminSidebar');
@@ -6,19 +6,18 @@
     const close = document.getElementById('closeMenu');
     const backdrop = document.getElementById('menuBackdrop');
     const main = document.getElementById('mainContent');
-    const mobile = window.matchMedia('(max-width: 760px)');
     let opened = false;
 
     function setOpen(value, restoreFocus = false) {
-      opened = mobile.matches && value;
+      opened = Boolean(value);
       document.body.classList.toggle('menu-open', opened);
       toggle.setAttribute('aria-expanded', String(opened));
       toggle.setAttribute('aria-label', opened ? 'ปิดเมนู' : 'เปิดเมนู');
       backdrop.hidden = !opened;
-      sidebar.inert = mobile.matches && !opened;
+      sidebar.inert = !opened;
       main.inert = opened;
       if (opened) close.focus();
-      else if (restoreFocus && mobile.matches) toggle.focus();
+      else if (restoreFocus) toggle.focus();
     }
 
     toggle.addEventListener('click', () => setOpen(!opened));
@@ -48,13 +47,6 @@
       const wasOpen = opened;
       setOpen(false);
       if (wasOpen) document.getElementById('pageTitle').focus();
-    });
-    mobile.addEventListener('change', () => {
-      const focusInSidebar = sidebar.contains(document.activeElement);
-      const focusOnMobileControl = document.activeElement === toggle || document.activeElement === close;
-      setOpen(false);
-      if (mobile.matches && focusInSidebar) toggle.focus();
-      else if (!mobile.matches && focusOnMobileControl) sidebar.querySelector('[aria-current="page"]').focus();
     });
     setOpen(false);
   });
