@@ -100,3 +100,7 @@
   .section-title-row h2,.billing-status h2,.data-usage-card h2{font-size:28px}
   .tool-card input,.tool-card select{min-height:48px}
 }
+
+.account-avatar-wrap{width:52px;height:52px}
+@media(max-width:760px){.account-avatar-wrap{width:46px;height:46px}}
+@media(max-width:420px){.account-avatar-wrap{width:42px;height:42px}}

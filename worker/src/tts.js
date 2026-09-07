@@ -26,7 +26,7 @@ const TAROT_VOICES=[
 
 const RETRYABLE_STATUS=new Set([404,408,409,429,500,502,503,504]);
 const MAX_TEXT_LENGTH=7000;
-const MAX_REQUEST_BYTES=12_000;
+const MAX_REQUEST_BYTES=32_000;
 
 export async function handleTts(request,env,headers){
   if(request.method!=="POST")return json({success:false,error:{code:"METHOD_NOT_ALLOWED",message:"Method not allowed"}},405,headers);

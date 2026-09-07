@@ -91,9 +91,9 @@
     if (!list) return;
     const invoicePaymentIds = new Set(invoices.map(item => item.paymentIntent).filter(Boolean));
     const items = [
-      ...invoices.map(item => ({...item, type:'invoice'})),
+      ...invoices.map(item => {const payment=payments.find(p=>p.id===item.paymentIntent);return {...item,status:payment&&['refunded','partially_refunded','refund_pending'].includes(payment.status)?payment.status:item.status,type:'invoice'};}),
       ...payments.filter(item => !invoicePaymentIds.has(item.id)).map(item => ({...item, type:'payment'}))
-    ].sort((a,b) => new Date(b.created || 0) - new Date(a.created || 0));
+    ].sort((a,b) => parseDate(b.created) - parseDate(a.created));
 
     if (!items.length) {
       list.innerHTML = '<div class="payment-empty"><strong>ยังไม่มีรายการชำระเงิน</strong><p>เมื่อมีการสมัครสมาชิกหรือชำระเงิน รายการจะปรากฏที่นี่โดยอัตโนมัติ</p></div>';
@@ -134,7 +134,8 @@
   function paymentKind(value) { return ({membership:'สมาชิกพิเศษ',support:'การสนับสนุน',payment:'การชำระเงิน'})[value] || 'การชำระเงิน'; }
   function paymentStatus(value) { return ({paid:'ชำระแล้ว',succeeded:'ชำระแล้ว',complete:'สำเร็จ',open:'รอชำระ',pending:'กำลังดำเนินการ',failed:'ไม่สำเร็จ',expired:'หมดอายุ',refund_pending:'กำลังคืนเงิน',refunded:'คืนเงินแล้ว',partially_refunded:'คืนเงินบางส่วน',draft:'ฉบับร่าง',void:'ยกเลิก',uncollectible:'เรียกเก็บไม่ได้'})[value] || value || '-'; }
   function formatMoney(amount,currency='thb') { try { return new Intl.NumberFormat('th-TH',{style:'currency',currency:String(currency || 'thb').toUpperCase()}).format(Number(amount || 0)/100); } catch { return `${Number(amount || 0)/100} ${currency || 'THB'}`; } }
-  function formatDate(value) { try { return new Intl.DateTimeFormat('th-TH',{dateStyle:'medium',timeZone:'Asia/Bangkok'}).format(new Date(value)); } catch { return value || '-'; } }
+  function parseDate(value) { const raw=String(value||'');return new Date(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/.test(raw)?raw.replace(' ','T')+'Z':(value||0)); }
+  function formatDate(value) { try { return new Intl.DateTimeFormat('th-TH',{dateStyle:'medium',timeZone:'Asia/Bangkok'}).format(parseDate(value)); } catch { return value || '-'; } }
   function safeUrl(value) { try { const url = new URL(String(value || '')); return url.protocol === 'https:' ? url.href : ''; } catch { return ''; } }
   function escapeHtml(value) { return String(value ?? '').replace(/[&<>\"']/g,char => ({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;'}[char])); }
 

@@ -35,6 +35,12 @@ export async function handleHistory(request,env,headers,session){
   try{id=decodeURIComponent(suffix.replace(/^\//,""))}
   catch{return json({success:false,error:{code:"INVALID_HISTORY_ID",message:"History id is invalid"}},400,headers)}
   if(!id||id.includes("/"))return json({success:false,error:{code:"NOT_FOUND",message:"Not found"}},404,headers);
+  if(request.method==="GET"){
+    const access=await historyAccess(env,session);
+    const row=await env.DB.prepare("SELECT id,question,category,reading_json,created_at FROM tarot_reading_history WHERE id=? AND user_sub=? AND expires_at>CURRENT_TIMESTAMP AND created_at>=datetime('now', ?)").bind(id,session.sub,`-${access.days} days`).first();
+    if(!row)return json({success:false,error:{code:"NOT_FOUND",message:"ไม่พบคำอ่านนี้หรือพ้นระยะเก็บประวัติแล้ว"}},404,headers);
+    return json({success:true,item:{id:row.id,question:row.question,category:row.category,created_at:row.created_at,reading:safeJson(row.reading_json,null)}},200,headers);
+  }
   if(request.method==="DELETE"){
     const result=await env.DB.prepare("DELETE FROM tarot_reading_history WHERE id=? AND user_sub=?").bind(id,session.sub).run();
     if(!result.meta?.changes)return json({success:false,error:{code:"NOT_FOUND",message:"ไม่พบคำอ่านนี้"}},404,headers);
@@ -57,14 +63,18 @@ async function listHistory(url,env,headers,session){
   const requested=normalizeRange(url.searchParams.get("range"));
   const days=Math.min(requested,access.days);
   const category=CATEGORIES.has(url.searchParams.get("category"))?url.searchParams.get("category"):"";
-  const limit=Math.min(Math.max(Number(url.searchParams.get("limit"))||50,1),100);
+  const limit=Math.min(Math.max(Math.floor(Number(url.searchParams.get("limit")))||50,1),100);
   let sql="SELECT id,question,category,cards_json,preview,created_at FROM tarot_reading_history WHERE user_sub=? AND expires_at>CURRENT_TIMESTAMP AND created_at>=datetime('now', ?)";
   const binds=[session.sub,`-${days} days`];
   if(category){sql+=" AND category=?";binds.push(category)}
-  sql+=" ORDER BY created_at DESC LIMIT ?";binds.push(limit);
+  const rawCursor=url.searchParams.get("cursor");
+  if(rawCursor){let cursor;try{cursor=JSON.parse(rawCursor)}catch{}if(!cursor||typeof cursor.date!=="string"||typeof cursor.id!=="string"||rawCursor.length>500)return json({success:false,error:{code:"INVALID_CURSOR",message:"ข้อมูลหน้าประวัติไม่ถูกต้อง"}},400,headers);sql+=" AND (created_at<? OR (created_at=? AND id<?))";binds.push(cursor.date,cursor.date,cursor.id);}
+  sql+=" ORDER BY created_at DESC,id DESC LIMIT ?";binds.push(limit+1);
   const result=await env.DB.prepare(sql).bind(...binds).all();
-  const items=(result.results||[]).map(row=>({...row,cards:safeJson(row.cards_json,[]),cards_json:undefined}));
-  return json({success:true,items,access:{tier:access.tier,days,requestedDays:requested,retentionDays:access.retentionDays}},200,headers);
+  const rows=result.results||[],hasMore=rows.length>limit;
+  const items=rows.slice(0,limit).map(row=>({...row,cards:safeJson(row.cards_json,[]),cards_json:undefined}));
+  const last=items.at(-1);
+  return json({success:true,items,nextCursor:hasMore&&last?JSON.stringify({date:last.created_at,id:last.id}):null,access:{tier:access.tier,days,requestedDays:requested,retentionDays:access.retentionDays}},200,headers);
 }
 
 async function recurringInsights(url,env,headers,session){
@@ -97,7 +107,7 @@ export function retentionDaysForTier(tier,env={}){
   return Math.min(Math.max(Math.floor(configured),1),1095);
 }
 
-function normalizeRange(value){if(value==="30")return 30;if(value==="90")return 90;if(value==="180")return 180;if(value==="365")return 365;if(value==="730"||value==="all")return 730;return 30}
+function normalizeRange(value){if(value==="30")return 30;if(value==="90")return 90;if(value==="180")return 180;if(value==="365")return 365;if(value==="730")return 730;if(value==="all")return 1095;return 30}
 function safeJson(value,fallback){try{return JSON.parse(value)}catch{return fallback}}
 function methodNotAllowed(headers){return json({success:false,error:{code:"METHOD_NOT_ALLOWED",message:"Method not allowed"}},405,headers)}
 function json(data,status,headers){return new Response(JSON.stringify(data),{status,headers})}

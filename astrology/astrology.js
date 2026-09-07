@@ -39,5 +39,6 @@
     finally{window.TarotPortal.finishLoading(box);box.focus({preventScroll:true});}
   }
   function escapeHtml(v){return String(v??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));}
+  $('#astroDeepEntry').addEventListener('click',loadDeep);
   addEventListener('DOMContentLoaded',hydrateFromMember);
 })();

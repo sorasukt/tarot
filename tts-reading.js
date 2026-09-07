@@ -1,7 +1,7 @@
 (() => {
   const API_PATH="/api/tts/reading";
   let activeAudio=null;
-  let objectUrl="";
+  let objectUrl="",fallbackStarted=false;
 
   function readingText(){
     const title=document.getElementById("readingTitle")?.textContent?.trim()||"การอ่านไพ่ของคุณ";
@@ -47,7 +47,7 @@
     const text=readingText();
     if(!text){status.textContent="ยังไม่มีคำอ่านสำหรับเปิดเสียง";return;}
     stopAudio(button,stop,status,false);
-    button.disabled=true;
+    fallbackStarted=false;button.disabled=true;
     button.textContent="กำลังเตรียมเสียง…";
     status.textContent="กำลังสร้างเสียงอ่านภาษาไทย";
     try{
@@ -72,27 +72,24 @@
       objectUrl=URL.createObjectURL(blob);
       activeAudio=new Audio(objectUrl);
       activeAudio.preload="auto";
-      activeAudio.addEventListener("ended",()=>stopAudio(button,stop,status));
-      activeAudio.addEventListener("error",()=>{
+      activeAudio.onended=()=>stopAudio(button,stop,status);
+      activeAudio.onerror=()=>{
         status.textContent="เปิดเสียงไม่สำเร็จ ลองใช้เสียงของอุปกรณ์แทน";
-        browserFallback(text,status);
-        stopAudio(button,stop,status,false);
-      },{once:true});
+        startFallback(text,button,stop,status);
+      };
       await activeAudio.play();
       button.textContent="กำลังเล่นเสียง";
       stop.hidden=false;
       status.textContent="กำลังอ่านคำทำนายให้คุณฟัง";
     }catch(error){
       status.textContent="กำลังใช้เสียงสำรองของอุปกรณ์";
-      const used=browserFallback(text,status);
+      const used=startFallback(text,button,stop,status);
       if(!used)status.textContent=error?.message||"ไม่สามารถเปิดเสียงได้ในขณะนี้";
-      button.disabled=false;
-      button.textContent="ฟังคำอ่านไพ่ · สมาชิก";
     }
   }
 
   function stopAudio(button,stop,status,clearStatus=true){
-    if(activeAudio){activeAudio.pause();activeAudio.src="";activeAudio=null;}
+    if(activeAudio){activeAudio.onerror=null;activeAudio.onended=null;activeAudio.pause();activeAudio.src="";activeAudio=null;}
     if(objectUrl){URL.revokeObjectURL(objectUrl);objectUrl="";}
     if("speechSynthesis" in window)window.speechSynthesis.cancel();
     if(button){button.disabled=false;button.textContent="ฟังคำอ่านไพ่ · สมาชิก";}
@@ -100,7 +97,14 @@
     if(status&&clearStatus)status.textContent="";
   }
 
-  function browserFallback(text,status){
+  function startFallback(text,button,stop,status){
+    if(fallbackStarted)return true;fallbackStarted=true;
+    stopAudio(button,stop,status,false);
+    const used=browserFallback(text,status,()=>stopAudio(button,stop,status));
+    if(used){button.disabled=true;button.textContent="กำลังเล่นเสียง";stop.hidden=false;}
+    return used;
+  }
+  function browserFallback(text,status,onEnd){
     if(!("speechSynthesis" in window)||typeof SpeechSynthesisUtterance==="undefined")return false;
     window.speechSynthesis.cancel();
     const utterance=new SpeechSynthesisUtterance(text);
@@ -109,8 +113,8 @@
     utterance.pitch=1;
     const voices=window.speechSynthesis.getVoices();
     utterance.voice=voices.find(voice=>/^th(-|_)/i.test(voice.lang))||null;
-    utterance.onend=()=>{if(status)status.textContent="";};
-    utterance.onerror=()=>{if(status)status.textContent="ไม่สามารถเปิดเสียงได้ในขณะนี้";};
+    utterance.onend=()=>{onEnd?.();if(status)status.textContent="";};
+    utterance.onerror=()=>{onEnd?.();if(status)status.textContent="ไม่สามารถเปิดเสียงได้ในขณะนี้";};
     window.speechSynthesis.speak(utterance);
     if(status)status.textContent="กำลังใช้เสียงภาษาไทยสำรองจากอุปกรณ์";
     return true;

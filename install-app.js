@@ -12,13 +12,13 @@
 
   function ensureInstallCard(){
     if(document.getElementById("installAppButton")||isStandalone())return;
-    const grid=document.querySelector(".system-grid");
+    const grid=document.querySelector(".home-tools, .system-grid");
     if(!grid)return;
     const button=document.createElement("button");
     button.type="button";
     button.id="installAppButton";
-    button.className="system-card app-install-card";
-    button.innerHTML='<span class="num">10</span><h3>ติดตั้งบนอุปกรณ์นี้</h3><p>เปิด Tarot ได้จากหน้าจอหลักและกลับมาใช้งานได้สะดวกขึ้น</p>';
+    button.className=grid.classList.contains("home-tools")?"home-tool app-install-card":"system-card app-install-card";
+    button.innerHTML='<span class="num">07</span><h3>ติดตั้งบนอุปกรณ์นี้</h3><p>เปิด Tarot ได้จากหน้าจอหลักและกลับมาใช้งานได้สะดวกขึ้น</p>';
     button.addEventListener("click",install);
     grid.append(button);
   }
