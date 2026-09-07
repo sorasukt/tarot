@@ -1,4 +1,5 @@
 import tarotWorker from "./index.js";
+import {withTarotQuota} from "./tarot-quota.js";
 import {handleMember} from "./member.js";
 import {handleAuthRoute,getSession} from "./auth-web.js";
 import {handleFortune} from "./fortune.js";
@@ -91,7 +92,7 @@ export default {
       }catch(error){console.error(JSON.stringify({message:"Optional Tarot member context failed",error:error?.message||"error"}))}
       const limit=await enforceAiRateLimit(request,env,session?.sub||"");
       if(!limit.allowed)return limited(limit,headers);
-      return tarotWorker.fetch(request,env,ctx,{session,profile});
+      return withTarotQuota(request,env,session,headers,()=>tarotWorker.fetch(request,env,ctx,{session,profile}));
     }
 
     if(url.pathname.startsWith('/api/fortune/')){

@@ -29,7 +29,7 @@ export async function enforceAiRateLimit(request, env, actorId = "") {
 }
 
 function quotaFeature(pathname) {
-  if (pathname === "/api/tarot/reading") return "tarot";
+  // Tarot daily quota is committed after success by withTarotQuota; burst limits still apply.
   if (pathname === "/api/tts/reading") return "tts";
   if (pathname === "/api/member/astrology" || pathname.startsWith("/api/fortune/astrology")) return "astrology";
   return "";
