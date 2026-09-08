@@ -1,4 +1,5 @@
 import tarotWorker from "./index.js";
+import {withTarotQuota,withFeatureQuota} from "./tarot-quota.js";
 import {handleMember} from "./member.js";
 import {handleAuthRoute,getSession} from "./auth-web.js";
 import {handleFortune} from "./fortune.js";
@@ -75,7 +76,7 @@ export default {
       try{session=await getSession(request,env)}catch(error){console.error(JSON.stringify({message:"Optional TTS member context failed",error:error?.message||"error"}))}
       const limit=await enforceAiRateLimit(request,env,session?.sub||"");
       if(!limit.allowed)return limited(limit,headers);
-      return handleTts(request,env,headers);
+      return withFeatureQuota(request,env,session,headers,()=>handleTts(request,env,headers),"tts");
     }
 
     if(url.pathname==="/api/tarot/reading"&&request.method==="POST"){
@@ -91,7 +92,7 @@ export default {
       }catch(error){console.error(JSON.stringify({message:"Optional Tarot member context failed",error:error?.message||"error"}))}
       const limit=await enforceAiRateLimit(request,env,session?.sub||"");
       if(!limit.allowed)return limited(limit,headers);
-      return tarotWorker.fetch(request,env,ctx,{session,profile});
+      return withTarotQuota(request,env,session,headers,()=>tarotWorker.fetch(request,env,ctx,{session,profile}));
     }
 
     if(url.pathname.startsWith('/api/fortune/')){
@@ -108,6 +109,7 @@ export default {
       }catch(error){console.error('Optional fortune member context failed',error?.message||'error');}
       const limit=await enforceAiRateLimit(request,env,session?.sub||"");
       if(!limit.allowed)return limited(limit,headers);
+      // Basic overviews use burst protection; the daily astrology entitlement applies to deep readings.
       const response=await handleFortune(request,env,headers,session,profile);
       return response||json({success:false,error:{code:'NOT_FOUND',message:'Not found'}},404,headers);
     }
@@ -149,7 +151,7 @@ export default {
     }
 
     try{
-      const response=await handleMember(request,env,headers,auth,DECK);
+      const response=url.pathname==="/api/member/astrology"&&request.method==="GET"?await withFeatureQuota(request,env,session,headers,()=>handleMember(request,env,headers,auth,DECK),"astrology"):await handleMember(request,env,headers,auth,DECK);
       return response||json({success:false,error:{code:"NOT_FOUND",message:"Not found"}},404,headers);
     }catch(error){
       console.error("Member API failed",error?.message||error?.name||"error");

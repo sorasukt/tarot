@@ -45,6 +45,7 @@ function browserContext(member = null) {
     location: { assign() {}, href: "https://sorasukt.com/tarot/me/", origin: "https://sorasukt.com", search: "" },
     requestAnimationFrame(handler) { handler(); },
     setTimeout,
+    setInterval() {},
     window: {
       TarotPortal: {
         api: async () => new Response("{}", { status: 200 }),

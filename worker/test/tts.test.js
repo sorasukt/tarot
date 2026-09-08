@@ -23,7 +23,7 @@ test("TTS rejects an oversized streamed request before calling Gemini",async()=>
   const originalFetch=globalThis.fetch;let calls=0;
   globalThis.fetch=async()=>{calls+=1;throw new Error("Gemini must not be called")};
   try{
-    const request=new Request("https://api.sorasukt.com/api/tts/reading",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({text:"อ่านสั้น ๆ",padding:"x".repeat(13_000)})});
+    const request=new Request("https://api.sorasukt.com/api/tts/reading",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({text:"อ่านสั้น ๆ",padding:"x".repeat(33_000)})});
     const response=await handleTts(request,{GEMINI_API_KEY:"configured"},new Headers());
     assert.equal(response.status,413);
     assert.equal((await response.json()).error.code,"REQUEST_TOO_LARGE");

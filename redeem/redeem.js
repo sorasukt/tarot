@@ -9,7 +9,8 @@
   const code=(params.get("code")||"").trim().toUpperCase();
   const plan=normalizePlan(params.get("plan"));
 
-  if(code)input.value=code;
+  let pendingCode='';try{pendingCode=sessionStorage.getItem('tarot-pending-redeem')||'';sessionStorage.removeItem('tarot-pending-redeem')}catch{}
+  if(code||pendingCode)input.value=code||pendingCode;
   if(plan)planHint.textContent=`แผนจากลิงก์: ${planLabel(plan)}`;
 
   form.addEventListener("submit",async event=>{
@@ -27,6 +28,7 @@
       });
       const data=await response.json().catch(()=>null);
       if(response.status===401){
+        try{sessionStorage.setItem('tarot-pending-redeem',redeemCode)}catch{}
         const returnTo=encodeURIComponent(location.href);
         location.href=`${API}/auth/login?returnTo=${returnTo}`;
         return;

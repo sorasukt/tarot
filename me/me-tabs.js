@@ -3,6 +3,7 @@
   if (!root) return;
 
   const tabs = [...root.querySelectorAll('.t-tab')];
+  tabs.forEach(tab=>{const name=tab.dataset.tabTarget;tab.id='me-tab-'+name;tab.setAttribute('aria-controls','me-panel-'+name);const panel=document.querySelector('[data-me-panel="'+name+'"]');if(panel){panel.id='me-panel-'+name;panel.setAttribute('role','tabpanel');panel.setAttribute('aria-labelledby',tab.id);}});
   const pill = root.querySelector('.t-tabs-pill');
   const panels = [...document.querySelectorAll('[data-me-panel]')];
 
@@ -61,7 +62,7 @@
   const loadPayments = () => {
     if (document.querySelector('script[data-me-payments]')) return;
     const paymentScript = document.createElement('script');
-    paymentScript.src = './me-payments.js?v=20260831-3';
+    paymentScript.src = './me-payments.js?v=20260907-audit1';
     paymentScript.dataset.mePayments = 'true';
     document.head.append(paymentScript);
   };

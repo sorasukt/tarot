@@ -5,8 +5,10 @@
   const $=id=>document.getElementById(id);
   const range=$("rangeFilter"),category=$("categoryFilter"),status=$("timelineStatus"),list=$("timelineList"),recurring=$("recurringCards"),recurringSection=$("recurringSection");
 
+  let timelineSequence=0,insightSequence=0,nextCursor=null,loading=false,visibleCount=0;
+  const more=document.createElement('button');more.type='button';more.textContent='โหลดคำอ่านเพิ่มเติม';more.hidden=true;list.after(more);more.addEventListener('click',()=>{if(!loading)void loadTimeline(true)});
   range.addEventListener("change",loadAll);
-  category.addEventListener("change",loadTimeline);
+  category.addEventListener("change",()=>loadTimeline());
   void loadAll();
 
   async function api(path,options={}){
@@ -16,25 +18,29 @@
 
   async function loadAll(){await Promise.all([loadTimeline(),loadInsights()])}
 
-  async function loadTimeline(){
-    status.textContent="กำลังโหลดไทม์ไลน์…";list.replaceChildren();
+  async function loadTimeline(append=false){
+    const sequence=++timelineSequence;loading=true;more.disabled=true;
+    status.textContent="กำลังโหลดไทม์ไลน์…";if(!append){list.replaceChildren();visibleCount=0;nextCursor=null;more.hidden=true;}
     try{
-      const query=new URLSearchParams({range:range.value,limit:"100"});if(category.value)query.set("category",category.value);
+      const query=new URLSearchParams({range:range.value,limit:"100"});if(category.value)query.set("category",category.value);if(append&&nextCursor)query.set("cursor",nextCursor);
       const response=await api(`/api/member/history?${query}`);
       const data=await response.json().catch(()=>null);
+      if(sequence!==timelineSequence)return;
       if(response.status===401){renderSignedOut();return}
       if(!response.ok||!data?.success)throw new Error(data?.error?.message||"โหลดไทม์ไลน์ไม่สำเร็จ");
       const access=data.access||{};
-      status.textContent=data.items.length?`แสดง ${data.items.length} คำอ่าน · ประวัติที่เข้าถึงได้สูงสุด ${access.days||30} วัน`:"ยังไม่มีคำอ่านที่บันทึกไว้ในช่วงเวลานี้";
+      visibleCount+=data.items.length;nextCursor=data.nextCursor||null;more.hidden=!nextCursor;
+      status.textContent=visibleCount?`แสดง ${visibleCount} คำอ่าน · ประวัติที่เข้าถึงได้สูงสุด ${access.days||30} วัน`:"ยังไม่มีคำอ่านที่บันทึกไว้ในช่วงเวลานี้";
       data.items.forEach(renderItem);
-    }catch(error){status.textContent=error?.message||"โหลดไทม์ไลน์ไม่สำเร็จ";}
+    }catch(error){if(sequence===timelineSequence)status.textContent=error?.message||"โหลดไทม์ไลน์ไม่สำเร็จ";}finally{if(sequence===timelineSequence){loading=false;more.disabled=false;}}
   }
 
   async function loadInsights(){
+    const sequence=++insightSequence;
     recurring.replaceChildren();recurringSection.hidden=true;
     try{
       const response=await api(`/api/member/history/insights?range=${encodeURIComponent(range.value)}`);
-      const data=await response.json().catch(()=>null);if(!response.ok||!data?.success)return;
+      const data=await response.json().catch(()=>null);if(sequence!==insightSequence||!response.ok||!data?.success)return;
       if(!data.items.length)return;
       recurringSection.hidden=false;
       data.items.forEach(item=>{const card=document.createElement("article");card.className="recurring-card";const count=document.createElement("strong");count.textContent=`${item.count}×`;const name=document.createElement("span");name.textContent=item.cardName;card.append(count,name);recurring.append(card)});
@@ -50,12 +56,14 @@
     const cards=document.createElement("p");cards.className="timeline-cards";cards.textContent=(item.cards||[]).map(card=>card.name).join(" · ");
     const preview=document.createElement("p");preview.className="timeline-preview";preview.textContent=item.preview||"";
     const actions=document.createElement("div");actions.className="timeline-actions";const remove=document.createElement("button");remove.type="button";remove.className="text-button danger";remove.textContent="ลบจากไทม์ไลน์";remove.addEventListener("click",()=>deleteItem(item.id,article));actions.append(remove);
-    article.append(top,cards,preview,actions);list.append(article);
+    const detail=document.createElement('details'),summary=document.createElement('summary'),full=document.createElement('div');summary.textContent='อ่านคำทำนายฉบับเต็ม';detail.append(summary,full);let detailLoading=false,detailLoaded=false;
+    detail.addEventListener('toggle',async()=>{if(!detail.open||detailLoading||detailLoaded)return;detailLoading=true;full.textContent='กำลังโหลด…';try{const response=await api(`/api/member/history/${encodeURIComponent(item.id)}`),data=await response.json();if(!response.ok)throw new Error(data?.error?.message||'โหลดคำอ่านไม่สำเร็จ');const r=data.item?.reading;if(!r)throw new Error('ไม่พบคำอ่านฉบับเต็ม');full.replaceChildren();const section=(title,text)=>{if(!text)return;const h=document.createElement('h4'),p=document.createElement('p');h.textContent=title;p.textContent=text;p.style.whiteSpace='pre-line';full.append(h,p)};section(r.readingTitle||'ภาพรวม',r.overallReading||r.summary);(r.cards||[]).forEach(card=>section(card.cardName,card.interpretation));(r.patterns||[]).forEach(pattern=>section(pattern.title,pattern.description));section('แนวทาง',(r.guidance||[]).join('\n'));section('คำถามสำหรับคิดต่อ',r.reflectionQuestion);detailLoaded=true}catch(error){full.textContent=error.message+' · ปิดแล้วเปิดอีกครั้งเพื่อลองใหม่'}finally{detailLoading=false}});
+    article.append(top,cards,preview,detail,actions);list.append(article);
   }
 
   async function updateCategory(id,value,select){
     select.disabled=true;
-    try{const response=await api(`/api/member/history/${encodeURIComponent(id)}`,{method:"PATCH",headers:{"Content-Type":"application/json"},body:JSON.stringify({category:value})});const data=await response.json().catch(()=>null);if(!response.ok)throw new Error(data?.error?.message||"เปลี่ยนหมวดไม่สำเร็จ");status.textContent=`ย้ายไปหมวด ${categories[value]} แล้ว`;}
+    try{const response=await api(`/api/member/history/${encodeURIComponent(id)}`,{method:"PATCH",headers:{"Content-Type":"application/json"},body:JSON.stringify({category:value})});const data=await response.json().catch(()=>null);if(!response.ok)throw new Error(data?.error?.message||"เปลี่ยนหมวดไม่สำเร็จ");if(category.value&&category.value!==value)await loadTimeline();status.textContent=`ย้ายไปหมวด ${categories[value]} แล้ว`;}
     catch(error){status.textContent=error?.message||"เปลี่ยนหมวดไม่สำเร็จ";await loadTimeline();}
     finally{select.disabled=false;}
   }
