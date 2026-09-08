@@ -46,13 +46,15 @@ export async function handleTts(request,env,headers){
   const voices=[preferredVoice,...TAROT_VOICES].filter((voice,index,list)=>voice&&list.indexOf(voice)===index);
   const prompt=buildTarotNarrationPrompt(text);
   let lastStatus=503;
+  const deadline=Date.now()+60000;
 
   for(let modelIndex=0;modelIndex<TTS_MODELS.length;modelIndex+=1){
     const model=TTS_MODELS[modelIndex];
     for(let voiceIndex=0;voiceIndex<voices.length;voiceIndex+=1){
+      if(Date.now()>=deadline)break;
       const voice=voices[voiceIndex];
       const controller=new AbortController();
-      const timer=setTimeout(()=>controller.abort(),15000);
+      const timer=setTimeout(()=>controller.abort(),Math.min(20000,deadline-Date.now()));
       try{
         const response=await fetch("https://generativelanguage.googleapis.com/v1beta/interactions",{
           method:"POST",
@@ -75,6 +77,7 @@ export async function handleTts(request,env,headers){
           const audio=extractAudio(raw);
           if(!audio?.data)throw new Error("TTS_AUDIO_MISSING");
           const bytes=base64ToBytes(audio.data);
+          if(!bytes.byteLength)throw new Error("TTS_AUDIO_MISSING");
           const outHeaders=new Headers(headers);
           outHeaders.set("Content-Type",audio.mimeType||"audio/wav");
           outHeaders.set("Content-Length",String(bytes.byteLength));
@@ -86,8 +89,11 @@ export async function handleTts(request,env,headers){
         }
 
         const errorText=await response.text().catch(()=>"");
+        let providerError;try{providerError=JSON.parse(errorText)?.error}catch{}
+        const providerStatus=safeErrorCode(providerError?.status||providerError?.code);
+        const providerReason=safeErrorCode(providerError?.details?.find(item=>item?.reason)?.reason);
         const voiceSpecific=response.status===400&&/voice/i.test(errorText);
-        console.warn(JSON.stringify({message:"Gemini TTS attempt failed",model,voice,status:response.status,voiceSpecific,retryable:RETRYABLE_STATUS.has(response.status)}));
+        console.warn(JSON.stringify({message:"Gemini TTS attempt failed",model,voice,status:response.status,providerStatus,providerReason,voiceSpecific,retryable:RETRYABLE_STATUS.has(response.status)}));
         if(voiceSpecific)continue;
         if(RETRYABLE_STATUS.has(response.status))break;
         return json({success:false,error:{code:"TTS_REQUEST_FAILED",message:"ไม่สามารถสร้างเสียงอ่านไพ่ได้ในขณะนี้"}},response.status,headers);
@@ -123,6 +129,15 @@ function buildTarotNarrationPrompt(text){
 }
 
 function extractAudio(raw){
+  const interaction=raw?.interaction||raw;
+  if(interaction?.status&&interaction.status!=="completed")return null;
+  const steps=interaction?.steps||[];
+  for(let i=steps.length-1;i>=0;i--){
+    if(steps[i]?.type!=="model_output")continue;
+    const blocks=steps[i].content||[];
+    const audio=blocks.find(block=>block?.type==="audio"&&block.data);
+    if(audio)return {data:audio.data,mimeType:audio.mime_type||audio.mimeType||"audio/wav"};
+  }
   const direct=raw?.output_audio||raw?.interaction?.output_audio;
   if(direct?.data)return {data:direct.data,mimeType:direct.mime_type||direct.mimeType||"audio/wav"};
   const outputs=raw?.outputs||raw?.interaction?.outputs||[];
@@ -133,6 +148,8 @@ function extractAudio(raw){
   }
   return null;
 }
+
+function safeErrorCode(value){return typeof value==="string"&&/^[A-Z][A-Z0-9_]{0,79}$/.test(value)?value:null;}
 
 function base64ToBytes(value){
   const binary=atob(value);
