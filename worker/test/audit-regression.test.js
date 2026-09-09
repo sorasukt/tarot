@@ -58,7 +58,7 @@ test('daily waits for consent and exhausted 202 clears busy without showing empt
 });
 test('service worker precache is unique, complete for imports, and deletes only own caches',async()=>{
  const listeners={},deleted=[],added=[];let activated;
- const context={self:{addEventListener:(n,f)=>listeners[n]=f,skipWaiting(){},clients:{claim(){}},location:{origin:'https://sorasukt.com'}},caches:{open:async()=>({addAll:async list=>added.push(...list)}),keys:async()=>['another-app','sorasukt-tarot-shell-v1','sorasukt-tarot-shell-v2-audit'],delete:async key=>deleted.push(key)},Response,URL};
+ const context={self:{addEventListener:(n,f)=>listeners[n]=f,skipWaiting(){},clients:{claim(){}},location:{origin:'https://sorasukt.com'}},caches:{open:async()=>({addAll:async list=>added.push(...list)}),keys:async()=>['another-app','sorasukt-tarot-shell-v1','sorasukt-tarot-shell-v3-delivery'],delete:async key=>deleted.push(key)},Response,URL};
  vm.runInNewContext(readFileSync(new URL('../../service-worker.js',import.meta.url),'utf8'),context);listeners.install({waitUntil:p=>activated=p});await activated;assert.equal(new Set(added).size,added.length);assert.ok(added.includes('/tarot/assets/css/core/portal.css'));
  listeners.activate({waitUntil:p=>activated=p});await activated;assert.deepEqual(deleted,['sorasukt-tarot-shell-v1']);
 });

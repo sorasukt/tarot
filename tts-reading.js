@@ -1,6 +1,6 @@
 (() => {
   const API_PATH="/api/tts/reading";
-  let activeAudio=null;
+  let activeAudio=null,activeDelivery=null;
   let objectUrl="",fallbackStarted=false;
 
   function readingText(){
@@ -67,12 +67,14 @@
         }
         throw error;
       }
+      activeDelivery=response;
       const blob=await response.blob();
       if(!blob.size)throw new Error("ไม่ได้รับข้อมูลเสียง");
       objectUrl=URL.createObjectURL(blob);
       activeAudio=new Audio(objectUrl);
       activeAudio.preload="auto";
-      activeAudio.onended=()=>stopAudio(button,stop,status);
+      // Count only a complete playback; decode errors, autoplay rejection and device fallback are free.
+      activeAudio.onended=()=>{activeDelivery=null;void window.TarotPortal.confirmDelivery?.(response,"received",{visual:false});stopAudio(button,stop,status);};
       activeAudio.onerror=()=>{
         status.textContent="เปิดเสียงไม่สำเร็จ ลองใช้เสียงของอุปกรณ์แทน";
         startFallback(text,button,stop,status);
@@ -89,6 +91,7 @@
   }
 
   function stopAudio(button,stop,status,clearStatus=true){
+    if(activeDelivery){void window.TarotPortal.confirmDelivery?.(activeDelivery,"failed");activeDelivery=null;}
     if(activeAudio){activeAudio.onerror=null;activeAudio.onended=null;activeAudio.pause();activeAudio.src="";activeAudio=null;}
     if(objectUrl){URL.revokeObjectURL(objectUrl);objectUrl="";}
     if("speechSynthesis" in window)window.speechSynthesis.cancel();

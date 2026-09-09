@@ -1,5 +1,5 @@
 import tarotWorker from "./index.js";
-import {withTarotQuota,withFeatureQuota} from "./tarot-quota.js";
+import {withTarotQuota,withFeatureQuota,acknowledgeDelivery} from "./tarot-quota.js";
 import {handleMember} from "./member.js";
 import {handleAuthRoute,getSession} from "./auth-web.js";
 import {handleFortune} from "./fortune.js";
@@ -63,6 +63,18 @@ export default {
       let session=null;
       try{session=await getSession(request,env)}catch(error){console.error(JSON.stringify({message:"Optional billing session failed",error:error?.message||"error"}))}
       return handleBilling(request,env,headers,session);
+    }
+
+    if(url.pathname==="/api/usage/ack"){
+      const origin=request.headers.get("Origin")||"";
+      const corsOrigin=allowedOrigin(origin,env);
+      if(request.method==="OPTIONS")return preflight(corsOrigin);
+      const headers=baseHeaders(request,env);
+      if(origin&&!corsOrigin)return json({success:false},403,headers);
+      if(!hasCurrentPolicy(request))return policyRequired(headers);
+      // Never downgrade an unavailable member session to an anonymous acknowledgement.
+      try{return await acknowledgeDelivery(request,env,await getSession(request,env),headers)}
+      catch{return json({success:false},503,headers)}
     }
 
     if(url.pathname==="/api/tts/reading"){

@@ -54,3 +54,7 @@ Apply migration `0014_tarot_quota_receipts.sql` before deploying the Worker. The
 Validate iOS/Safari/PWA installation, offline lifecycle, screen readers and visual layout on actual devices. No real subscription was changed and no real refund was issued; provider outcomes were mocked. These checks do not establish the cause of the reported overnight request failure without production logs. They also do not retrospectively restore previously consumed quota.
 
 Network delivery cannot be guaranteed: a same-day retry of the same operation is not charged twice, but a reload/new card selection is a new operation. Private/guest results may be regenerated instead of persisted. Concurrent generations are possible before the final transactional quota check; the committed daily counter cannot exceed the allowance. Basic astrology overview is protected by the per-minute burst limiter; the daily astrology allowance covers deep readings.
+
+## Delivery follow-up
+
+The post-audit review found that server-side generation success did not establish browser delivery or playable audio. The follow-up replaces generation-based debits with browser acknowledgements, expiring capacity holds and transactional receipts. See [reading-quota-fix.md](reading-quota-fix.md) for the updated behavior, migration 0015, validation and remaining limits. The earlier validation counts and deployment notes above describe the original audit release.

@@ -60,14 +60,17 @@ async function createReading(){
   els.deckStep.setAttribute("inert","");els.reveal.disabled=true;
   els.sticky.hidden=true;els.error.hidden=true;showLoading(true);
   const messages=["กำลังพิจารณาคำถามของคุณ","กำลังเชื่อมโยงความหมายของไพ่","กำลังเรียบเรียงการอ่านของคุณ"];
+  let delivery=null;
   let mi=0; const timer=setInterval(()=>{mi=(mi+1)%messages.length;els.loadingText.textContent=messages[mi]},1400);
   try{
     const endpoint=window.TAROT_CONFIG?.endpoint||"/api/tarot/reading";
     const res=await window.TarotPortal.ai("tarot",endpoint,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({requestId:state.requestId,question:state.question,language:"th",category:state.category,privateMode:state.privateMode,cards:state.selected.map(c=>({cardId:c.id,orientation:"upright"}))})});
+    delivery=res;
     const data=await res.json().catch(()=>null);
     if(!res.ok||!data?.success||!data.reading||!Array.isArray(data.reading.cards)||data.reading.cards.length!==5)throw window.TarotPortal.apiError(data,"ไม่สามารถสร้างคำอ่านไพ่ได้");
     renderReading(data.reading,data.history);
-  }catch(err){window.TarotPortal.renderError(els.error,err);els.sticky.hidden=false;els.reveal.textContent="ลองรับคำทำนายจากไพ่ชุดเดิม";}
+    void window.TarotPortal.confirmDelivery?.(res);
+  }catch(err){if(delivery)void window.TarotPortal.confirmDelivery?.(delivery,"failed");els.deckStep.hidden=false;els.readingStep.hidden=true;window.TarotPortal.renderError(els.error,err);els.sticky.hidden=false;els.reveal.textContent="ลองรับคำทำนายจากไพ่ชุดเดิม";}
   finally{clearInterval(timer);showLoading(false);state.pending=false;els.deckStep.removeAttribute("inert");els.reveal.disabled=false;if(!els.error.hidden)els.error.focus();}
 }
 function renderReading(reading,history){
