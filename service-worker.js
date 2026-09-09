@@ -1,4 +1,4 @@
-const CACHE_NAME="sorasukt-tarot-shell-v2-audit";
+const CACHE_NAME="sorasukt-tarot-shell-v3-delivery";
 const APP_SHELL=[...new Set([
   "/tarot/",
   "/tarot/admin/admin-codes.css",

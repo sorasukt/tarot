@@ -28,14 +28,19 @@
     const box=$('#astroResult');
     if(!member.completion?.readyForDaily){box.innerHTML='<h2>เพิ่มข้อมูลเกิดก่อน</h2><p>กรุณาบันทึกวันเดือนปีเกิดในหน้า “ฉัน” ก่อนเปิดการอ่านเชิงลึก</p><p><a class="deep-button" href="../me/">ไปที่หน้า ฉัน</a></p>';return;}
     window.TarotPortal.setLoading(box,'กำลังเตรียมรายละเอียดจากข้อมูลที่คุณบันทึกไว้');
+    let delivery=null;
     try{
       const r=await window.TarotPortal.ai('astrology','/api/member/astrology');
+      delivery=r;
       const data=await r.json();
       if(r.status===409&&data?.error?.code==='PROFILE_REQUIRED'){box.innerHTML=`<h2>ต้องมีข้อมูลเกิดก่อน</h2><p>${escapeHtml(data.error.message)}</p><p><a class="deep-button" href="../me/">ไปที่หน้า ฉัน</a></p>`;return;}
       if(!r.ok)throw window.TarotPortal.apiError(data,'ไม่สามารถอ่านเชิงลึกได้');
-      const x=data.reading||{};
+      if(r.status===202)throw new Error("คำอ่านยังอยู่ระหว่างเตรียม กรุณาลองใหม่อีกครั้ง");
+      if(!data.success||!data.reading?.overview?.trim())throw new Error("ยังไม่ได้รับคำอ่านที่สมบูรณ์");
+      const x=data.reading;
       box.innerHTML=`<h2>${escapeHtml(x.title||'การอ่านเชิงลึก')}</h2><p>${escapeHtml(x.overview||'')}</p><h3>จุดแข็ง</h3><p>${(x.strengths||[]).map(v=>'• '+escapeHtml(v)).join('<br>')}</p><h3>พื้นที่สำหรับเติบโต</h3><p>${(x.growth||[]).map(v=>'• '+escapeHtml(v)).join('<br>')}</p><h3>ความสัมพันธ์</h3><p>${escapeHtml(x.relationships||'')}</p><h3>คำถามสำหรับคิดต่อ</h3><p>${escapeHtml(x.reflection||'')}</p><p class="profile-note">การอ่านนี้เป็นมุมมองเชิงสัญลักษณ์เพื่อการทบทวนตัวเอง</p>`;
-    }catch(e){window.TarotPortal.renderError(box,e,{title:'ยังอ่านเชิงลึกไม่ได้'});}
+      void window.TarotPortal.confirmDelivery?.(r);
+    }catch(e){if(delivery)void window.TarotPortal.confirmDelivery?.(delivery,'failed');window.TarotPortal.renderError(box,e,{title:'ยังอ่านเชิงลึกไม่ได้'});}
     finally{window.TarotPortal.finishLoading(box);box.focus({preventScroll:true});}
   }
   function escapeHtml(v){return String(v??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));}

@@ -36,7 +36,7 @@ test("member policy acceptance is persisted",async()=>{
 
 test("scheduled cleanup removes expired user, quota, and tarot history data",async()=>{
   const statements=[];
-  const env={DB:{prepare(sql){statements.push(sql);return {sql}},async batch(batch){assert.equal(batch.length,6)}}};
+  const env={DB:{prepare(sql){statements.push(sql);return {sql}},async batch(batch){assert.equal(batch.length,7)}}};
   await purgeExpiredUserData(env);
   assert.ok(statements.some(sql=>sql.includes("usage_events")));
   assert.ok(statements.some(sql=>sql.includes("member_ai_results")));
