@@ -9,6 +9,10 @@ Standalone source for the Tarot experience published at <https://sorasukt.com/ta
 - `docs/` contains product and implementation notes.
 - `.github/workflows/` contains frontend and Worker validation/deployment workflows.
 
+## UX/UI standard
+
+Use [the shared UX/UI standard](docs/ux-ui-standard.md) for frontend design and review. It sets WCAG 2.2 AA as the accessibility target, defines Tarot-specific visual and interaction rules, and includes acceptance criteria. It does not certify the current site as compliant.
+
 ## Local checks
 
 ```bash
