@@ -102,6 +102,17 @@ test("Home uses member context to hydrate saved birth data", async () => {
   assert.equal(fixture.elements.get("#modalBirthTime").value,"07:45");
 });
 
+test("Phase 2 exposes optional journal, mood and weekly reflection controls",async()=>{
+  const [reading,app,history,historyScript,readme]=await Promise.all([
+    readFile(new URL("reading/index.html",repositoryRoot),"utf8"),readFile(new URL("app.js",repositoryRoot),"utf8"),readFile(new URL("history/index.html",repositoryRoot),"utf8"),readFile(new URL("history/history.js",repositoryRoot),"utf8"),readFile(new URL("README.md",repositoryRoot),"utf8")
+  ]);
+  assert.match(reading,/id="moodBefore"/);assert.match(reading,/id="moodAfter"/);assert.match(reading,/id="reflectionNote"/);
+  assert.match(app,/\/api\/member\/reflections\//);assert.match(app,/state\.privateMode/);
+  assert.match(history,/id="weeklyReflection"/);assert.match(history,/ไม่ใช่คำทำนายหรือการประเมินสุขภาพ/);
+  assert.match(historyScript,/\/api\/member\/reflections\/weekly/);assert.match(historyScript,/method:generate\?'POST':'GET'/);
+  assert.match(readme,/\| 2 \| Private journal, optional mood before\/after, and weekly reflection \| In progress \|/);
+});
+
 test("Tarot reading shuffles before enabling card selection", async () => {
   const [html,script,styles]=await Promise.all([
     readFile(new URL("reading/index.html",repositoryRoot),"utf8"),
