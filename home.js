@@ -32,12 +32,13 @@
     status.dataset.loading="true";status.setAttribute("role","status");status.setAttribute("aria-live","polite");status.textContent="กำลังเตรียมข้อความประจำวันของคุณ…";
     let r=await window.TarotPortal.ai("daily","/api/member/daily");
     for(let attempt=0;r.status===202&&attempt<20;attempt+=1){
-      status.textContent="กำลังจัดทำข้อความประจำวันของคุณ…";
+      if(window.TarotPortal.swapText)window.TarotPortal.swapText(status,"กำลังจัดทำข้อความประจำวันของคุณ…");else status.textContent="กำลังจัดทำข้อความประจำวันของคุณ…";
       await new Promise(resolve=>setTimeout(resolve,2000));
       r=await window.TarotPortal.ai("daily","/api/member/daily");
     }
     if(r.status===202)throw new Error("ยังเตรียมดวงวันนี้ไม่เสร็จ กรุณาลองใหม่อีกครั้ง");
     const data=await r.json();
+    window.TarotPortal.swapText?.(status,"");
     if(r.status===409&&data?.error?.code==="PROFILE_REQUIRED"){ if(authenticated)openBirthModal(); return; }
     if(!r.ok){ window.TarotPortal.renderError(status,window.TarotPortal.apiError(data,"ไม่สามารถโหลดดวงวันนี้ได้")); return; }
     $("dailyDate").textContent=data.date||"";
@@ -54,7 +55,7 @@
     $("dailyLuckyMeaning").textContent=data.horoscope?.luckyColorMeaning||"";
     $("dailyLuckyUse").textContent=data.horoscope?.luckyColorUse||"";
     $("dailyContent").hidden=false;lastDailyDate=data.date||today(); status.textContent="";
-    }catch(error){window.TarotPortal.renderError(status,error);const retry=document.createElement('button');retry.type='button';retry.textContent='ลองใหม่';retry.addEventListener('click',()=>void loadDaily());status.append(retry)}
+    }catch(error){window.TarotPortal.swapText?.(status,"");window.TarotPortal.renderError(status,error);const retry=document.createElement('button');retry.type='button';retry.textContent='ลองใหม่';retry.addEventListener('click',()=>void loadDaily());status.append(retry)}
     finally{dailyPending=false;delete status.dataset.loading;}
   }
 
@@ -96,7 +97,7 @@
     if(!date)return;
     const d=new Date(`${date}T00:00:00`), zodiac=getZodiac(d.getDate(),d.getMonth()+1), lifePath=reduceNumber(date.replaceAll("-",""));
     $("quickResult").hidden=false;
-    $("quickResult").innerHTML=`<h3>${zodiac.name} · เลขเส้นทางชีวิต ${lifePath}</h3><p>${zodiac.copy}</p><p>เลข ${lifePath} ใช้เป็นมุมมองเชิงสัญลักษณ์เกี่ยวกับแนวโน้ม วิธีคิด และสิ่งที่คุณอาจให้ความสำคัญ</p><button class="deep-button" id="deepResultButton" type="button">ดูรายละเอียดเชิงลึก</button>`;
+    $("quickResult").innerHTML=`<h3>${zodiac.name} · เลขเส้นทางชีวิต <span class="t-digit-group is-animating">${[...String(lifePath)].map((digit,index)=>`<span class="t-digit" data-stagger="${index}">${digit}</span>`).join("")}</span></h3><p>${zodiac.copy}</p><p>เลข ${lifePath} ใช้เป็นมุมมองเชิงสัญลักษณ์เกี่ยวกับแนวโน้ม วิธีคิด และสิ่งที่คุณอาจให้ความสำคัญ</p><button class="deep-button" id="deepResultButton" type="button">ดูรายละเอียดเชิงลึก</button>`;
     $("deepResultButton").onclick=()=>{
       if(authenticated) location.assign("./astrology/");
       else location.assign(`https://api.sorasukt.com/auth/login?returnTo=${encodeURIComponent(location.origin+"/tarot/astrology/")}`);

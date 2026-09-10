@@ -1,4 +1,4 @@
-const CACHE_NAME="sorasukt-tarot-shell-v4-home-reference";
+const CACHE_NAME="sorasukt-tarot-shell-v5-shared-motion";
 const APP_SHELL=[...new Set([
   "/tarot/",
   "/tarot/admin/admin-codes.css",
@@ -6,6 +6,7 @@ const APP_SHELL=[...new Set([
   "/tarot/assets/css/components/lucky-colors.css",
   "/tarot/assets/css/components/tabs.css",
   "/tarot/assets/css/core/design-system.css",
+  "/tarot/assets/css/core/transitions.css",
   "/tarot/assets/css/core/enhancements.css",
   "/tarot/assets/css/core/experience.css",
   "/tarot/assets/css/core/interaction.css",

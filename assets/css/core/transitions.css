@@ -1,0 +1,74 @@
+/* Shared motion primitives adapted from the supplied Transitions.dev examples.
+   State classes are opt-in. Semantic hidden/inert/focus remain the caller's job. */
+:root{
+ --resize-dur:300ms;--resize-ease:cubic-bezier(.22,1,.36,1);
+ --digit-dur:500ms;--digit-distance:8px;--digit-stagger:70ms;--digit-blur:2px;--digit-ease:cubic-bezier(.34,1.45,.64,1);--digit-dir-x:0;--digit-dir-y:1;
+ --text-swap-dur:150ms;--text-swap-translate-y:4px;--text-swap-blur:2px;--text-swap-ease:ease-in-out;
+ --dropdown-open-dur:250ms;--dropdown-close-dur:150ms;--dropdown-pre-scale:.97;--dropdown-closing-scale:.99;--dropdown-ease:cubic-bezier(.22,1,.36,1);
+ --modal-open-dur:250ms;--modal-close-dur:150ms;--modal-scale:.96;--modal-scale-close:.96;--modal-ease:cubic-bezier(.22,1,.36,1);
+ --panel-open-dur:400ms;--panel-close-dur:350ms;--panel-translate-y:16px;--panel-blur:2px;--panel-ease:cubic-bezier(.22,1,.36,1);
+ --stagger-dur:500ms;--stagger-distance:12px;--stagger-stagger:40ms;--stagger-blur:3px;--stagger-ease:cubic-bezier(.22,1,.36,1);
+ --tabs-dur:250ms;--tabs-ease:cubic-bezier(.22,1,.36,1);
+ --tabs-text-muted:#c1c1c1;--tabs-text-active:#fff;--tabs-bar-bg:#202020;--tabs-pill-bg:#454545;
+ --shimmer-dur:2000ms;--shimmer-base:var(--st-muted,#6f6f6f);--shimmer-highlight:#ededed;--shimmer-band:400%;--shimmer-ease:linear;
+ --check-box:150ms;--check-draw:350ms;--check-delay:0ms;--check-uncheck:150ms;--check-ease:cubic-bezier(.22,1,.36,1);
+}
+/* No permanent will-change: promote only when profiling identifies a need. */
+.t-resize{transition:width var(--resize-dur) var(--resize-ease),height var(--resize-dur) var(--resize-ease)}
+@supports(interpolate-size:allow-keywords){.t-resize{interpolate-size:allow-keywords}}
+@keyframes t-digit-pop-in{from{transform:translate(calc(var(--digit-distance)*var(--digit-dir-x)),calc(var(--digit-distance)*var(--digit-dir-y)));opacity:0;filter:blur(var(--digit-blur))}to{transform:translate(0,0);opacity:1;filter:blur(0)}}
+.t-digit-group{display:inline-flex;align-items:baseline}
+.t-digit{display:inline-block}
+.t-digit-group.is-animating .t-digit{animation:t-digit-pop-in var(--digit-dur) var(--digit-ease) both;animation-delay:calc(var(--digit-index,0)*var(--digit-stagger))}
+.t-digit[data-stagger="1"]{--digit-index:1}.t-digit[data-stagger="2"]{--digit-index:2}
+.t-text-swap{display:inline-block;transform:translateY(0);filter:blur(0);opacity:1;transition:transform var(--text-swap-dur) var(--text-swap-ease),filter var(--text-swap-dur) var(--text-swap-ease),opacity var(--text-swap-dur) var(--text-swap-ease)}
+.t-text-swap.is-exit{transform:translateY(calc(var(--text-swap-translate-y)*-1));filter:blur(var(--text-swap-blur));opacity:0}
+.t-text-swap.is-enter-start{transform:translateY(var(--text-swap-translate-y));filter:blur(var(--text-swap-blur));opacity:0;transition:none}
+.t-dropdown{transform-origin:top left;transform:scale(var(--dropdown-pre-scale));opacity:0;visibility:hidden;pointer-events:none;transition:transform var(--dropdown-open-dur) var(--dropdown-ease),opacity var(--dropdown-open-dur) var(--dropdown-ease),visibility var(--dropdown-open-dur)}
+.t-dropdown[data-origin="top-right"]{transform-origin:top right}.t-dropdown[data-origin="top-center"]{transform-origin:top center}.t-dropdown[data-origin="bottom-left"]{transform-origin:bottom left}.t-dropdown[data-origin="bottom-center"]{transform-origin:bottom center}.t-dropdown[data-origin="bottom-right"]{transform-origin:bottom right}
+.t-dropdown.is-open{transform:scale(1);opacity:1;visibility:visible;pointer-events:auto}
+.t-dropdown.is-closing{transform:scale(var(--dropdown-closing-scale));opacity:0;pointer-events:none;transition-duration:var(--dropdown-close-dur)}
+.t-modal{transform-origin:center;transform:scale(var(--modal-scale));opacity:0;visibility:hidden;pointer-events:none;transition:transform var(--modal-open-dur) var(--modal-ease),opacity var(--modal-open-dur) var(--modal-ease),visibility var(--modal-open-dur)}
+.t-modal.is-open{transform:scale(1);opacity:1;visibility:visible;pointer-events:auto}
+.t-modal.is-closing{transform:scale(var(--modal-scale-close));opacity:0;pointer-events:none;transition-duration:var(--modal-close-dur)}
+.t-panel-slide{transform:translateY(var(--panel-translate-y));opacity:0;filter:blur(var(--panel-blur));visibility:hidden;pointer-events:none;transition:transform var(--panel-close-dur) var(--panel-ease),opacity var(--panel-close-dur) var(--panel-ease),filter var(--panel-close-dur) var(--panel-ease),visibility var(--panel-close-dur)}
+.t-panel-slide[data-open="true"]{transform:translateY(0);opacity:1;filter:blur(0);visibility:visible;pointer-events:auto;transition-duration:var(--panel-open-dur)}
+.t-stagger-line{display:block;opacity:0;transform:translateY(var(--stagger-distance));filter:blur(var(--stagger-blur));transition:opacity var(--stagger-dur) var(--stagger-ease),transform var(--stagger-dur) var(--stagger-ease),filter var(--stagger-dur) var(--stagger-ease);transition-delay:calc(var(--stagger-index,0)*var(--stagger-stagger))}
+.t-stagger-line--2{--stagger-index:1}
+.t-stagger.is-shown .t-stagger-line{opacity:1;transform:translateY(0);filter:blur(0)}
+.t-stagger.is-hiding .t-stagger-line{opacity:0;transform:none;filter:none;transition:opacity 200ms ease;transition-delay:0s}
+.t-tabs{position:relative;display:inline-flex;align-items:center;gap:3px;padding:3px;border-radius:48px;background:var(--tabs-bar-bg);max-width:100%}
+.t-tab{position:relative;appearance:none;border:0;background:transparent;min-height:44px;padding:4px 12px;color:var(--tabs-text-muted);cursor:pointer;border-radius:48px;z-index:1;white-space:nowrap;transition:color var(--tabs-dur) var(--tabs-ease)}
+.t-tab:not([aria-selected="true"]):hover,.t-tab[aria-selected="true"]{color:var(--tabs-text-active)}
+.t-tab:focus-visible{outline:2px solid #fff;outline-offset:2px}
+.t-tabs-pill{position:absolute;top:3px;bottom:3px;left:0;width:0;background:var(--tabs-pill-bg);border-radius:48px;transform:translateX(0);transition:transform var(--tabs-dur) var(--tabs-ease),width var(--tabs-dur) var(--tabs-ease);z-index:0;pointer-events:none}
+.t-shimmer{position:relative;display:inline-block;color:var(--shimmer-base)}
+.t-shimmer::before{content:attr(data-text);content:attr(data-text) / "";position:absolute;inset:0;pointer-events:none;background-image:linear-gradient(90deg,transparent 0%,transparent 40%,var(--shimmer-highlight) 50%,transparent 60%,transparent 100%);background-size:var(--shimmer-band) 100%;background-repeat:no-repeat;-webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent;animation:t-shimmer var(--shimmer-dur) var(--shimmer-ease) infinite}
+@keyframes t-shimmer{from{background-position:100% 0}to{background-position:0% 0}}
+.t-check{transition:background var(--check-box) var(--check-ease),box-shadow var(--check-box) var(--check-ease)}
+.t-check svg path{stroke-dasharray:var(--check-len,15);stroke-dashoffset:var(--check-len,15);transition:stroke-dashoffset var(--check-uncheck) var(--check-ease)}
+.t-check[aria-checked="true"] svg path,.t-check input:checked+svg path{stroke-dashoffset:0;transition:stroke-dashoffset var(--check-draw) var(--check-ease) var(--check-delay)}
+/* Adapters preserve existing JS, hidden state, keyboard behavior and focus traps. */
+@media(max-width:820px){
+ .portal-header .portal-nav{transform:scale(var(--dropdown-pre-scale));transform-origin:top right;opacity:0;pointer-events:none;transition:transform var(--dropdown-close-dur) var(--dropdown-ease),opacity var(--dropdown-close-dur) var(--dropdown-ease),visibility var(--dropdown-close-dur)}
+ .portal-header.menu-open .portal-nav{transform:scale(1);opacity:1;pointer-events:auto;transition-duration:var(--dropdown-open-dur)}
+}
+@keyframes t-modal-enter{from{opacity:0;transform:scale(var(--modal-scale))}to{opacity:1;transform:scale(1)}}
+.modal-backdrop:not([hidden])>.modal-card,.policy-backdrop>.policy-dialog{animation:t-modal-enter var(--modal-open-dur) var(--modal-ease)}
+/* Modern discrete transitions animate removal; older engines close immediately. */
+@supports(transition-behavior:allow-discrete){
+ .modal-backdrop{opacity:1;transition:opacity var(--modal-close-dur) var(--modal-ease),display var(--modal-close-dur) allow-discrete}
+ .modal-backdrop[hidden]{opacity:0}
+ @starting-style{.modal-backdrop:not([hidden]){opacity:0}}
+}
+@keyframes t-panel-enter{from{opacity:0;transform:translateY(var(--panel-translate-y));filter:blur(var(--panel-blur))}to{opacity:1;transform:none;filter:none}}
+.quick-result:not([hidden]),[data-me-panel]:not([hidden]){animation:t-panel-enter var(--panel-open-dur) var(--panel-ease)}
+@keyframes t-line-enter{from{opacity:0;transform:translateY(var(--stagger-distance));filter:blur(var(--stagger-blur))}to{opacity:1;transform:none;filter:none}}
+.daily-content:not([hidden]) .daily-reading h3,.daily-content:not([hidden]) .daily-reading p{animation:t-line-enter var(--stagger-dur) var(--stagger-ease) both}
+.daily-content:not([hidden]) .daily-reading p{animation-delay:var(--stagger-stagger)}
+@media(prefers-reduced-motion:reduce){
+ .t-resize,.t-text-swap,.t-dropdown,.t-modal,.t-panel-slide,.t-stagger-line,.t-tabs-pill,.t-tab,.t-check,.t-check svg path,.portal-header .portal-nav,.modal-backdrop{transition:none!important}
+ .t-digit-group .t-digit,.t-shimmer::before,.modal-backdrop>.modal-card,.policy-backdrop>.policy-dialog,.quick-result,[data-me-panel],.daily-content .daily-reading h3,.daily-content .daily-reading p{animation:none!important}
+ .t-text-swap.is-exit,.t-text-swap.is-enter-start{opacity:1;transform:none;filter:none}
+ .t-shimmer::before{display:none}
+}
