@@ -1,4 +1,4 @@
-const CACHE_NAME="sorasukt-tarot-shell-v6-reading-updates";
+const CACHE_NAME="sorasukt-tarot-shell-v7-reflection-phase2";
 const APP_SHELL=[...new Set([
   "/tarot/",
   "/tarot/updates/",
