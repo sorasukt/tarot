@@ -135,7 +135,16 @@ test("all Tarot pages share the reading-page visual language",async()=>{
   assert.match(styles,/font-size:clamp\(48px,7vw,92px\)/);
   assert.match(styles,/--experience-width:1180px/);
   documents.forEach((html,index)=>assert.match(html,/experience\.css\?v=20260829-reading1/,pages[index]));
-  ["อ่านจังหวะของคุณ<br>ผ่านดวงดาว","วันเกิดของคุณ<br>บอกอะไรได้บ้าง","เลือกวันที่<br>แล้วค้นหาสีของคุณ","มองความหมาย<br>ผ่านตัวเลขของคุณ","เริ่มจากความหมาย<br>แล้วค้นหาชื่อที่ใช่","ทุกอย่างของคุณ<br>อยู่ที่นี่"].forEach(heading=>assert.ok(documents.some(html=>html.includes(heading)),heading));
+  ["อ่านจังหวะของคุณ<br>ผ่านดวงดาว","วันเกิดของคุณ<br>บอกอะไรได้บ้าง","เลือกวันที่<br>แล้วค้นหาสีของคุณ","มองความหมาย<br>ผ่านตัวเลขของคุณ","เริ่มจากความหมาย<br>แล้วค้นหาชื่อที่ใช่","พื้นที่ของคุณ"].forEach(heading=>assert.ok(documents.some(html=>html.includes(heading)),heading));
+  documents.filter(html=>html.includes('portal.css')).forEach(html=>assert.match(html,/portal\.css/));
+});
+
+test("every frontend page uses the shared portal CSS and remaining pages use Font Awesome icons",async()=>{
+  const pages=["index.html","reading/index.html","astrology/index.html","zodiac/index.html","colors/index.html","numbers/index.html","naming/index.html","me/index.html","membership/index.html","support/index.html","about/index.html","billing/success/index.html","redeem/index.html","updates/index.html","history/index.html","admin/index.html"];
+  const documents=await Promise.all(pages.map(path=>readFile(new URL(path,repositoryRoot),"utf8")));
+  documents.forEach((html,index)=>assert.match(html,/portal\.css/,pages[index]));
+  ["astrology/index.html","zodiac/index.html","colors/index.html","numbers/index.html","naming/index.html","me/index.html","support/index.html","about/index.html","redeem/index.html","updates/index.html","history/index.html","admin/index.html"].forEach(path=>assert.match(documents[pages.indexOf(path)],/fa-(solid|regular)/,path));
+  assert.doesNotMatch(documents[pages.indexOf("admin/index.html")],/<svg/);
 });
 
 test("lucky-color pages expose an accessible member result and selected-date tool",async()=>{
@@ -187,7 +196,7 @@ test("billing pages use simple provider-neutral copy and keep membership managem
   assert.match(billingStyles,/\.membership-hero/);
   assert.match(billingStyles,/\.icon-benefit-grid/);
   assert.match(support,/PromptPay/);assert.match(support,/ที่อยู่จัดส่ง/);
-  assert.match(support,/id="supportButton"[^>]*>ดำเนินต่อ</);
+  assert.match(support,/id="supportButton"[^>]*>[\s\S]*?ดำเนินต่อ<\/button>/);
   assert.match(success,/aria-live="polite"/);
   assert.doesNotMatch(membership,/Stripe|Customer Portal|Promotion Code/);
   assert.doesNotMatch(support,/Stripe|Customer Portal/);
@@ -204,7 +213,7 @@ test("billing pages use simple provider-neutral copy and keep membership managem
   assert.match(accountScript,/\/api\/billing\/portal/);
   assert.match(accountScript,/\/api\/billing\/status\?refresh=1/);
   assert.match(accountScript,/cancelAtPeriodEnd/);
-  assert.match(account,/data-tab-target="usage">การใช้งาน</);
+  assert.match(account,/data-tab-target="usage">[\s\S]*?การใช้งาน<\/button>/);
   assert.match(account,/id="usageBars"/);
   assert.match(accountScript,/\/api\/member\/usage/);
   assert.match(accountScript,/role="progressbar"/);

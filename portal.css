@@ -1,6 +1,8 @@
 /* Compatibility entrypoint. Shared foundation + canonical portal styles. */
+@import url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css");
 @import url("./assets/css/core/design-system.css");
 @import url("./assets/css/components/tabs.css");
 @import url("./assets/css/core/portal.css");
 @import url("./assets/css/core/transitions.css?v=20260910-motion1");
 @import url("./assets/css/components/actions.css");
+@import url("./assets/css/core/minimal-pages.css?v=20260910-unified1");

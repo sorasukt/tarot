@@ -22,15 +22,15 @@
 <div class="portal-account"><button id="portalSignIn" type="button">ลงชื่อใช้งาน</button><a id="portalMe" href="../me/" hidden>ฉัน</a><button id="portalLogout" class="secondary" type="button" hidden>ออก</button></div>
 </header>
 <main class="tool-shell">
-<p class="eyebrow">LUCKY COLOR</p>
+<p class="eyebrow page-kicker"><i class="fa-solid fa-palette" aria-hidden="true"></i>LUCKY COLOR</p>
 <h1>เลือกวันที่<br>แล้วค้นหาสีของคุณ</h1>
-<p class="lead">เลือกวันที่ที่คุณสนใจ แล้วใช้สีประจำวันเป็นแนวคิดเล็ก ๆ สำหรับการแต่งตัว ของใช้ หรือการตั้งใจทำสิ่งหนึ่งให้ชัดขึ้น</p>
+<p class="lead">เลือกวันที่ แล้วดูสีเชิงสัญลักษณ์สำหรับวันนั้น</p>
 <section class="tool-card">
 <form id="colorForm">
 <label for="colorDate">วันที่ที่ต้องการดู</label>
 <input id="colorDate" type="date" min="1900-01-01" max="2100-12-31" required>
 <p class="profile-note" id="colorProfileNote">ลงชื่อเข้าใช้เพื่อรับผลลัพธ์ที่เหมาะกับข้อมูลวันเกิดของคุณ</p>
-<button type="submit">ดูสีมงคล</button>
+<button class="icon-action" type="submit"><i class="fa-solid fa-arrow-right" aria-hidden="true"></i>ดูสีมงคล</button>
 </form>
 <div class="result" id="colorResult" role="status" aria-live="polite" tabindex="-1" hidden></div>
 </section>
