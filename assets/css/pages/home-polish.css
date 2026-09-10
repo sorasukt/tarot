@@ -1,87 +1,87 @@
-/* Post-PR #9 homepage polish: tighter mobile rhythm without changing app logic */
-.home-main{padding:46px 0 76px}
-.home-hero{padding:18px 0 34px;gap:22px}
-.home-hero h1{font-size:clamp(46px,7vw,82px);line-height:.96}
-.home-hero-copy{font-size:16px;line-height:1.6}
-.home-primary-actions{margin-top:18px}
-.home-primary-actions a{min-height:44px;padding:10px 17px}
-
-.daily-shell.compact{padding:24px;border-radius:22px;margin-bottom:22px}
-.daily-shell.compact .daily-top h2{font-size:clamp(28px,4vw,40px)}
-.daily-shell.compact .daily-content h3{font-size:26px;margin-top:24px}
-.daily-shell.compact .daily-grid{gap:10px}
-.daily-shell.compact .daily-grid>div{padding:15px;border-radius:16px}
-.home-guest-card{padding:22px;border-radius:20px;margin-bottom:22px}
-.home-guest-card h2{font-size:30px}
-
-.home-section{margin-top:12px}
-.home-section-head{margin-bottom:12px}
-.home-section-head h2{font-size:clamp(30px,4vw,40px)}
-.home-tools{gap:10px}
-.home-tool{min-height:136px;padding:18px;border-radius:18px}
-.home-tool.featured{min-height:156px;border-radius:20px}
-.home-tool h3{font-size:21px}
-.home-tool.featured h3{font-size:30px}
-
-.quick-calc.home-quick{margin-top:22px;padding:22px;border-radius:20px}
-.quick-calc.home-quick h2{font-size:32px}
-.quick-form{gap:10px;margin-top:16px}
-.quick-form input{min-height:50px;border-radius:14px}
-.quick-form button{min-height:50px}
-
-.home-bottom{gap:10px;margin-top:22px}
-.home-bottom a{padding:19px;border-radius:18px}
-.footer{padding:22px 0 34px;font-size:13px}
-
-@media(max-width:900px){
-  .home-main{padding:36px 0 64px}
-  .home-hero{padding:10px 0 28px}
-  .home-tools{grid-template-columns:repeat(2,minmax(0,1fr))}
-  .home-tool{min-height:120px}
+/* Homepage reference: airy editorial layout, local outline icons, progressive detail. */
+.home-reference .portal{max-width:1180px;width:calc(100% - 64px)}
+.home-reference .home-main{max-width:680px;margin:auto;padding:56px 0 40px}
+.home-reference .home-hero{display:block;padding:0 0 40px}
+.home-reference .home-hero h1{font-family:var(--st-font-sans);font-size:clamp(44px,7vw,68px);font-weight:600;line-height:1.25;letter-spacing:-.035em;margin:0 0 20px}
+.home-reference .home-hero-copy{max-width:none;font-size:18px;line-height:1.7}
+.home-reference .home-primary-actions{margin-top:28px;gap:12px}
+.home-reference .home-primary-actions a{min-height:52px;padding:12px 24px;gap:12px;font-size:16px}
+.home-icon{width:32px;height:32px;flex:none;display:block}
+.home-primary-actions .home-icon{width:26px;height:26px}
+.home-reference .daily-shell.compact,.home-reference .home-guest-card{padding:28px;border-radius:var(--st-radius-md);background:#fafafa;border:1px solid var(--st-line);margin:0}
+.home-reference .daily-top{display:flex;justify-content:space-between;align-items:center;gap:16px}
+.home-reference .daily-top h2,.home-reference .home-guest-card h2{font-size:24px;line-height:1.4;margin:0}
+.home-reference .daily-meta{font-size:14px;line-height:1.6;color:#666}
+.home-reference .daily-reading{display:grid;grid-template-columns:100px minmax(0,1fr);align-items:center;gap:24px;margin-top:28px}
+.home-reference .daily-art{width:100px;height:148px}
+.home-reference .daily-content h3{font-family:var(--st-font-sans);font-size:23px;line-height:1.5;margin:0 0 8px}
+.home-reference #dailySummary{font-size:16px;line-height:1.8;margin:0;color:#666;overflow-wrap:anywhere}
+.home-reference .daily-details{margin-top:16px;font-size:14px;line-height:1.8;color:#555}
+.home-reference .daily-details summary{cursor:pointer;min-height:44px;align-content:center;width:fit-content}
+.home-reference .daily-grid{grid-template-columns:1fr 1fr;gap:20px}
+.home-reference .daily-grid>div{padding:0;background:none;border:0}
+.home-reference .daily-lucky-color{display:flex;align-items:center;gap:20px;border:0;border-top:1px solid var(--st-line);border-radius:0;padding:24px 0 0;margin-top:20px;background:none}
+.home-reference .lucky-swatch{width:56px;height:56px;min-width:56px;border:0;box-shadow:none;border-radius:50%}
+.home-reference .personal-only{font-size:14px;color:#666;margin:0 0 4px}
+.home-reference .daily-lucky-color h3{font-size:21px;margin:0}
+.home-reference .daily-lucky-color .daily-details{margin-top:4px}
+.home-reference .home-section{margin-top:48px}
+.home-reference .home-section-head{margin-bottom:28px}
+.home-reference .home-section-head h2,.home-reference .home-quick h2{font-size:28px;line-height:1.4;margin:0}
+.home-reference .home-tools{grid-template-columns:repeat(3,minmax(0,1fr));gap:24px 16px}
+.home-reference .home-tool{display:flex;align-items:center;justify-content:center;gap:16px;min-height:112px;padding:16px 4px;border:0;border-radius:var(--st-radius-sm);background:transparent;color:var(--st-ink);text-align:center;grid-column:auto}
+.home-reference .home-tool .home-icon{width:38px;height:38px}
+.home-reference .home-tool h3{font-family:var(--st-font-sans);font-weight:500;font-size:16px;line-height:1.5;margin:0}
+.home-reference .home-tool:hover{background:var(--st-soft);transform:none}
+.home-reference .home-tool.app-install-card{grid-column:1/-1;display:grid;grid-template-columns:minmax(0,1fr) 44px;text-align:left;min-height:64px;padding:16px 0;gap:0;border-top:1px solid var(--st-line);border-radius:0}
+.home-reference .app-install-card .num,.home-reference .app-install-card p{display:none}
+.home-reference .app-install-card h3{grid-column:1;font-size:16px}
+.home-reference .app-install-card::after{content:'↓';grid-column:2;grid-row:1;justify-self:center;font-size:24px}
+.home-reference .quick-calc.home-quick{margin-top:48px;padding:0;border:0;background:none;border-radius:0}
+.home-reference .quick-form{display:grid;grid-template-columns:minmax(0,1fr) 56px;gap:12px;margin-top:20px}
+.home-reference .quick-form input{width:100%;min-height:56px;font-size:16px;border:1px solid #888;border-radius:var(--st-radius-sm);padding:12px 16px}
+.home-reference .quick-form button{width:56px;min-height:56px;padding:12px;display:grid;place-items:center;border-radius:var(--st-radius-sm)}
+.home-reference .home-bottom{display:flex;flex-wrap:wrap;gap:24px;margin-top:32px}
+.home-reference .home-bottom a{border:0;border-radius:0;padding:10px 0;min-height:44px}
+.home-reference .home-bottom h3{font-size:14px;font-weight:500;margin:0;line-height:1.7}
+.home-reference .footer{max-width:680px;margin:auto}
+.home-reference .footer-brand p{font-size:14px;line-height:1.8;max-width:60ch}
+.home-reference .footer-links{gap:24px}
+@media(max-width:560px){
+.home-reference .portal{width:calc(100% - 48px)}
+.home-reference .portal-header{min-height:76px}
+.home-reference .home-main{padding-top:40px}
+.home-reference .home-hero h1{font-size:44px}
+.home-reference .home-hero-copy{font-size:16px}
+.home-reference .home-primary-actions a{padding:12px 20px}
+.home-reference .daily-shell.compact,.home-reference .home-guest-card{padding:20px}
+.home-reference .daily-top h2{font-size:22px}
+.home-reference .daily-reading{grid-template-columns:72px minmax(0,1fr);gap:16px}
+.home-reference .daily-art{width:72px;height:auto}
+.home-reference .daily-content h3{font-size:20px}
+.home-reference .daily-grid{grid-template-columns:1fr}
+.home-reference .home-tools{gap:20px 8px}
+.home-reference .home-tool{min-height:104px}
+.home-reference .home-tool h3{font-size:15px}
+}
+@media(max-width:360px){
+.home-reference .portal{width:calc(100% - 32px)}
+.home-reference .home-primary-actions a{padding:12px 16px}
+.home-reference .daily-reading{grid-template-columns:56px minmax(0,1fr);gap:12px}
+.home-reference .daily-art{width:56px}
+.home-reference .daily-top{flex-wrap:wrap;gap:8px}
 }
 
-@media(max-width:560px){
-  .portal{width:calc(100% - 24px)}
-  .portal-header{min-height:64px;padding:12px 0}
-  .portal-brand{font-size:21px}
-  .portal-menu-toggle{width:40px;height:40px;padding:9px}
-  .portal-nav{inset:64px 0 0 0}
-
-  .home-main{padding:28px 0 52px}
-  .home-hero{padding:6px 0 22px;gap:14px}
-  .home-hero h1{font-size:44px;letter-spacing:-.04em}
-  .home-hero-copy{font-size:15px;line-height:1.5}
-  .home-primary-actions{gap:8px;margin-top:14px}
-  .home-primary-actions a{min-height:42px;padding:9px 15px;font-size:14px}
-
-  .home-main .eyebrow{font-size:10px;letter-spacing:.2em;margin-bottom:8px}
-  .daily-shell.compact{padding:18px;border-radius:17px;margin-bottom:16px}
-  .daily-shell.compact .daily-top h2{font-size:27px}
-  .daily-shell.compact .daily-grid{grid-template-columns:1fr;gap:8px}
-  .daily-shell.compact .daily-grid>div{padding:13px;border-radius:14px}
-  .home-guest-card{padding:18px;border-radius:17px;margin-bottom:18px}
-  .home-guest-card h2{font-size:27px;margin:3px 0 5px}
-  .home-guest-card p:last-child{font-size:14px;line-height:1.5}
-
-  .home-section-head{margin-bottom:10px}
-  .home-section-head h2{font-size:30px}
-  .home-section-head p{font-size:14px;line-height:1.45;margin-top:5px}
-  .home-tools{grid-template-columns:1fr;gap:8px}
-  .home-tool,.home-tool.featured{grid-column:auto;min-height:0;padding:15px 16px;border-radius:15px;display:grid;grid-template-columns:32px 1fr;align-items:center;gap:8px;background:#fff;color:#111;border-color:var(--line)}
-  .home-tool.featured{background:#111;color:#fff;border-color:#111}
-  .home-tool span{grid-column:1;font-size:11px}
-  .home-tool h3,.home-tool.featured h3{grid-column:2;margin:0;font-size:21px;line-height:1.2}
-  .home-tool:hover{transform:none}
-
-  .quick-calc.home-quick{margin-top:18px;padding:18px;border-radius:17px}
-  .quick-calc.home-quick h2{font-size:27px;margin:3px 0 7px}
-  .quick-calc.home-quick .quick-calc-head p{font-size:14px;line-height:1.45}
-  .quick-form{grid-template-columns:1fr;gap:8px;margin-top:13px}
-  .quick-form input,.quick-form button{min-height:48px;width:100%}
-
-  .home-bottom{grid-template-columns:1fr;gap:8px;margin-top:18px}
-  .home-bottom a{padding:16px;border-radius:15px}
-  .home-bottom h3{font-size:20px;margin-bottom:2px}
-  .home-bottom p{font-size:13px}
-  .footer{padding:18px 0 28px;font-size:12px;line-height:1.55}
+/* Keep loading and error feedback readable; empty status adds no visual space. */
+.home-reference .member-status{color:#595959;line-height:1.7}
+.home-reference .member-status:empty{margin:0}
+.home-reference .daily-shell.compact .daily-content h3{margin-top:0}
+.home-reference .daily-shell.compact .daily-grid>div{padding:0;border-radius:0}
+.home-reference .home-guest-card p{line-height:1.8}
+.home-reference .home-tool.app-install-card h3{margin:0;line-height:1.6}
+.home-reference .footer-brand p{max-width:48ch}
+@media(min-width:821px) and (max-width:1100px){
+  .home-reference .portal-header{flex-wrap:wrap;gap:16px}
+  .home-reference .portal-nav{order:3;width:100%;margin:0}
+  .home-reference .portal-account{margin-left:auto}
 }
