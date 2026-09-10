@@ -9,6 +9,7 @@ import {handleBilling,handleStripeWebhook,loadMembership} from "./stripe.js";
 import {handleAdmin} from "./admin.js";
 import {handleTts} from "./tts.js";
 import {handleHistory} from "./history.js";
+import {handleReflections} from "./reflections.js";
 import {usageSummary} from "./entitlements.js";
 
 const MAJOR=["The Fool","The Magician","The High Priestess","The Empress","The Emperor","The Hierophant","The Lovers","The Chariot","Strength","The Hermit","Wheel of Fortune","Justice","The Hanged Man","Death","Temperance","The Devil","The Tower","The Star","The Moon","The Sun","Judgement","The World"];
@@ -144,6 +145,12 @@ export default {
       if(!hasCurrentPolicy(request))return policyRequired(headers);
       try{return await handleHistory(request,env,headers,session)}
       catch(error){console.error(JSON.stringify({message:"Tarot history failed",error:error?.message||"error"}));return json({success:false,error:{code:"HISTORY_ERROR",message:"ไม่สามารถโหลดประวัติการเปิดไพ่ได้ในขณะนี้"}},500,headers)}
+    }
+
+    if(url.pathname.startsWith("/api/member/reflections")){
+      if(!hasCurrentPolicy(request))return policyRequired(headers);
+      try{return await handleReflections(request,env,headers,session)}
+      catch(error){console.error(JSON.stringify({message:"Tarot reflection failed",error:error?.message||"error"}));return json({success:false,error:{code:"REFLECTION_ERROR",message:"ไม่สามารถโหลดหรือบันทึกการทบทวนได้ในขณะนี้"}},500,headers)}
     }
 
     if((url.pathname==="/api/member/daily"||url.pathname==="/api/member/astrology")&&request.method==="GET"){
