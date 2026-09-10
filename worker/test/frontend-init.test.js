@@ -193,5 +193,10 @@ test("billing pages use simple provider-neutral copy and keep membership managem
   assert.match(accountScript,/\/api\/billing\/portal/);
   assert.match(accountScript,/\/api\/billing\/status\?refresh=1/);
   assert.match(accountScript,/cancelAtPeriodEnd/);
+  assert.match(account,/data-tab-target="usage">การใช้งาน</);
+  assert.match(account,/id="usageBars"/);
+  assert.match(accountScript,/\/api\/member\/usage/);
+  assert.match(accountScript,/role="progressbar"/);
+  assert.match(accountScript,/รีเซ็ต/);
   assert.doesNotMatch(account+accountScript,/Customer Portal/);
 });
