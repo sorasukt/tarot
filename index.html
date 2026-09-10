@@ -27,14 +27,14 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="./portal.css">
+<link rel="stylesheet" href="./portal.css?v=20260910-motion1">
 <link rel="stylesheet" href="./experience.css?v=20260829-reading1">
 <link rel="stylesheet" href="./interaction.css">
 <link rel="stylesheet" href="./lucky-colors.css">
 <link rel="stylesheet" href="./home.css?v=20260831-clean1">
-<link rel="stylesheet" href="./home-polish.css?v=20260831-post9">
+<link rel="stylesheet" href="./assets/css/pages/home-polish.css?v=20260910-reference">
 </head>
-<body>
+<body class="home-reference">
 <div class="portal">
 <header class="portal-header">
 <a class="portal-brand" href="./"><em>/</em>sorasukt</a>
@@ -58,45 +58,46 @@
 <main class="home-main">
 <section class="home-hero">
 <div>
-<p class="eyebrow">TODAY FOR YOU</p>
-<h1>ดูวันนี้<br>ในแบบของคุณ</h1>
+
+<h1>วันนี้<br>ในแบบคุณ</h1>
 </div>
 <div>
-<p class="home-hero-copy">เริ่มจากไพ่ ดวงดาว สี หรือตัวเลข แล้วเลือกสิ่งที่ตรงกับคำถามของคุณตอนนี้</p>
+<p class="home-hero-copy">ค้นพบมุมมองใหม่ของวันนี้</p>
 <div class="home-primary-actions">
-<a class="primary" href="./reading/">เปิดไพ่</a>
-<a class="secondary" href="./astrology/">ดูดวงดาว</a>
+<a class="primary" href="./reading/"><svg class="home-icon" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="4" width="12" height="18" rx="2" transform="rotate(-14 11 13)"/><rect x="13" y="3" width="12" height="18" rx="2" transform="rotate(14 19 12)"/></svg>เปิดไพ่</a>
+<a class="secondary" href="./astrology/"><svg class="home-icon" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 3c0 8-5 13-13 13 8 0 13 5 13 13 0-8 5-13 13-13C21 16 16 11 16 3Z"/></svg>ดวงดาว</a>
 </div>
 </div>
 </section>
 
-<section class="daily-shell compact" id="dailyMember" hidden>
+<section class="daily-shell compact t-resize" id="dailyMember" hidden>
 <div class="daily-top">
 <div>
-<p class="eyebrow">DAILY</p>
+
 <h2>วันนี้ของคุณ</h2>
 </div>
 <div class="daily-meta">
 <span id="dailyDate"></span>
-<span>ไพ่ <strong id="dailyCard"></strong></span>
+
 </div>
 </div>
 <div class="daily-content" id="dailyContent" hidden>
-<h3 id="dailyTitle"></h3>
-<p id="dailySummary"></p>
+<div class="daily-reading"><svg class="daily-art" viewBox="0 0 100 148" fill="none" stroke="currentColor" stroke-width="1.3" aria-hidden="true"><rect x="3" y="3" width="94" height="142" rx="8"/><rect x="8" y="8" width="84" height="132" rx="5"/><circle cx="50" cy="49" r="16"/><path d="M50 20v8m0 42v8M21 49h8m42 0h8M29 28l6 6m30 30 6 6m0-42-6 6M35 64l-6 6M8 103l20-20 22 19 20-17 22 16M50 103c-40 14 36 17 3 37M22 134v-21m0 14c-12-3-12-12-5-10m5 4c10-7 12-3 4 3M78 134v-20m0 11c-12-7-12-12-5-8m5 4c9-9 12-5 4 1"/></svg><div><h3 id="dailyTitle"></h3>
+<p id="dailySummary"></p></div></div>
+<details class="daily-details"><summary>อ่านเพิ่มเติม</summary><p class="daily-card-name">ไพ่ <strong id="dailyCard"></strong></p>
 <div class="daily-grid">
 <div><span>พลังงาน</span><p id="dailyEnergy"></p></div>
 <div><span>โฟกัส</span><p id="dailyFocus"></p></div>
 <div><span>ระวัง</span><p id="dailyAvoid"></p></div>
 <div><span>คำแนะนำ</span><p id="dailyAdvice"></p></div>
 </div>
+</details>
 <section class="daily-lucky-color" aria-labelledby="dailyLuckyHeading">
 <div class="lucky-swatch" id="dailyLuckySwatch" aria-hidden="true"></div>
 <div>
-<p class="personal-only">สำหรับคุณ</p>
-<h3 id="dailyLuckyHeading">สีวันนี้: <span id="dailyLuckyColor"></span></h3>
-<p id="dailyLuckyMeaning"></p>
-<p><strong>ลองใช้:</strong> <span id="dailyLuckyUse"></span></p>
+<p class="personal-only">สีมงคล</p>
+<h3 id="dailyLuckyHeading"><span id="dailyLuckyColor"></span></h3>
+<details class="daily-details"><summary>ความหมายและวิธีใช้</summary><p id="dailyLuckyMeaning"></p><p><strong>ลองใช้:</strong> <span id="dailyLuckyUse"></span></p></details>
 </div>
 </section>
 </div>
@@ -104,47 +105,47 @@
 </section>
 
 <section class="home-guest-card" id="dailyGuest">
-<p class="eyebrow">DAILY</p>
-<h2>มีดวงประจำวันรออยู่</h2>
-<p>ลงชื่อใช้งานเพื่อดูไพ่และข้อความสำหรับวันนี้</p>
+
+<h2>วันนี้ของคุณ</h2>
+<p>ลงชื่อใช้งาน เพื่อดูคำทำนายวันนี้</p>
 </section>
 
 <section class="home-section" aria-labelledby="exploreTitle">
 <div class="home-section-head">
 <div>
-<p class="eyebrow">EXPLORE</p>
-<h2 id="exploreTitle">เลือกสิ่งที่อยากดู</h2>
+
+<h2 id="exploreTitle">สำรวจ</h2>
 </div>
-<p>เครื่องมือหลักทั้งหมดอยู่ตรงนี้ เลือกแล้วเริ่มได้ทันที</p>
+
 </div>
 <div class="home-tools">
-<a class="home-tool featured" href="./reading/"><span>01</span><h3>เปิดไพ่ทาโรต์</h3></a>
-<a class="home-tool" href="./astrology/"><span>02</span><h3>ดวงดาว</h3></a>
-<a class="home-tool" href="./zodiac/"><span>03</span><h3>ราศี</h3></a>
-<a class="home-tool" href="./colors/"><span>04</span><h3>สีมงคล</h3></a>
-<a class="home-tool" href="./numbers/"><span>05</span><h3>ตัวเลข</h3></a>
-<a class="home-tool" href="./naming/"><span>06</span><h3>คิดชื่อ</h3></a>
+<a class="home-tool" href="./reading/"><svg class="home-icon" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="4" width="12" height="18" rx="2" transform="rotate(-14 11 13)"/><rect x="13" y="3" width="12" height="18" rx="2" transform="rotate(14 19 12)"/></svg><h3>ไพ่ทาโรต์</h3></a>
+<a class="home-tool" href="./astrology/"><svg class="home-icon" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 3c0 8-5 13-13 13 8 0 13 5 13 13 0-8 5-13 13-13C21 16 16 11 16 3Z"/></svg><h3>ดวงดาว</h3></a>
+<a class="home-tool" href="./zodiac/"><svg class="home-icon" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22c-9 7-13-5-6-7 7-2 11 10 15 10 6 0 7-7 7-7M12 22c8-11 11-20 4-20-9 0-7 10-4 20Z"/></svg><h3>ราศี</h3></a>
+<a class="home-tool" href="./colors/"><svg class="home-icon" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M28 15C28 6 21 2 14 3 5 4 1 12 4 20c2 6 8 10 12 8 3-2-2-5 1-8 3-3 11 2 11-5Z"/><circle cx="10" cy="11" r="1"/><circle cx="16" cy="8" r="1"/><circle cx="22" cy="12" r="1"/><circle cx="8" cy="17" r="1"/></svg><h3>สีมงคล</h3></a>
+<a class="home-tool" href="./numbers/"><svg class="home-icon" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m4 12 3-3v15M12 12c0-5 8-5 8 0 0 4-8 7-8 12h8M24 10c5-3 8 4 3 6 5 0 5 10-1 8"/></svg><h3>ตัวเลข</h3></a>
+<a class="home-tool" href="./naming/"><svg class="home-icon" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 22-2 7 7-2L28 9c3-3-2-8-5-5ZM19 8l5 5M5 22l5 5"/></svg><h3>ตั้งชื่อ</h3></a>
 </div>
 </section>
 
 <section class="quick-calc home-quick">
 <div class="quick-calc-head">
 <div>
-<p class="eyebrow">QUICK LOOK</p>
-<h2>ดูจากวันเกิด</h2>
+
+<h2><label for="quickBirthDate">ดูจากวันเกิด</label></h2>
 </div>
-<p>ดูราศีและเลขเส้นทางชีวิตแบบสั้น ๆ โดยไม่ต้องลงชื่อใช้งาน</p>
+
 </div>
 <form class="quick-form" id="quickBirthForm">
 <input id="quickBirthDate" type="date" autocomplete="bday" required aria-label="วันเดือนปีเกิด">
-<button type="submit">ดูผล</button>
+<button type="submit" aria-label="ดูผลจากวันเกิด"><svg class="home-icon" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 16h22M19 8l8 8-8 8"/></svg></button>
 </form>
 <div class="quick-result" id="quickResult" role="status" aria-live="polite" tabindex="-1" hidden></div>
 </section>
 
 <section class="home-bottom" aria-label="บัญชีและสมาชิก">
-<a href="./me/"><h3>ฉัน</h3><p>ข้อมูลส่วนตัวและประวัติของคุณ</p></a>
-<a href="./membership/"><h3>สมาชิกพิเศษ</h3><p>ดูสิทธิ์และแพ็กเกจสมาชิก</p></a>
+<a href="./me/"><h3>ฉัน</h3></a>
+<a href="./membership/"><h3>สมาชิกพิเศษ</h3></a>
 </section>
 </main>
 
@@ -170,8 +171,8 @@
 </form>
 </section>
 </div>
-<script src="./portal.js?v=20260828-payments1"></script>
-<script src="./home.js?v=20260828-colors1"></script>
-<script src="./install-app.js?v=20260830-install1" defer></script>
+<script src="./portal.js?v=20260910-motion1"></script>
+<script src="./home.js?v=20260910-motion1"></script>
+<script src="./install-app.js?v=20260908-delivery1" defer></script>
 </body>
 </html>

@@ -18,13 +18,14 @@ export async function handleFortune(request,env,headers,session=null,profile=nul
     if(error instanceof RequestBodyError)return json({success:false,error:{code:error.code,message:error.status===413?"ข้อมูลคำขอมีขนาดใหญ่เกินไป":"ข้อมูลคำขอไม่ถูกต้อง"}},error.status,headers);
     throw error;
   }
+  if(!body||typeof body!=='object'||Array.isArray(body))return json({success:false,error:{code:'INVALID_REQUEST',message:'ข้อมูลคำขอไม่ถูกต้อง'}},400,headers);
   const kind=url.pathname.slice('/api/fortune/'.length);
   try{
-    if(kind==='zodiac')return zodiac(body,env,headers,session,profile);
-    if(kind==='numbers')return numbers(body,env,headers,session,profile);
-    if(kind==='naming')return naming(body,env,headers,session,profile);
-    if(kind==='astrology')return astrology(body,env,headers,session,profile);
-    if(kind==='colors')return colors(body,env,headers,session,profile);
+    if(kind==='zodiac')return await zodiac(body,env,headers,session,profile);
+    if(kind==='numbers')return await numbers(body,env,headers,session,profile);
+    if(kind==='naming')return await naming(body,env,headers,session,profile);
+    if(kind==='astrology')return await astrology(body,env,headers,session,profile);
+    if(kind==='colors')return await colors(body,env,headers,session,profile);
     return json({success:false,error:{code:"NOT_FOUND",message:"Not found"}},404,headers);
   }catch(error){
     const timeout=error?.name==='AbortError';
@@ -35,7 +36,7 @@ export async function handleFortune(request,env,headers,session=null,profile=nul
 }
 
 async function zodiac(body,env,headers,session,profile){
-  const birthDate=validIsoDate(body.birthDate)||profile?.birth_date;
+  const birthDate=Object.hasOwn(body,"birthDate")?validIsoDate(body.birthDate):profile?.birth_date;
   if(!birthDate)return json({success:false,error:{code:'INVALID_BIRTH_DATE',message:'กรุณาระบุวันเดือนปีเกิด'}},400,headers);
   const context=memberContext(session,profile);
   const prompt=`Create a concise zodiac-inspired reflective reading in natural Thai for birth date ${birthDate}. ${context} Explain the sun-sign theme without presenting personality as fixed or fate as certain. Give practical reflective insights for everyday life.`;
@@ -44,11 +45,12 @@ async function zodiac(body,env,headers,session,profile){
 }
 
 async function astrology(body,env,headers,session,profile){
-  const birthDate=validIsoDate(body.birthDate)||profile?.birth_date;
+  const birthDate=Object.hasOwn(body,"birthDate")?validIsoDate(body.birthDate):profile?.birth_date;
   if(!birthDate)return json({success:false,error:{code:'INVALID_BIRTH_DATE',message:'กรุณาระบุวันเดือนปีเกิด'}},400,headers);
   const suppliedTime=validTime(typeof body.birthTime==='string'?body.birthTime.trim():'');
-  const birthTime=suppliedTime||profile?.birth_time||'';
-  const context=memberContext(session,profile);
+  if(body.birthTime && !suppliedTime)return json({success:false,error:{code:'INVALID_BIRTH_TIME',message:'เวลาเกิดไม่ถูกต้อง'}},400,headers);
+  const birthTime=Object.hasOwn(body,'birthTime')?suppliedTime:(profile?.birth_time||'');
+  const context=memberContext(session,profile?{...profile,birth_date:birthDate,birth_time:birthTime}:null);
   const prompt=`Create a grounded astrology-inspired overview in natural Thai using birth date ${birthDate}${birthTime?`, birth time ${birthTime}`:''}. ${context} Do not invent exact planets, houses, ascendant, aspects, or astronomical positions because no ephemeris calculation is provided. Focus on reflective themes, strengths, tensions, and one useful reflection question.`;
   const generated=await generateCached(env,session,"fortune:astrology:v1",{birthDate,birthTime,profile:profileInput(profile)},"You provide astrology-inspired reflection, never fabricated astronomical calculations and never deterministic predictions.",prompt,RESULT_SCHEMA);
   return json({success:true,cached:generated.cached,result:generated.result},200,headers);

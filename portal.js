@@ -11,7 +11,7 @@
 
   function ensureEnhancementStyles(){
     const styles=[['/tarot/experience.css?v=20260829-reading1','tarotExperience'],['/tarot/portal-enhancements.css?v=20260827-1322','tarotEnhancements'],['/tarot/interaction.css?v=20260827-consent1','tarotInteraction']];
-    styles.forEach(([href,key])=>{const path=new URL(href,location.href).pathname;const loaded=[...document.querySelectorAll('link[rel="stylesheet"]')].some(link=>{try{return new URL(link.href,location.href).pathname===path}catch{return false}});if(loaded)return;const link=document.createElement('link');link.rel='stylesheet';link.href=href;link.dataset[key]='true';document.head.append(link);});
+    styles.forEach(([href,key])=>{const path=new URL(href,location.href).pathname;const loaded=[...document.querySelectorAll('link[rel="stylesheet"]')].some(link=>{try{return new URL(link.href,location.href).pathname===path}catch{return false}});if(loaded)return;const link=document.createElement('link');link.rel='stylesheet';link.href=href;link.dataset[key]='true';document.head.insertBefore(link,document.head.querySelector('link[rel="stylesheet"]'));});
   }
 
   async function api(path, options={}) {
@@ -30,7 +30,7 @@
       try{
         const response=await api(path,{...options,headers,timeout:65000});
         if(response.status===504&&attempt===0){await new Promise(resolve=>setTimeout(resolve,700));continue;}
-        const data=await response.clone().json().catch(()=>null);
+        const data=response.headers.get("Content-Type")?.includes("application/json")?await response.clone().json().catch(()=>null):null;
         void track(response.ok?"action_completed":"action_failed",feature,response.ok?(data?.cached?"cached":"completed"):"failed",Date.now()-started,{cached:Boolean(data?.cached),errorCode:data?.error?.code});
         return response;
       }catch(error){
@@ -42,10 +42,51 @@
     throw new Error("ไม่สามารถเตรียมผลลัพธ์ได้ในขณะนี้");
   }
 
+  // Called by each view only after rendering, or after audio finishes successfully.
+  async function confirmDelivery(response,outcome="received",{visual=true}={}){
+    const token=response?.headers.get("X-Tarot-Delivery");
+    if(!token)return;
+    try{
+      if(outcome==="received"&&visual){
+        await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
+        if(document.visibilityState==="hidden")return;
+      }
+      for(let attempt=0;attempt<3;attempt++){
+        try{
+          const result=await api("/api/usage/ack",{method:"POST",headers:{"Content-Type":"application/json","X-Tarot-Policy-Version":POLICY_VERSION},body:JSON.stringify({token,outcome}),timeout:5000,keepalive:true});
+          if(result.ok||result.status<500)return;
+        }catch{}
+        if(attempt<2)await new Promise(resolve=>setTimeout(resolve,500*(attempt+1)));
+      }
+    }catch{} // Accounting must never replace an already displayed reading with an error.
+  }
+
+  // Latest update wins, including clearing a status before rendering an error.
+  const textSwapJobs=new WeakMap();
+  function swapText(node,value){
+    if(!node)return;
+    const text=String(value??""),previous=textSwapJobs.get(node);
+    if(previous)clearTimeout(previous);
+    textSwapJobs.delete(node);
+    node.classList.remove("is-exit","is-enter-start");
+    node.classList.add("t-text-swap");
+    if(!text||!node.textContent||node.textContent===text||window.matchMedia?.("(prefers-reduced-motion: reduce)").matches){node.textContent=text;return;}
+    const raw=getComputedStyle(node).getPropertyValue("--text-swap-dur").trim();
+    const duration=Math.max(0,(parseFloat(raw)||0)*(raw.endsWith("ms")?1:1000));
+    node.classList.add("is-exit");
+    const timer=setTimeout(()=>{
+      if(textSwapJobs.get(node)!==timer)return;
+      textSwapJobs.delete(node);
+      node.textContent=text;node.classList.remove("is-exit");node.classList.add("is-enter-start");
+      void node.offsetWidth;node.classList.remove("is-enter-start");
+    },duration);
+    textSwapJobs.set(node,timer);
+  }
+
   function setLoading(container,label){
     if(!container)return;
     container.hidden=false;container.setAttribute("role","status");container.setAttribute("aria-live","polite");container.setAttribute("aria-busy","true");
-    container.innerHTML=`<div class="result-loading"><span class="result-spinner" aria-hidden="true"></span><p>${escapeHtml(label||"กำลังเตรียมผลลัพธ์ กรุณารอสักครู่")}</p></div>`;
+    container.innerHTML=`<div class="result-loading"><span class="result-spinner" aria-hidden="true"></span><p class="t-shimmer" data-text="${escapeHtml(label||"กำลังเตรียมผลลัพธ์ กรุณารอสักครู่")}">${escapeHtml(label||"กำลังเตรียมผลลัพธ์ กรุณารอสักครู่")}</p></div>`;
   }
 
   function finishLoading(container){if(container)container.setAttribute("aria-busy","false")}
@@ -101,7 +142,7 @@
     if(policyAccepted()){void track("page_view","portal","completed");return;}
     showConsent();
     const member=await getMember();
-    if(member?.policy?.accepted&&member.policy.version===POLICY_VERSION){rememberAcceptance();hideConsent();void track("page_view","portal","completed");}
+    if(member?.policy?.accepted&&member.policy.version===POLICY_VERSION){rememberAcceptance();hideConsent();dispatchEvent(new Event("tarot:policy-accepted"));void track("page_view","portal","completed");}
   }
 
   function ensureConsentDialog(){
@@ -132,7 +173,7 @@
     try{
       const member=await getMember();
       if(member?.success){const response=await api("/api/member/consent",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({accepted:true,policyVersion:POLICY_VERSION})});if(!response.ok){const data=await response.json().catch(()=>null);throw new Error(data?.error?.message||"บันทึกการยอมรับไม่สำเร็จ");}clearMemberCache();}
-      rememberAcceptance();hideConsent();void track("policy_accepted","portal","completed");void track("page_view","portal","completed");
+      rememberAcceptance();hideConsent();dispatchEvent(new Event("tarot:policy-accepted"));void track("policy_accepted","portal","completed");void track("page_view","portal","completed");
     }catch(error){status.textContent=error?.message||"ยังบันทึกไม่ได้ กรุณาลองอีกครั้ง";}
     finally{setButtonBusy(button,false);}
   }
@@ -148,7 +189,17 @@
   function getAnonymousId(){let value=readStorage(ANONYMOUS_KEY);if(!value){value=crypto.randomUUID();writeStorage(ANONYMOUS_KEY,value);}return value;}
   function readStorage(key){try{return localStorage.getItem(key)||""}catch{return ""}}
   function writeStorage(key,value){try{localStorage.setItem(key,value)}catch{}}
-  function escapeHtml(value){return String(value??"").replace(/[&<>']/g,char=>({"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;"}[char]));}
+  function escapeHtml(value){return String(value??"").replace(/[&<>'"]/g,char=>({'"':"&quot;","&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;"}[char]));}
+
+  function containFocus(container,onEscape){
+    const previous=document.activeElement,blocked=[];
+    let branch=container;
+    while(branch.parentElement){for(const sibling of branch.parentElement.children){if(sibling!==branch&&!sibling.inert){sibling.inert=true;blocked.push(sibling)}}branch=branch.parentElement;if(branch===document.body)break;}
+    const items=()=>[...container.querySelectorAll('a[href],button:not(:disabled),input:not(:disabled),select:not(:disabled),textarea:not(:disabled),[tabindex="0"]')].filter(e=>!e.closest('[hidden]')&&e.getClientRects().length);
+    const handler=event=>{if(event.key==='Escape'){event.preventDefault();onEscape?.();return;}if(event.key!=='Tab')return;const all=items(),first=all[0],last=all.at(-1);if(!first){event.preventDefault();return;}if(event.shiftKey&&(document.activeElement===first||!container.contains(document.activeElement))){event.preventDefault();last.focus()}else if(!event.shiftKey&&(document.activeElement===last||!container.contains(document.activeElement))){event.preventDefault();first.focus()}};
+    container.addEventListener('keydown',handler);items()[0]?.focus();
+    return ()=>{container.removeEventListener('keydown',handler);blocked.forEach(e=>e.inert=false);if(previous?.isConnected)previous.focus()};
+  }
 
   function initNavigation(){
     const header=document.querySelector('.portal-header');
@@ -161,9 +212,10 @@
     const button=document.createElement('button');
     button.type='button';button.className='portal-menu-toggle';button.setAttribute('aria-label','เปิดเมนู');button.setAttribute('aria-controls',nav.id);button.setAttribute('aria-expanded','false');button.innerHTML='<span></span><span></span><span></span>';
     header.insertBefore(button,account||nav);
-    const syncAccountPlacement=()=>{if(!account)return;if(matchMedia('(max-width: 820px)').matches){if(account.parentNode!==nav){account.classList.add('portal-account-mobile');nav.append(account);}}else{account.classList.remove('portal-account-mobile');if(account.parentNode===nav)accountPlaceholder.parentNode.insertBefore(account,accountPlaceholder.nextSibling);}};
-    const close=()=>{header.classList.remove('menu-open');button.setAttribute('aria-expanded','false');button.setAttribute('aria-label','เปิดเมนู');document.body.classList.remove('portal-menu-lock');};
-    button.addEventListener('click',()=>{syncAccountPlacement();const open=!header.classList.contains('menu-open');header.classList.toggle('menu-open',open);button.setAttribute('aria-expanded',String(open));button.setAttribute('aria-label',open?'ปิดเมนู':'เปิดเมนู');document.body.classList.toggle('portal-menu-lock',open&&matchMedia('(max-width: 820px)').matches);});
+    const syncAccountPlacement=()=>{nav.inert=matchMedia('(max-width: 820px)').matches&&!header.classList.contains('menu-open');if(!account)return;if(matchMedia('(max-width: 820px)').matches){if(account.parentNode!==nav){account.classList.add('portal-account-mobile');nav.append(account);}}else{account.classList.remove('portal-account-mobile');if(account.parentNode===nav)accountPlaceholder.parentNode.insertBefore(account,accountPlaceholder.nextSibling);}};
+    let releaseFocus=null;
+    const close=()=>{releaseFocus?.();releaseFocus=null;header.classList.remove('menu-open');button.setAttribute('aria-expanded','false');button.setAttribute('aria-label','เปิดเมนู');document.body.classList.remove('portal-menu-lock');nav.inert=matchMedia('(max-width: 820px)').matches;};
+    button.addEventListener('click',()=>{syncAccountPlacement();const open=!header.classList.contains('menu-open');header.classList.toggle('menu-open',open);nav.inert=!open&&matchMedia('(max-width: 820px)').matches;button.setAttribute('aria-expanded',String(open));button.setAttribute('aria-label',open?'ปิดเมนู':'เปิดเมนู');document.body.classList.toggle('portal-menu-lock',open&&matchMedia('(max-width: 820px)').matches);if(open&&matchMedia('(max-width: 820px)').matches)releaseFocus=containFocus(header,close);else{releaseFocus?.();releaseFocus=null;}});
     nav.addEventListener('click',e=>{if(e.target.closest('a,button'))close();});document.addEventListener('keydown',e=>{if(e.key==='Escape')close();});addEventListener('resize',()=>{syncAccountPlacement();if(innerWidth>820)close();});syncAccountPlacement();
   }
 
@@ -190,7 +242,8 @@
     footer.innerHTML=`<div class="footer-brand"><a href="/tarot/" class="footer-logo"><em>/</em>sorasukt Tarot</a><p>พื้นที่สำหรับการสะท้อนมุมมองผ่านไพ่ โหราศาสตร์ และเครื่องมือเชิงสัญลักษณ์ ผลลัพธ์มีไว้เพื่อความบันเทิงและการไตร่ตรอง ไม่ใช่คำแนะนำจากผู้เชี่ยวชาญ</p></div><div class="footer-links"><div><strong>บริการ</strong><a href="/tarot/">วันนี้</a><a href="/tarot/reading/">เปิดไพ่</a><a href="/tarot/astrology/">ดวงดาว</a><a href="/tarot/membership/">สมาชิกพิเศษ</a></div><div><strong>ข้อมูล</strong><a href="/tarot/support/">สนับสนุนเรา</a><a href="/tarot/about/">เกี่ยวกับบริการ</a><a href="/privacy/">นโยบายความเป็นส่วนตัว</a><a href="/terms/">ข้อกำหนดการใช้งาน</a></div></div><div class="footer-bottom"><span>© ${new Date().getFullYear()} sorasukt</span><span>โปรดใช้วิจารณญาณในการตีความผลลัพธ์</span></div>`;
   }
 
-  window.TarotPortal={api,ai,apiError,renderError,getMember,clearMemberCache,setLoading,finishLoading,setButtonBusy,track,policyAccepted,policyVersion:POLICY_VERSION};
+  window.TarotPortal={swapText,containFocus,api,ai,confirmDelivery,apiError,renderError,getMember,clearMemberCache,setLoading,finishLoading,setButtonBusy,track,policyAccepted,policyVersion:POLICY_VERSION};
   ensureEnhancementStyles();
-  addEventListener("DOMContentLoaded",()=>{initNavigation();initFooter();initAccount();initConsent();});
+  addEventListener("DOMContentLoaded",()=>{initNavigation();initFooter();initAccount();initConsent();
+    const params=new URLSearchParams(location.search);if(params.has('auth_error')){const message=document.createElement('p');message.className='profile-status';message.setAttribute('role','alert');message.textContent='ลงชื่อใช้งานไม่สำเร็จ กรุณาลองอีกครั้ง';document.querySelector('.portal-header')?.after(message);params.delete('auth_error');history.replaceState(null,'',location.pathname+(params.size?'?'+params:'')+location.hash);}});
 })();

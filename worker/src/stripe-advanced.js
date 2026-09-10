@@ -12,22 +12,22 @@ export async function handleAdvancedBilling(request,env,headers,session){
     if(url.pathname==="/api/billing/invoices"){
       if(request.method!=="GET")return methodNotAllowed(headers);
       if(!session)return unauthorized(headers);
-      return invoiceHistory(env,headers,session.sub);
+      return await invoiceHistory(env,headers,session.sub);
     }
     if(url.pathname==="/api/billing/recovery"){
       if(request.method!=="GET")return methodNotAllowed(headers);
       if(!session)return unauthorized(headers);
-      return recoveryStatus(env,headers,session.sub);
+      return await recoveryStatus(env,headers,session.sub);
     }
     if(url.pathname==="/api/billing/subscription/change"){
       if(request.method!=="POST")return methodNotAllowed(headers);
       if(!session)return unauthorized(headers);
-      return changeSubscription(request,env,headers,session.sub);
+      return await changeSubscription(request,env,headers,session.sub);
     }
     if(url.pathname==="/api/billing/subscription/cancel"){
       if(request.method!=="POST")return methodNotAllowed(headers);
       if(!session)return unauthorized(headers);
-      return cancellationPortal(env,headers,session.sub);
+      return await cancellationPortal(env,headers,session.sub);
     }
     return null;
   }catch(error){
@@ -118,6 +118,8 @@ async function changeSubscription(request,env,headers,userSub){
   assertStripe(env);assertDb(env);
   const body=await readJsonBody(request,4_096);
   const period=PERIODS.has(body?.period)?body.period:"";
+  const requestId=body?.requestId===undefined?crypto.randomUUID():validRequestId(body.requestId);
+  if(!requestId)return json({success:false,error:{code:"INVALID_REQUEST_ID",message:"กรุณาลองทำรายการใหม่"}},400,headers);
   if(!period)return json({success:false,error:{code:"INVALID_PLAN",message:"กรุณาเลือกแพ็กเกจที่ถูกต้อง"}},400,headers);
   const priceId=membershipPriceId(env,period);
   if(!priceId)return json({success:false,error:{code:"PLAN_NOT_CONFIGURED",message:"แพ็กเกจนี้ยังไม่พร้อมใช้งาน"}},503,headers);
@@ -133,7 +135,11 @@ async function changeSubscription(request,env,headers,userSub){
   params.set("proration_behavior",body?.prorationBehavior==="none"?"none":"create_prorations");
   params.set("payment_behavior","pending_if_incomplete");
   params.set("metadata[period]",period);
-  const updated=await stripe(env,`/subscriptions/${encodeURIComponent(row.stripe_subscription_id)}`,{method:"POST",body:params,idempotencyKey:`change-${row.stripe_subscription_id}-${period}`});
+  const updated=await stripe(env,`/subscriptions/${encodeURIComponent(row.stripe_subscription_id)}`,{method:"POST",body:params,idempotencyKey:`change-${await sha256(`${userSub}:${row.stripe_subscription_id}:${requestId}`)}`});
+  if(updated.pending_update)return json({success:true,pending:true,requestedPeriod:period,membership:{period:row.plan_period,status:row.status}},200,headers);
+  const effectivePrice=updated.items?.data?.[0]?.price;
+  const effectivePriceId=typeof effectivePrice==="string"?effectivePrice:effectivePrice?.id;
+  if(effectivePriceId!==priceId)throw new StripeAdvancedError(502,"PLAN_CHANGE_UNCONFIRMED","ยังยืนยันแพ็กเกจใหม่ไม่ได้ กรุณารีเฟรชสถานะสมาชิก");
   await env.DB.prepare("UPDATE tarot_memberships SET plan_period=?,status=?,current_period_end=?,cancel_at_period_end=?,updated_at=CURRENT_TIMESTAMP WHERE user_sub=?").bind(period,updated.status||row.status,unixIso(updated.current_period_end),updated.cancel_at_period_end?1:0,userSub).run();
   return json({success:true,membership:{period,status:updated.status||row.status,currentPeriodEnd:unixIso(updated.current_period_end),cancelAtPeriodEnd:Boolean(updated.cancel_at_period_end)}},200,headers);
 }

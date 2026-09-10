@@ -1,4 +1,3 @@
-import {enforceDailyFeatureLimit} from "./entitlements.js";
 
 const LIMIT_ERROR_MESSAGE = "มีคำขอจำนวนมากเกินไป กรุณารอหนึ่งนาทีแล้วลองใหม่";
 
@@ -18,21 +17,7 @@ export async function enforceAiRateLimit(request, env, actorId = "") {
     return errorResult(503, "RATE_LIMIT_UNAVAILABLE", "ระบบควบคุมการใช้งานไม่พร้อมใช้งาน");
   }
 
-  const feature = quotaFeature(new URL(request.url).pathname);
-  if (!feature) return { allowed: true };
-  try {
-    return await enforceDailyFeatureLimit(request, env, actorId ? { sub: actorId } : null, feature);
-  } catch (error) {
-    console.error(JSON.stringify({ message: "Daily entitlement check failed", feature, error: error?.message || "error" }));
-    return errorResult(503, "LIMIT_STORAGE_UNAVAILABLE", "ระบบตรวจสอบสิทธิ์การใช้งานไม่พร้อมใช้งาน");
-  }
-}
-
-function quotaFeature(pathname) {
-  // Tarot daily quota is committed after success by withTarotQuota; burst limits still apply.
-  if (pathname === "/api/tts/reading") return "tts";
-  if (pathname === "/api/member/astrology" || pathname.startsWith("/api/fortune/astrology")) return "astrology";
-  return "";
+  return {allowed:true};
 }
 
 function errorResult(status, code, message, retryAfter = 0) {
