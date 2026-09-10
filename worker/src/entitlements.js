@@ -48,6 +48,16 @@ export function publicEntitlements(tier="guest"){
 
 export function entitlementLimits(){return JSON.parse(JSON.stringify(LIMITS))}
 
+export async function usageSummary(env,session){
+  if(!env.DB||!session?.sub)throw new Error("USAGE_UNAVAILABLE");
+  const features=["tarot","tts","astrology"],actor=`user:${session.sub}`,quotaDate=thaiDateKey();
+  const entitlement=await entitlementFor(env,session,"tarot");
+  const limits=LIMITS[entitlement.tier]||LIMITS.free;
+  const rows=await Promise.all(features.map(feature=>env.DB.prepare("SELECT used_count FROM ai_daily_quotas WHERE actor_key=? AND quota_date=? AND feature=?").bind(actor,quotaDate,feature).first()));
+  const usage=Object.fromEntries(features.map((feature,index)=>{const limit=Number(limits[feature]||0),used=Math.max(0,Math.min(limit,Number(rows[index]?.used_count||0)));return [feature,{used,limit,remaining:Math.max(0,limit-used)}]}));
+  return {tier:entitlement.tier,date:quotaDate,resetAt:new Date(Date.now()+secondsUntilThaiMidnight()*1000).toISOString(),usage};
+}
+
 function featureLabel(feature){return ({tarot:"การเปิดไพ่",astrology:"ดวงดาวเชิงลึก",tts:"เสียงอ่านไพ่"})[feature]||"AI"}
 function thaiDateKey(){return new Intl.DateTimeFormat("en-CA",{timeZone:"Asia/Bangkok",year:"numeric",month:"2-digit",day:"2-digit"}).format(new Date())}
 function secondsUntilThaiMidnight(){
