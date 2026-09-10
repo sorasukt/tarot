@@ -12,14 +12,14 @@ const positions = [
   ["guidance","แนวทาง"],
   ["direction","แนวโน้ม"]
 ];
-const state={question:"",selected:[],category:"personal",privateMode:false,pending:false,requestId:null};
+const state={question:"",selected:[],category:"personal",privateMode:false,moodBefore:"",historyId:null,pending:false,requestId:null};
 const $=id=>document.getElementById(id);
-const els={question:$("question"),charCount:$("charCount"),start:$("startButton"),counter:$("counter"),questionStep:$("questionStep"),deckStep:$("deckStep"),deckTitle:$("deckTitle"),deckInstruction:$("deckInstruction"),shuffleStage:$("shuffleStage"),deck:$("deck"),selectedStrip:$("selectedStrip"),sticky:$("stickyAction"),reveal:$("revealButton"),readingStep:$("readingStep"),readingGrid:$("readingGrid"),readingCopy:$("readingCopy"),readingTitle:$("readingTitle"),questionDisplay:$("questionDisplay"),historyStatus:$("historyStatus"),category:$("readingCategory"),privateMode:$("privateMode"),loading:$("loading"),loadingText:$("loadingText"),error:$("readingError")};
+const els={question:$("question"),charCount:$("charCount"),start:$("startButton"),counter:$("counter"),questionStep:$("questionStep"),deckStep:$("deckStep"),deckTitle:$("deckTitle"),deckInstruction:$("deckInstruction"),shuffleStage:$("shuffleStage"),deck:$("deck"),selectedStrip:$("selectedStrip"),sticky:$("stickyAction"),reveal:$("revealButton"),readingStep:$("readingStep"),readingGrid:$("readingGrid"),readingCopy:$("readingCopy"),readingTitle:$("readingTitle"),questionDisplay:$("questionDisplay"),historyStatus:$("historyStatus"),category:$("readingCategory"),privateMode:$("privateMode"),moodBefore:$("moodBefore"),reflectionCard:$("reflectionCard"),moodAfter:$("moodAfter"),reflectionNote:$("reflectionNote"),reflectionStatus:$("reflectionStatus"),saveReflection:$("saveReflection"),loading:$("loading"),loadingText:$("loadingText"),error:$("readingError")};
 
 function shuffledDeck(){return [...cards].sort(()=>Math.random()-.5)}
 function updateQuestion(){const q=els.question.value.trim(); els.charCount.textContent=`${els.question.value.length} / 500`; els.start.disabled=!q;}
 els.question.addEventListener("input",updateQuestion);
-els.start.addEventListener("click",()=>{state.question=els.question.value.trim();state.category=els.category?.value||"personal";state.privateMode=Boolean(els.privateMode?.checked);if(!state.question)return;els.questionStep.hidden=true;els.deckStep.hidden=false;window.scrollTo({top:0,behavior:"smooth"});void beginShuffle();});
+els.start.addEventListener("click",()=>{state.question=els.question.value.trim();state.category=els.category?.value||"personal";state.privateMode=Boolean(els.privateMode?.checked);state.moodBefore=els.moodBefore?.value||"";if(!state.question)return;els.questionStep.hidden=true;els.deckStep.hidden=false;window.scrollTo({top:0,behavior:"smooth"});void beginShuffle();});
 
 async function beginShuffle(){
   if(state.pending)return;
@@ -80,6 +80,7 @@ function renderReading(reading,history){
     else if(history?.saved)els.historyStatus.innerHTML='บันทึกในไทม์ไลน์แล้ว · <a href="/tarot/history/">ดูไทม์ไลน์ของฉัน</a>';
     else els.historyStatus.innerHTML='ลงชื่อใช้งานเพื่อเก็บคำอ่านใน <a href="/tarot/history/">Tarot Timeline</a>';
   }
+  state.historyId=history?.saved?history.id:null;if(els.reflectionCard){els.reflectionCard.hidden=!state.historyId;els.moodAfter.value="";els.reflectionNote.value="";els.reflectionStatus.textContent="";}
   state.selected.forEach((card,i)=>{const ai=reading.cards?.[i]||{}; const wrap=document.createElement("article");wrap.className="revealed-card";const face=document.createElement("div");face.className="card-face";const pos=document.createElement("div");pos.className="card-position";pos.textContent=positions[i][1];const symbol=document.createElement("div");symbol.className="card-symbol";symbol.textContent=card.arcana==="major"?"✦":"◇";const name=document.createElement("div");name.className="card-name";name.textContent=card.name;const keys=document.createElement("div");keys.className="keywords";keys.textContent=(ai.keywords||[]).join(" · ");face.append(pos,symbol,name,keys);wrap.append(face);els.readingGrid.append(wrap)});
   els.readingCopy.replaceChildren();
   addSection("ภาพรวม",reading.overallReading||reading.summary||"");
@@ -89,4 +90,7 @@ function renderReading(reading,history){
   if(reading.reflectionQuestion)addSection("คำถามสำหรับคิดต่อ",reading.reflectionQuestion);
   window.scrollTo({top:0,behavior:"smooth"});
 }
+
+async function saveReflection(){if(!state.historyId||state.privateMode)return;const button=els.saveReflection,note=els.reflectionNote.value.trim(),moodAfter=els.moodAfter.value;if(!note&&!state.moodBefore&&!moodAfter){els.reflectionStatus.textContent="เพิ่มบันทึกหรือเลือกความรู้สึกอย่างน้อยหนึ่งรายการ";return}window.TarotPortal.setButtonBusy(button,true,"กำลังบันทึก…");els.reflectionStatus.textContent="กำลังบันทึก";try{const response=await window.TarotPortal.api(`/api/member/reflections/${encodeURIComponent(state.historyId)}`,{method:"PUT",headers:{"Content-Type":"application/json","X-Tarot-Policy-Version":window.TarotPortal.policyVersion},body:JSON.stringify({note,moodBefore:state.moodBefore,moodAfter}),timeout:12000}),data=await response.json();if(!response.ok)throw window.TarotPortal.apiError(data,"บันทึกไม่สำเร็จ");els.reflectionStatus.textContent="บันทึกการทบทวนแล้ว"}catch(error){els.reflectionStatus.textContent=error?.message||"บันทึกไม่สำเร็จ"}finally{window.TarotPortal.setButtonBusy(button,false)}}
+els.saveReflection?.addEventListener("click",saveReflection);
 function addSection(title,text){if(!text)return;const h=document.createElement("h3");h.textContent=title;const p=document.createElement("p");p.style.whiteSpace="pre-line";p.textContent=text;els.readingCopy.append(h,p)}
