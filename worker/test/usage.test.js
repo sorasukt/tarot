@@ -36,7 +36,7 @@ test("member policy acceptance is persisted",async()=>{
 
 test("scheduled cleanup removes expired user, quota, and tarot history data",async()=>{
   const statements=[];
-  const env={DB:{prepare(sql){statements.push(sql);return {sql}},async batch(batch){assert.equal(batch.length,7)}}};
+  const env={DB:{prepare(sql){statements.push(sql);return {sql}},async batch(batch){assert.equal(batch.length,9)}}};
   await purgeExpiredUserData(env);
   assert.ok(statements.some(sql=>sql.includes("usage_events")));
   assert.ok(statements.some(sql=>sql.includes("member_ai_results")));
@@ -44,4 +44,6 @@ test("scheduled cleanup removes expired user, quota, and tarot history data",asy
   assert.ok(statements.some(sql=>sql.includes("tarot_quota_receipts")&&sql.includes("-7 days")));
   assert.ok(statements.some(sql=>sql.includes("ai_daily_quotas")&&sql.includes("-7 days")));
   assert.ok(statements.some(sql=>sql.includes("tarot_reading_history")&&sql.includes("expires_at")));
+  assert.ok(statements.some(sql=>sql.includes("tarot_reflections")&&sql.includes("NOT EXISTS")));
+  assert.ok(statements.some(sql=>sql.includes("tarot_weekly_reflections")&&sql.includes("-730 days")));
 });
