@@ -1,4 +1,4 @@
-const CACHE_NAME="sorasukt-tarot-shell-v9-reflection-phase2";
+const CACHE_NAME="sorasukt-tarot-shell-v8-usage";
 const APP_SHELL=[...new Set([
   "/tarot/",
   "/tarot/updates/",
@@ -13,6 +13,7 @@ const APP_SHELL=[...new Set([
   "/tarot/assets/css/components/tabs.css",
   "/tarot/assets/css/core/design-system.css",
   "/tarot/assets/css/core/transitions.css",
+  "/tarot/assets/css/core/minimal-pages.css",
   "/tarot/assets/css/core/enhancements.css",
   "/tarot/assets/css/core/experience.css",
   "/tarot/assets/css/core/interaction.css",
