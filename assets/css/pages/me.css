@@ -62,6 +62,7 @@
 .usage-grid>div{padding:16px;border:1px solid var(--line);border-radius:16px;background:#fff}
 .usage-grid strong{display:block;font-size:15px;margin-bottom:5px}
 .usage-grid p{margin:0;color:#666;font-size:13px;line-height:1.5}
+.usage-reset{color:#666;font-size:13px;white-space:nowrap}.usage-bars{display:grid;gap:24px;margin-top:26px}.usage-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px 16px;align-items:center}.usage-label{grid-column:1/-1;display:flex;justify-content:space-between;gap:18px}.usage-label strong{font-size:15px}.usage-label span,.usage-row small{color:#666;font-size:13px}.usage-track{height:10px;border-radius:999px;background:var(--soft);overflow:hidden}.usage-track>span{display:block;width:var(--usage-progress);height:100%;border-radius:inherit;background:#111;transition:width var(--panel-open-dur) var(--panel-ease)}
 
 .me-shell .eyebrow{margin-bottom:8px;font-size:10px;letter-spacing:.2em}
 .me-shell .deep-button,.me-shell .billing-action,.me-shell button{font-weight:600}
@@ -79,6 +80,7 @@
   .me-tabs .t-tab{padding-inline:13px;font-size:13px}
   .me-panel>.tool-card,.data-usage-card{padding:18px;border-radius:18px}
   .section-title-row{display:block}
+  .usage-reset{display:block;margin-top:6px}
   .save-state{display:block;margin-top:5px}
   .profile-grid{grid-template-columns:1fr;gap:12px}
   .profile-grid .full{grid-column:auto}
@@ -89,6 +91,8 @@
   .billing-main-actions>*{width:100%;text-align:center}
   .usage-grid{grid-template-columns:1fr}
 }
+
+@media(prefers-reduced-motion:reduce){.usage-track>span{transition:none!important}}
 
 @media(max-width:420px){
   .me-shell{padding-top:30px}

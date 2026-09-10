@@ -156,8 +156,11 @@ test("billing pages use simple provider-neutral copy and keep membership managem
   assert.match(membership,/<strong>Subscription<\/strong><em>ต่ออายุอัตโนมัติ<\/em>/);
   assert.match(membership,/<strong>Pay as you go<\/strong><em>ชำระครั้งเดียว<\/em>/);
   assert.match(membership,/เลือกวิธีชำระ/);
-  assert.match(membership,/เลือกช่วงเวลาที่พอดี/);
-  assert.match(membership,/สิทธิพิเศษที่เห็นความต่างชัดเจน/);
+  assert.match(membership,/เลือกระยะเวลา/);
+  assert.match(membership,/สิ่งสำคัญ ครบในที่เดียว/);
+  assert.match(membership,/เปรียบเทียบสิทธิ์ทั้งหมด/);
+  assert.match(membership,/ข้อมูลสำคัญก่อนชำระเงิน/);
+  assert.match(membership,/class="benefit-icon"/);
   assert.match(membership,/Annual Boost/);
   assert.match(membership,/60\/วัน/);
   assert.match(membership,/40\/วัน/);
@@ -170,6 +173,8 @@ test("billing pages use simple provider-neutral copy and keep membership managem
   assert.match(billingStyles,/\.logo-mastercard/);assert.match(billingStyles,/\.logo-apple-pay/);assert.match(billingStyles,/\.logo-google-pay/);assert.match(billingStyles,/\.logo-promptpay/);
   assert.match(billingStyles,/\.payment-logo img/);
   assert.match(billingStyles,/\.benefit-table/);
+  assert.match(billingStyles,/\.membership-hero/);
+  assert.match(billingStyles,/\.icon-benefit-grid/);
   assert.match(support,/PromptPay/);assert.match(support,/ที่อยู่จัดส่ง/);
   assert.match(support,/id="supportButton"[^>]*>ดำเนินต่อ</);
   assert.match(success,/aria-live="polite"/);
@@ -188,5 +193,10 @@ test("billing pages use simple provider-neutral copy and keep membership managem
   assert.match(accountScript,/\/api\/billing\/portal/);
   assert.match(accountScript,/\/api\/billing\/status\?refresh=1/);
   assert.match(accountScript,/cancelAtPeriodEnd/);
+  assert.match(account,/data-tab-target="usage">การใช้งาน</);
+  assert.match(account,/id="usageBars"/);
+  assert.match(accountScript,/\/api\/member\/usage/);
+  assert.match(accountScript,/role="progressbar"/);
+  assert.match(accountScript,/รีเซ็ต/);
   assert.doesNotMatch(account+accountScript,/Customer Portal/);
 });

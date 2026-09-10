@@ -37,6 +37,7 @@
     <span class="t-tabs-pill" aria-hidden="true"></span>
     <button class="t-tab" type="button" role="tab" aria-selected="true" data-tab-target="profile">ข้อมูลส่วนตัว</button>
     <button class="t-tab" type="button" role="tab" aria-selected="false" tabindex="-1" data-tab-target="membership">สมาชิก</button>
+    <button class="t-tab" type="button" role="tab" aria-selected="false" tabindex="-1" data-tab-target="usage">การใช้งาน</button>
     <button class="t-tab" type="button" role="tab" aria-selected="false" tabindex="-1" data-tab-target="billing">การชำระเงิน</button>
     <button class="t-tab" type="button" role="tab" aria-selected="false" tabindex="-1" data-tab-target="data">ข้อมูลของฉัน</button>
   </div>
@@ -51,6 +52,10 @@
 <section class="tool-card" id="subscriptionManager" hidden><div class="section-title-row"><div><p class="eyebrow">SUBSCRIPTION</p><h2>จัดการแพ็กเกจ</h2></div></div><p class="profile-intro">เปลี่ยนแพ็กเกจได้โดยไม่ต้องยกเลิกสมาชิกเดิม ระบบจะคำนวณส่วนต่างตามรอบบิลโดยอัตโนมัติ</p><div class="subscription-controls"><label>แพ็กเกจ<select id="subscriptionPeriod"><option value="weekly">รายสัปดาห์</option><option value="monthly">รายเดือน</option><option value="yearly">รายปี</option></select></label><button id="changeSubscription" type="button">เปลี่ยนแพ็กเกจ</button></div><div class="retention-box"><div><strong>กำลังคิดจะยกเลิก?</strong><p>เปิดขั้นตอนยกเลิกเพื่อดูทางเลือกที่มีให้ก่อนตัดสินใจ และคุณยังควบคุมการยกเลิกได้เอง</p></div><button id="cancelSubscription" class="secondary" type="button">จัดการการยกเลิก</button></div><div id="subscriptionMessage" class="profile-status" role="status" aria-live="polite"></div></section>
 </div>
 
+<div class="me-panel" data-me-panel="usage" hidden>
+<section class="tool-card usage-card" aria-labelledby="usageTitle"><div class="section-title-row"><div><p class="eyebrow">DAILY LIMIT</p><h2 id="usageTitle">การใช้งานวันนี้</h2></div><span class="usage-reset" id="usageReset">กำลังโหลด…</span></div><div class="usage-bars" id="usageBars" aria-live="polite"><p class="profile-note t-shimmer" data-text="กำลังโหลดการใช้งาน…">กำลังโหลดการใช้งาน…</p></div><p class="profile-status" id="usageStatus" role="status" aria-live="polite"></p></section>
+</div>
+
 <div class="me-panel" data-me-panel="billing" hidden>
 <section class="billing-recovery" id="billingRecovery" hidden role="status" aria-live="polite"><div><strong>การชำระเงินรอบล่าสุดยังไม่สำเร็จ</strong><p id="billingRecoveryText">กรุณาอัปเดตวิธีชำระเงินเพื่อให้สมาชิกใช้งานต่อเนื่อง</p></div><a id="billingRecoveryLink" class="deep-button" href="#" target="_blank" rel="noopener" hidden>ชำระเงิน / อัปเดต</a></section>
 <section class="tool-card" id="invoiceSection" hidden><div class="section-title-row"><div><p class="eyebrow">BILLING HISTORY</p><h2>ใบแจ้งหนี้และการชำระเงิน</h2></div><button id="refreshInvoices" class="secondary" type="button">รีเฟรช</button></div><div id="invoiceList" class="invoice-list"><p class="profile-note">กำลังโหลด…</p></div></section>
@@ -60,6 +65,6 @@
 <section class="data-usage-card"><p class="eyebrow">YOUR DATA</p><h2>ข้อมูลนี้ถูกใช้ที่ไหน</h2><div class="usage-grid"><div><strong>ดวงประจำวัน</strong><p>ใช้วันเกิดเพื่อปรับบริบทของข้อความสำหรับสมาชิก</p></div><div><strong>ดวงดาวเชิงลึก</strong><p>ใช้วันเกิด เวลาเกิด และสถานที่เกิดเมื่อมีข้อมูลครบ</p></div><div><strong>เครื่องมืออื่น</strong><p>ข้อมูลที่บันทึกจะพร้อมใช้ในหน้าที่เกี่ยวข้อง โดยไม่ต้องกรอกใหม่</p></div></div></section>
 </div>
 </main><footer class="footer"></footer></div>
-<script src="../portal.js?v=20260910-updates1"></script><script src="./me-tabs.js?v=20260907-audit1"></script><script src="./me.js?v=20260907-audit1"></script>
+<script src="../portal.js?v=20260910-updates1"></script><script src="./me-tabs.js?v=20260910-usage1"></script><script src="./me.js?v=20260910-usage1"></script>
 </body>
 </html>

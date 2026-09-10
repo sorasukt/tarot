@@ -9,6 +9,7 @@ import {handleBilling,handleStripeWebhook,loadMembership} from "./stripe.js";
 import {handleAdmin} from "./admin.js";
 import {handleTts} from "./tts.js";
 import {handleHistory} from "./history.js";
+import {usageSummary} from "./entitlements.js";
 
 const MAJOR=["The Fool","The Magician","The High Priestess","The Empress","The Emperor","The Hierophant","The Lovers","The Chariot","Strength","The Hermit","Wheel of Fortune","Justice","The Hanged Man","Death","Temperance","The Devil","The Tower","The Star","The Moon","The Sun","Judgement","The World"];
 const RANKS=["Ace","Two","Three","Four","Five","Six","Seven","Eight","Nine","Ten","Page","Knight","Queen","King"];
@@ -160,6 +161,12 @@ export default {
         console.error("Member context failed",error?.message||"error");
         return json({success:false,error:{code:"MEMBER_CONTEXT_ERROR",message:"ไม่สามารถโหลดข้อมูลสมาชิกได้ในขณะนี้"}},500,headers);
       }
+    }
+
+    if(url.pathname==="/api/member/usage"){
+      if(request.method!=="GET")return json({success:false,error:{code:"METHOD_NOT_ALLOWED",message:"Method not allowed"}},405,headers);
+      try{return json({success:true,...await usageSummary(env,session)},200,headers)}
+      catch(error){console.error(JSON.stringify({message:"Member usage failed",error:error?.message||"error"}));return json({success:false,error:{code:"USAGE_UNAVAILABLE",message:"ไม่สามารถโหลดข้อมูลการใช้งานได้ในขณะนี้"}},503,headers)}
     }
 
     try{

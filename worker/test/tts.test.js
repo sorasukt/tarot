@@ -19,6 +19,21 @@ test("Tarot narration has a broad voice fallback pool",()=>{
   assert.equal(new Set(voices).size,voices.length);
 });
 
+test("TTS moves to the next model after a retryable provider response",async()=>{
+  const originalFetch=globalThis.fetch;const models=[];
+  globalThis.fetch=async(_url,options)=>{
+    const payload=JSON.parse(options.body);models.push(payload.model);
+    if(models.length===1)return Response.json({error:{status:"RESOURCE_EXHAUSTED"}},{status:429});
+    return Response.json({status:"completed",steps:[{type:"model_output",content:[{type:"audio",mime_type:"audio/wav",data:btoa("RIFF fallback")}]}]});
+  };
+  try{
+    const response=await handleTts(new Request("https://api.test/api/tts/reading",{method:"POST",body:JSON.stringify({text:"อ่านไพ่"})}),{GEMINI_API_KEY:"fixture"},new Headers());
+    assert.equal(response.status,200);
+    assert.deepEqual(models.slice(0,2),["gemini-3.1-flash-tts-preview","gemini-2.5-flash-preview-tts"]);
+    assert.equal(response.headers.get("X-Tarot-TTS-Model"),"gemini-2.5-flash-preview-tts");
+  }finally{globalThis.fetch=originalFetch}
+});
+
 test("TTS rejects an oversized streamed request before calling Gemini",async()=>{
   const originalFetch=globalThis.fetch;let calls=0;
   globalThis.fetch=async()=>{calls+=1;throw new Error("Gemini must not be called")};
