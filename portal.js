@@ -30,7 +30,7 @@
       try{
         const response=await api(path,{...options,headers,timeout:65000});
         if(response.status===504&&attempt===0){await new Promise(resolve=>setTimeout(resolve,700));continue;}
-        const data=await response.clone().json().catch(()=>null);
+        const data=response.headers.get("Content-Type")?.includes("application/json")?await response.clone().json().catch(()=>null):null;
         void track(response.ok?"action_completed":"action_failed",feature,response.ok?(data?.cached?"cached":"completed"):"failed",Date.now()-started,{cached:Boolean(data?.cached),errorCode:data?.error?.code});
         return response;
       }catch(error){
@@ -40,6 +40,25 @@
       }
     }
     throw new Error("ไม่สามารถเตรียมผลลัพธ์ได้ในขณะนี้");
+  }
+
+  // Called by each view only after rendering, or after audio finishes successfully.
+  async function confirmDelivery(response,outcome="received",{visual=true}={}){
+    const token=response?.headers.get("X-Tarot-Delivery");
+    if(!token)return;
+    try{
+      if(outcome==="received"&&visual){
+        await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
+        if(document.visibilityState==="hidden")return;
+      }
+      for(let attempt=0;attempt<3;attempt++){
+        try{
+          const result=await api("/api/usage/ack",{method:"POST",headers:{"Content-Type":"application/json","X-Tarot-Policy-Version":POLICY_VERSION},body:JSON.stringify({token,outcome}),timeout:5000,keepalive:true});
+          if(result.ok||result.status<500)return;
+        }catch{}
+        if(attempt<2)await new Promise(resolve=>setTimeout(resolve,500*(attempt+1)));
+      }
+    }catch{} // Accounting must never replace an already displayed reading with an error.
   }
 
   function setLoading(container,label){
@@ -201,7 +220,7 @@
     footer.innerHTML=`<div class="footer-brand"><a href="/tarot/" class="footer-logo"><em>/</em>sorasukt Tarot</a><p>พื้นที่สำหรับการสะท้อนมุมมองผ่านไพ่ โหราศาสตร์ และเครื่องมือเชิงสัญลักษณ์ ผลลัพธ์มีไว้เพื่อความบันเทิงและการไตร่ตรอง ไม่ใช่คำแนะนำจากผู้เชี่ยวชาญ</p></div><div class="footer-links"><div><strong>บริการ</strong><a href="/tarot/">วันนี้</a><a href="/tarot/reading/">เปิดไพ่</a><a href="/tarot/astrology/">ดวงดาว</a><a href="/tarot/membership/">สมาชิกพิเศษ</a></div><div><strong>ข้อมูล</strong><a href="/tarot/support/">สนับสนุนเรา</a><a href="/tarot/about/">เกี่ยวกับบริการ</a><a href="/privacy/">นโยบายความเป็นส่วนตัว</a><a href="/terms/">ข้อกำหนดการใช้งาน</a></div></div><div class="footer-bottom"><span>© ${new Date().getFullYear()} sorasukt</span><span>โปรดใช้วิจารณญาณในการตีความผลลัพธ์</span></div>`;
   }
 
-  window.TarotPortal={containFocus,api,ai,apiError,renderError,getMember,clearMemberCache,setLoading,finishLoading,setButtonBusy,track,policyAccepted,policyVersion:POLICY_VERSION};
+  window.TarotPortal={containFocus,api,ai,confirmDelivery,apiError,renderError,getMember,clearMemberCache,setLoading,finishLoading,setButtonBusy,track,policyAccepted,policyVersion:POLICY_VERSION};
   ensureEnhancementStyles();
   addEventListener("DOMContentLoaded",()=>{initNavigation();initFooter();initAccount();initConsent();
     const params=new URLSearchParams(location.search);if(params.has('auth_error')){const message=document.createElement('p');message.className='profile-status';message.setAttribute('role','alert');message.textContent='ลงชื่อใช้งานไม่สำเร็จ กรุณาลองอีกครั้ง';document.querySelector('.portal-header')?.after(message);params.delete('auth_error');history.replaceState(null,'',location.pathname+(params.size?'?'+params:'')+location.hash);}});
