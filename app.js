@@ -24,10 +24,10 @@ els.start.addEventListener("click",()=>{state.question=els.question.value.trim()
 async function beginShuffle(){
   if(state.pending)return;
   state.requestId=null;els.error.hidden=true;
-  state.selected=[];updateSelectionUI();els.deck.replaceChildren();els.deck.hidden=true;els.deck.setAttribute("inert","");els.selectedStrip.hidden=true;$("resetSelection").hidden=true;els.shuffleStage.hidden=false;els.deckStep.dataset.phase="shuffling";els.deckTitle.textContent="กำลังสับไพ่ของคุณ";els.deckInstruction.textContent="รอสักครู่ เมื่อสับไพ่เสร็จแล้วคุณจะเลือกได้ 5 ใบ";
+  state.selected=[];updateSelectionUI();els.deck.replaceChildren();els.deck.hidden=true;els.deck.setAttribute("inert","");els.selectedStrip.hidden=true;$("resetSelection").hidden=true;els.shuffleStage.hidden=false;els.deckStep.dataset.phase="shuffling";els.deckTitle.textContent="กำลังสับไพ่ของคุณ";els.deckInstruction.textContent="รอสักครู่…";
   const reduceMotion=window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches;
   await new Promise(resolve=>setTimeout(resolve,reduceMotion?250:1900));
-  renderDeck();els.shuffleStage.hidden=true;els.deck.hidden=false;els.deck.removeAttribute("inert");els.selectedStrip.hidden=false;$("resetSelection").hidden=false;delete els.deckStep.dataset.phase;els.deckTitle.textContent="เลือกไพ่ที่ดึงดูดคุณ";els.deckInstruction.textContent="สับไพ่เรียบร้อยแล้ว แตะไพ่เพื่อเลือก แตะอีกครั้งเพื่อยกเลิก เลือกให้ครบ 5 ใบ";els.deck.classList.add("is-dealing");setTimeout(()=>els.deck.classList.remove("is-dealing"),700);els.deckTitle.focus({preventScroll:true});
+  renderDeck();els.shuffleStage.hidden=true;els.deck.hidden=false;els.deck.removeAttribute("inert");els.selectedStrip.hidden=false;$("resetSelection").hidden=false;delete els.deckStep.dataset.phase;els.deckTitle.textContent="เลือกไพ่ที่ดึงดูดคุณ";els.deckInstruction.textContent="เลือก 5 ใบ · แตะซ้ำเพื่อยกเลิก";els.deck.classList.add("is-dealing");setTimeout(()=>els.deck.classList.remove("is-dealing"),700);els.deckTitle.focus({preventScroll:true});
 }
 
 function renderDeck(){
@@ -48,7 +48,7 @@ function toggleCard(card,node,order){
   document.querySelectorAll(".card").forEach(n=>{const i=state.selected.findIndex(x=>x.id===Number(n.dataset.id)); const badge=n.querySelector(".order"); if(i>=0){n.classList.add("selected");badge.textContent=i+1;n.setAttribute("aria-pressed","true")}else{n.classList.remove("selected");badge.textContent="";n.setAttribute("aria-pressed","false")} n.disabled=state.selected.length===5&&i<0;n.classList.toggle("disabled",n.disabled)});
   updateSelectionUI();
 }
-function updateSelectionUI(){els.counter.textContent=`เลือกแล้ว ${state.selected.length} / 5 ใบ`;els.selectedStrip.textContent=state.selected.length?`เลือกแล้ว: ${state.selected.map((_,i)=>`ใบที่ ${i+1}`).join(" · ")}`:"ยังไม่ได้เลือกไพ่";els.sticky.hidden=state.selected.length!==5;}
+function updateSelectionUI(){els.counter.textContent=`เลือกแล้ว ${state.selected.length} / 5 ใบ`;els.selectedStrip.textContent=`เลือกแล้ว ${state.selected.length} / 5 ใบ`;els.sticky.hidden=state.selected.length!==5;}
 $("resetSelection").addEventListener("click",()=>void beginShuffle());
 $("newReading").addEventListener("click",()=>location.reload());
 els.reveal.addEventListener("click",createReading);

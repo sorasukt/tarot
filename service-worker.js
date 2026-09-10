@@ -1,6 +1,12 @@
-const CACHE_NAME="sorasukt-tarot-shell-v5-shared-motion";
+const CACHE_NAME="sorasukt-tarot-shell-v6-reading-updates";
 const APP_SHELL=[...new Set([
   "/tarot/",
+  "/tarot/updates/",
+  "/tarot/updates/updates.mjs",
+  "/tarot/updates/feed.mjs",
+  "/tarot/assets/css/components/actions.css",
+  "/tarot/assets/css/pages/reading.css",
+  "/tarot/assets/css/pages/updates.css",
   "/tarot/admin/admin-codes.css",
   "/tarot/admin/admin.css",
   "/tarot/assets/css/components/lucky-colors.css",
