@@ -1,0 +1,14 @@
+/* Shared icon/action controls, built on the design-system and motion tokens. */
+.ui-icon{width:24px;height:24px;flex:none;vertical-align:middle;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+.ui-action{display:inline-flex;align-items:center;justify-content:center;gap:10px;min-height:48px;padding:12px 20px;border:1px solid var(--st-line-strong);border-radius:var(--st-pill);background:var(--st-paper);color:var(--st-ink);font:inherit;text-decoration:none;cursor:pointer;transition:background var(--check-box) var(--check-ease),border-color var(--check-box) var(--check-ease)}
+.ui-action:hover{background:var(--st-soft);border-color:var(--st-ink)}
+.ui-action--primary{background:var(--st-ink);color:var(--st-paper);border-color:var(--st-ink)}
+.ui-action--primary:hover{background:#333;color:var(--st-paper)}
+.ui-action:disabled{opacity:.45;cursor:not-allowed}
+.ui-icon-button{width:48px;min-width:48px;padding:12px}
+.ui-options{margin:28px 0;border-block:1px solid var(--st-line);padding:16px 0}
+.ui-options>summary{display:flex;gap:10px;align-items:center;cursor:pointer;min-height:44px;list-style:none}
+.ui-options>summary::-webkit-details-marker{display:none}
+.ui-options>summary::after{content:'+';margin-left:auto;font-size:22px}
+.ui-options[open]>summary::after{content:'−'}
+@media(prefers-reduced-motion:reduce){.ui-action{transition:none}}
