@@ -12,7 +12,14 @@ export default {
       if(!env.PANGTANG_API)return json({success:false,error:{code:"SERVICE_UNAVAILABLE",message:"PangTang API is not configured"}},503,baseHeaders(request,env));
       const target=new URL(request.url);
       target.pathname=url.pathname.slice("/pangtang".length)||"/";
-      return env.PANGTANG_API.fetch(new Request(target,request));
+      const forwardedHeaders=new Headers(request.headers);
+      forwardedHeaders.delete("X-PangTang-Identity");
+      if(request.method!=="OPTIONS"&&target.pathname!=="/health"){
+        let session=null;
+        try{session=await getSession(request,env)}catch(error){console.error(JSON.stringify({message:"PangTang session failed",error:error?.message||"error"}))}
+        if(session)forwardedHeaders.set("X-PangTang-Identity",encodeIdentity({sub:session.sub,email:session.email,name:session.name}));
+      }
+      return env.PANGTANG_API.fetch(new Request(target,{method:request.method,headers:forwardedHeaders,body:request.method==="GET"||request.method==="HEAD"?undefined:request.body,redirect:"manual"}));
     }
     if(url.pathname==="/api/stripe/webhook")return handleStripeWebhookWithRecovery(request,env);
 
@@ -55,3 +62,10 @@ function allowedOrigin(origin,env){const allowed=(env.ALLOWED_ORIGINS||"https://
 function baseHeaders(request,env){const origin=request.headers.get("Origin")||"",corsOrigin=allowedOrigin(origin,env),headers=new Headers();headers.set("Content-Type","application/json; charset=utf-8");headers.set("Cache-Control","no-store");headers.set("Vary","Origin");if(corsOrigin){headers.set("Access-Control-Allow-Origin",corsOrigin);headers.set("Access-Control-Allow-Credentials","true")}return headers}
 function preflight(corsOrigin){if(!corsOrigin)return new Response(null,{status:403,headers:{"Cache-Control":"no-store","Vary":"Origin"}});const headers=new Headers();headers.set("Access-Control-Allow-Origin",corsOrigin);headers.set("Access-Control-Allow-Credentials","true");headers.set("Access-Control-Allow-Methods","GET, POST, OPTIONS");headers.set("Access-Control-Allow-Headers","Content-Type, X-Tarot-Policy-Version");headers.set("Access-Control-Max-Age","86400");headers.set("Cache-Control","no-store");headers.set("Vary","Origin, Access-Control-Request-Method, Access-Control-Request-Headers");return new Response(null,{status:204,headers})}
 function json(data,status,headers){return new Response(JSON.stringify(data),{status,headers})}
+
+function encodeIdentity(value){
+  const bytes=new TextEncoder().encode(JSON.stringify(value));
+  let binary="";
+  for(const byte of bytes)binary+=String.fromCharCode(byte);
+  return btoa(binary).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/g,"");
+}
