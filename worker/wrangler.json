@@ -5,6 +5,12 @@
   "compatibility_date": "2026-08-27",
   "compatibility_flags": ["nodejs_compat"],
   "workers_dev": false,
+  "services": [
+    {
+      "binding": "PANGTANG_API",
+      "service": "pangtang-api"
+    }
+  ],
   "routes": [
     {
       "pattern": "api.sorasukt.com",
