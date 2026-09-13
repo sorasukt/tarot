@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="noindex,nofollow">
 <title>ภาพรวมระบบ · Tarot Admin</title>
-<link rel="stylesheet" href="../assets/css/core/design-system.css">
+<link rel="stylesheet" href="../portal.css?v=20260910-unified1">
 <link rel="stylesheet" href="./admin.css?v=20260906-hamburger-2">
 <link rel="stylesheet" href="./admin-codes.css?v=20260906-hamburger-2">
 </head>
@@ -20,60 +20,39 @@
 </strong>
 <small>ผู้ดูแลระบบ</small>
 </div>
-<button class="icon-button menu-close" id="closeMenu" type="button" aria-label="ปิดเมนู">×</button>
+<button class="icon-button menu-close" id="closeMenu" type="button" aria-label="ปิดเมนู"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
 </div>
 <nav id="nav" aria-label="ส่วนจัดการ">
 <p class="nav-label">พื้นที่ทำงาน</p>
 <button class="nav-item active" aria-current="page" data-view="overview">
-<svg width="20" height="20" class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-<rect x="3" y="3" width="7" height="7" rx="1.5"/>
-<rect x="14" y="3" width="7" height="7" rx="1.5"/>
-<rect x="3" y="14" width="7" height="7" rx="1.5"/>
-<rect x="14" y="14" width="7" height="7" rx="1.5"/>
-</svg>
+<i class="fa-solid fa-table-cells-large icon" aria-hidden="true"></i>
 <span>ภาพรวม</span>
 </button>
 <p class="nav-label">การชำระเงินและสิทธิ์</p>
 <button class="nav-item" data-view="payments">
-<svg width="20" height="20" class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-<rect x="2" y="5" width="20" height="14" rx="3"/>
-<path d="M2 10h20M6 15h3"/>
-</svg>
+<i class="fa-regular fa-credit-card icon" aria-hidden="true"></i>
 <span>การชำระเงิน</span>
 </button>
 <button class="nav-item" data-view="memberships">
-<svg width="20" height="20" class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-<path d="m12 3 3 6 6 1-4.5 4.5 1 6.5-5.5-3-5.5 3 1-6.5L3 10l6-1Z"/>
-</svg>
+<i class="fa-regular fa-gem icon" aria-hidden="true"></i>
 <span>สมาชิก</span>
 </button>
 <button class="nav-item" data-view="codes">
-<svg width="20" height="20" class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-<path d="M3 7h18v4a2 2 0 0 0 0 4v4H3v-4a2 2 0 0 0 0-4ZM15 7v3m0 3v2m0 2v2"/>
-</svg>
+<i class="fa-solid fa-ticket icon" aria-hidden="true"></i>
 <span>โค้ดแลกสิทธิ์</span>
 </button>
 <p class="nav-label">ลูกค้าและการดูแล</p>
 <button class="nav-item" data-view="customers">
-<svg width="20" height="20" class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-<circle cx="9" cy="8" r="3"/>
-<path d="M3 21v-2a6 6 0 0 1 12 0v2M16 5a3 3 0 0 1 0 6m2 4a5 5 0 0 1 3 4v2"/>
-</svg>
+<i class="fa-solid fa-users icon" aria-hidden="true"></i>
 <span>ลูกค้า</span>
 </button>
 <button class="nav-item" data-view="support">
-<svg width="20" height="20" class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-<path d="M4 14V10a8 8 0 0 1 16 0v4M20 17v1a3 3 0 0 1-3 3h-3"/>
-<rect x="2" y="11" width="4" height="7" rx="2"/>
-<rect x="18" y="11" width="4" height="7" rx="2"/>
-</svg>
+<i class="fa-solid fa-headset icon" aria-hidden="true"></i>
 <span>บริการลูกค้า</span>
 </button>
 <p class="nav-label">ระบบ</p>
 <button class="nav-item" data-view="audit">
-<svg width="20" height="20" class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-<path d="M3 11a9 9 0 1 1 2 7M3 4v7h7m2-4v5l3 2"/>
-</svg>
+<i class="fa-solid fa-clock-rotate-left icon" aria-hidden="true"></i>
 <span>ประวัติการดำเนินการ</span>
 </button>
 </nav>
@@ -88,9 +67,7 @@
 <header class="page-header">
 <div class="page-heading">
 <button class="icon-button menu-toggle" id="menuToggle" type="button" aria-controls="adminSidebar" aria-expanded="false" aria-label="เปิดเมนู">
-<svg width="20" height="20" class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true">
-<path d="M4 6h16M4 12h16M4 18h16"/>
-</svg>
+<i class="fa-solid fa-bars icon" aria-hidden="true"></i>
 </button>
 <div>
 <p class="eyebrow">Tarot / Admin</p>
@@ -114,15 +91,9 @@
 <div class="quick-actions">
 <button id="openStripe">เปิด Stripe Dashboard</button>
 <button data-jump="codes">
-<svg width="20" height="20" class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-<path d="M3 7h18v4a2 2 0 0 0 0 4v4H3v-4a2 2 0 0 0 0-4ZM15 7v3m0 3v2m0 2v2"/>
-</svg>จัดการโค้ดแลกสิทธิ์</button>
+<i class="fa-solid fa-ticket icon" aria-hidden="true"></i>จัดการโค้ด</button>
 <button data-jump="support">
-<svg width="20" height="20" class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-<path d="M4 14V10a8 8 0 0 1 16 0v4M20 17v1a3 3 0 0 1-3 3h-3"/>
-<rect x="2" y="11" width="4" height="7" rx="2"/>
-<rect x="18" y="11" width="4" height="7" rx="2"/>
-</svg>สร้างเคสบริการลูกค้า</button>
+<i class="fa-solid fa-headset icon" aria-hidden="true"></i>สร้างเคส</button>
 <button data-refresh="overview">รีเฟรชข้อมูล</button>
 </div>
 </div>
@@ -341,4 +312,3 @@
 </script>
 </body>
 </html>
-

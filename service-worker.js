@@ -13,6 +13,7 @@ const APP_SHELL=[...new Set([
   "/tarot/assets/css/components/tabs.css",
   "/tarot/assets/css/core/design-system.css",
   "/tarot/assets/css/core/transitions.css",
+  "/tarot/assets/css/core/minimal-pages.css",
   "/tarot/assets/css/core/enhancements.css",
   "/tarot/assets/css/core/experience.css",
   "/tarot/assets/css/core/interaction.css",
