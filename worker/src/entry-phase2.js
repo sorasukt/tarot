@@ -8,6 +8,12 @@ import {handleRedeemAdmin} from "./redeem-admin.js";
 export default {
   async fetch(request,env,ctx){
     const url=new URL(request.url);
+    if(url.pathname==="/pangtang"||url.pathname.startsWith("/pangtang/")){
+      if(!env.PANGTANG_API)return json({success:false,error:{code:"SERVICE_UNAVAILABLE",message:"PangTang API is not configured"}},503,baseHeaders(request,env));
+      const target=new URL(request.url);
+      target.pathname=url.pathname.slice("/pangtang".length)||"/";
+      return env.PANGTANG_API.fetch(new Request(target,request));
+    }
     if(url.pathname==="/api/stripe/webhook")return handleStripeWebhookWithRecovery(request,env);
 
     const billingAccount=new Set([
