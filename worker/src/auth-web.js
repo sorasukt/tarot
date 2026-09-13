@@ -189,6 +189,7 @@ function safeReturnTo(value) {
   try {
     const url = new URL(value || DEFAULT_RETURN_TO);
     if (url.protocol !== "https:") return DEFAULT_RETURN_TO;
+    if (url.hostname === "pangtag.sorasukt.com" || url.hostname === "pangtang.pages.dev") return url.toString();
     if (url.hostname !== "sorasukt.com" && url.hostname !== "www.sorasukt.com") return DEFAULT_RETURN_TO;
     if (!url.pathname.startsWith("/tarot")) return DEFAULT_RETURN_TO;
     return url.toString();
