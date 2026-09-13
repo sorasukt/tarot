@@ -19,7 +19,7 @@ export default {
         try{session=await getSession(request,env)}catch(error){console.error(JSON.stringify({message:"PangTang session failed",error:error?.message||"error"}))}
         if(session)forwardedHeaders.set("X-PangTang-Identity",encodeIdentity({sub:session.sub,email:session.email,name:session.name}));
       }
-      return env.PANGTANG_API.fetch(new Request(target,{method:request.method,headers:forwardedHeaders,body:request.body,redirect:"manual"}));
+      return env.PANGTANG_API.fetch(new Request(target,{method:request.method,headers:forwardedHeaders,body:request.method==="GET"||request.method==="HEAD"?undefined:request.body,redirect:"manual"}));
     }
     if(url.pathname==="/api/stripe/webhook")return handleStripeWebhookWithRecovery(request,env);
 
