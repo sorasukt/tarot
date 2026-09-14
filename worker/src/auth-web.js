@@ -205,14 +205,19 @@ async function logout(request, env) {
   const auth0Logout = new URL(`https://${auth0Domain(env)}/v2/logout`);
   auth0Logout.searchParams.set("client_id", env.AUTH0_CLIENT_ID);
   auth0Logout.searchParams.set("returnTo", returnTo);
-  return new Response(null, {
-    status: 302,
-    headers: {
-      Location: auth0Logout.toString(),
-      "Set-Cookie": `${SESSION_COOKIE}=; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=0`,
-      "Cache-Control": "no-store"
-    }
+  const headers = new Headers({
+    Location: auth0Logout.toString(),
+    "Cache-Control": "no-store"
   });
+  headers.append(
+    "Set-Cookie",
+    `${SESSION_COOKIE}=; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=0`
+  );
+  headers.append(
+    "Set-Cookie",
+    `${TEST_SESSION_COOKIE}=; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=0`
+  );
+  return new Response(null, { status: 302, headers });
 }
 
 async function readTransaction(request, env) {
