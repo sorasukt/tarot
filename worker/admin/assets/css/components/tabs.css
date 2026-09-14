@@ -1,0 +1,7 @@
+/* Shared tab primitives live in core/transitions.css. */
+.payment-type-tabs{margin:0 0 14px}
+.payment-choice-details{display:block!important;border:0!important;padding:0!important;margin:0!important}
+.payment-choice-details .payment-choice{display:none}
+.payment-choice-details .payment-choice.is-active{display:block}
+.payment-choice-details .payment-choice>span{min-height:0}
+@media(max-width:520px){.t-tabs{display:flex;width:100%}.t-tab{flex:1 1 0;padding-inline:8px}.payment-type-tabs{margin-bottom:12px}}
