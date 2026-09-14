@@ -1,4 +1,5 @@
 const SESSION_COOKIE = "sorasukt_session";
+const TEST_SESSION_COOKIE = "sorasukt_test_session";
 const TX_COOKIE = "sorasukt_auth_tx";
 const CALLBACK_PATH = "/auth/callback";
 const DEFAULT_RETURN_TO = "https://sorasukt.com/tarot/";
@@ -14,25 +15,30 @@ export async function handleAuthRoute(request, env) {
 }
 
 export async function getSession(request, env) {
-  const raw = readCookie(request, SESSION_COOKIE);
-  if (!raw) return null;
-  const [payloadPart, signaturePart] = raw.split(".");
-  if (!payloadPart || !signaturePart) return null;
-  const expected = await sign(payloadPart, env.AUTH0_CLIENT_SECRET);
-  if (!timingSafeEqual(signaturePart, expected)) return null;
-  try {
-    const payload = JSON.parse(decodeBase64Url(payloadPart));
-    if (!payload?.sub || !payload?.exp || payload.exp <= Math.floor(Date.now() / 1000)) return null;
-    if (payload.test_access) {
-      if (payload.test_access.exp <= Math.floor(Date.now() / 1000)) return null;
-      const wantsPangTang = new URL(request.url).pathname.startsWith("/pangtang");
-      if ((payload.test_access.service === "pangtang") !== wantsPangTang) return null;
+  const candidates = [
+    readCookie(request, TEST_SESSION_COOKIE),
+    readCookie(request, SESSION_COOKIE)
+  ].filter(Boolean);
+  for (const raw of candidates) {
+    const [payloadPart, signaturePart] = raw.split(".");
+    if (!payloadPart || !signaturePart) continue;
+    const expected = await sign(payloadPart, env.AUTH0_CLIENT_SECRET);
+    if (!timingSafeEqual(signaturePart, expected)) continue;
+    try {
+      const payload = JSON.parse(decodeBase64Url(payloadPart));
+      if (!payload?.sub || !payload?.exp || payload.exp <= Math.floor(Date.now() / 1000)) continue;
+      if (payload.test_access) {
+        if (payload.test_access.exp <= Math.floor(Date.now() / 1000)) continue;
+        const wantsPangTang = new URL(request.url).pathname.startsWith("/pangtang");
+        if ((payload.test_access.service === "pangtang") !== wantsPangTang) continue;
+      }
+      payload.roles = normalizeRoles(payload.roles);
+      return payload;
+    } catch {
+      continue;
     }
-    payload.roles = normalizeRoles(payload.roles);
-    return payload;
-  } catch {
-    return null;
   }
+  return null;
 }
 
 async function startTestSession(request, env) {
@@ -86,7 +92,7 @@ async function startTestSession(request, env) {
     status: 302,
     headers: {
       Location: returnTo,
-      "Set-Cookie": `${SESSION_COOKIE}=${payload}.${signature}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=${Math.max(1, exp - now)}`,
+      "Set-Cookie": `${TEST_SESSION_COOKIE}=${payload}.${signature}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=${Math.max(1, exp - now)}`,
       "Cache-Control": "no-store",
       "Referrer-Policy": "no-referrer"
     }
