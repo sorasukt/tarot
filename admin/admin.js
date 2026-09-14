@@ -1,5 +1,5 @@
 const API="https://api.sorasukt.com";
-const titles={overview:"ภาพรวมระบบ",payments:"การชำระเงิน",memberships:"สมาชิก",codes:"โค้ดแลกสิทธิ์",customers:"ลูกค้า",support:"บริการลูกค้า",audit:"ประวัติการดำเนินการ"};
+const titles={overview:"ภาพรวมระบบ",payments:"การชำระเงิน",memberships:"สมาชิก",codes:"โค้ดแลกสิทธิ์",customers:"ลูกค้า",support:"บริการลูกค้า",services:"Service & Status",testlinks:"ลิงก์ทดลอง",audit:"ประวัติการดำเนินการ"};
 const state={loaded:new Set()};
 
 document.addEventListener("DOMContentLoaded",init);
@@ -10,9 +10,9 @@ async function init(){
   catch(error){if(error.status===401){location.href=`${API}/auth/login?returnTo=${encodeURIComponent(location.href)}`;return}showNotice(error.status===403?"บัญชีนี้ไม่มีสิทธิ์เข้า Admin Console":"ไม่สามารถโหลด Admin Console ได้",true);document.querySelectorAll("button,input,select,textarea").forEach(el=>{if(!el.matches("#closeMenu,#menuToggle,#menuBackdrop"))el.disabled=true})}
 }
 function bindNavigation(){document.querySelectorAll(".nav-item").forEach(button=>button.addEventListener("click",()=>switchView(button.dataset.view)));document.querySelectorAll("[data-jump]").forEach(button=>button.addEventListener("click",()=>switchView(button.dataset.jump)))}
-function bindActions(){document.querySelectorAll("[data-refresh]").forEach(button=>button.addEventListener("click",()=>load(button.dataset.refresh,true)));document.getElementById("openStripe").addEventListener("click",async()=>{try{const result=await api("/api/admin/stripe/portal",{method:"POST"});window.open(result.url,"_blank","noopener")}catch(e){showNotice(e.message,true)}});document.getElementById("searchCustomers").addEventListener("click",()=>load("customers",true));document.getElementById("customerSearch").addEventListener("keydown",e=>{if(e.key==="Enter")void load("customers",true)});document.getElementById("caseForm").addEventListener("submit",createCase)}
+function bindActions(){document.querySelectorAll("[data-refresh]").forEach(button=>button.addEventListener("click",()=>load(button.dataset.refresh,true)));document.getElementById("openStripe").addEventListener("click",async()=>{try{const result=await api("/api/admin/stripe/portal",{method:"POST"});window.open(result.url,"_blank","noopener")}catch(e){showNotice(e.message,true)}});document.getElementById("searchCustomers").addEventListener("click",()=>load("customers",true));document.getElementById("customerSearch").addEventListener("keydown",e=>{if(e.key==="Enter")void load("customers",true)});document.getElementById("caseForm").addEventListener("submit",createCase);document.getElementById("incidentForm")?.addEventListener("submit",createIncident);document.getElementById("testLinkForm")?.addEventListener("submit",createTestLink)}
 async function switchView(name){document.querySelectorAll(".view").forEach(v=>v.classList.toggle("active",v.id===name));document.querySelectorAll(".nav-item").forEach(v=>v.classList.toggle("active",v.dataset.view===name));document.getElementById("pageTitle").textContent=titles[name]||"Admin Console";document.title=`${titles[name]||"Admin Console"} · Tarot Admin`;document.dispatchEvent(new CustomEvent("admin:view",{detail:{name}}));await load(name)}
-async function load(name,force=false){if(state.loaded.has(name)&&!force)return;try{if(name==="overview")await loadOverview();if(name==="payments")await loadPayments();if(name==="memberships")await loadMemberships();if(name==="customers")await loadCustomers();if(name==="support")await loadSupport();if(name==="audit")await loadAudit();state.loaded.add(name)}catch(e){showNotice(e.message||"โหลดข้อมูลไม่สำเร็จ",true)}}
+async function load(name,force=false){if(state.loaded.has(name)&&!force)return;try{if(name==="overview")await loadOverview();if(name==="payments")await loadPayments();if(name==="memberships")await loadMemberships();if(name==="customers")await loadCustomers();if(name==="support")await loadSupport();if(name==="services")await loadServices();if(name==="testlinks")await loadTestLinks();if(name==="audit")await loadAudit();state.loaded.add(name)}catch(e){showNotice(e.message||"โหลดข้อมูลไม่สำเร็จ",true)}}
 async function loadOverview(){const {metrics:m}=await api("/api/admin/overview");const cards=[["ลูกค้าทั้งหมด",num(m.customers)],["สมาชิก Active",num(m.activeMemberships)],["Payments สำเร็จ",num(m.paidPayments)],["รายรับที่บันทึก",money(m.revenueMinor,m.currency)],["เคสที่ต้องดูแล",num(m.openCases)]];document.getElementById("metrics").innerHTML=cards.map(([label,value])=>`<article class="metric"><span>${esc(label)}</span><strong>${esc(value)}</strong></article>`).join("")}
 async function loadPayments(){
   const {payments}=await api("/api/admin/payments?limit=100");
@@ -39,6 +39,46 @@ async function createCase(event){
   try{const body=Object.fromEntries(new FormData(element).entries());await api("/api/admin/support/cases",{method:"POST",body:JSON.stringify(body)});element.reset();showNotice("สร้างเคสแล้ว");await load("support",true);state.loaded.delete("overview")}
   catch(error){showNotice(error.message||"สร้างเคสไม่สำเร็จ",true)}finally{delete element.dataset.pending;if(button)button.disabled=false}
 }
+async function loadServices(){
+  const [{services},{incidents}]=await Promise.all([api("/api/admin/services"),api("/api/admin/incidents")]);
+  const states=["operational","degraded","partial_outage","major_outage","maintenance"];
+  document.getElementById("serviceList").innerHTML=services.map(service=>`<article class="case"><div class="case-top"><div><h3>${esc(service.name)}</h3><p>${esc(service.description||"")}</p></div><span class="badge ${esc(service.status)}">${esc(service.status)}</span></div><div class="case-actions"><select data-service-state="${esc(service.slug)}">${states.map(state=>`<option value="${state}" ${state===service.status?"selected":""}>${state}</option>`).join("")}</select><input data-service-message="${esc(service.slug)}" maxlength="500" placeholder="ข้อความสั้นสำหรับ status log"><button data-save-service="${esc(service.slug)}">บันทึก</button></div></article>`).join("");
+  document.querySelectorAll("[data-save-service]").forEach(button=>button.addEventListener("click",()=>saveService(button.dataset.saveService)));
+  document.getElementById("incidentList").innerHTML=incidents.length?incidents.map(item=>`<article class="case"><div class="case-top"><div><h3>#${item.id} ${esc(item.title)}</h3><p>${esc(item.message)}</p></div><span class="badge ${esc(item.impact)}">${esc(item.status)}</span></div><div class="case-actions"><select data-incident-state="${item.id}">${["investigating","identified","monitoring","resolved","maintenance"].map(state=>`<option value="${state}" ${state===item.status?"selected":""}>${state}</option>`).join("")}</select><button data-save-incident="${item.id}">อัปเดต</button><small>${date(item.updated_at)}</small></div></article>`).join(""):'<div class="empty">ยังไม่มีเหตุการณ์</div>';
+  document.querySelectorAll("[data-save-incident]").forEach(button=>button.addEventListener("click",()=>saveIncident(button.dataset.saveIncident)));
+}
+async function saveService(slug){
+  const status=document.querySelector(`[data-service-state="${slug}"]`).value;
+  const message=document.querySelector(`[data-service-message="${slug}"]`).value;
+  await api(`/api/admin/services/${encodeURIComponent(slug)}`,{method:"PUT",body:JSON.stringify({status,message})});
+  showNotice("อัปเดตสถานะบริการแล้ว");await load("services",true);
+}
+async function createIncident(event){
+  event.preventDefault();const form=event.currentTarget,data=new FormData(form);
+  const affectedServices=[...form.elements.affectedServices.selectedOptions].map(option=>option.value);
+  await api("/api/admin/incidents",{method:"POST",body:JSON.stringify({title:data.get("title"),status:data.get("status"),impact:data.get("impact"),message:data.get("message"),affectedServices})});
+  form.reset();showNotice("เผยแพร่ประกาศแล้ว");await load("services",true);
+}
+async function saveIncident(id){
+  const status=document.querySelector(`[data-incident-state="${id}"]`).value;
+  await api(`/api/admin/incidents/${id}`,{method:"PUT",body:JSON.stringify({status})});
+  showNotice("อัปเดตเหตุการณ์แล้ว");await load("services",true);
+}
+async function loadTestLinks(){
+  const {links}=await api("/api/admin/test-links");
+  const now=Math.floor(Date.now()/1000);
+  document.getElementById("testLinkList").innerHTML=links.length?links.map(link=>`<article class="case"><div class="case-top"><div><h3>${esc(link.service)} · ${link.membership?"Membership":"Free"}</h3><p>หมดอายุ ${date(Number(link.expires_at)*1000)}</p></div><span class="badge">${link.revoked_at?"revoked":Number(link.expires_at)<=now?"expired":"active"}</span></div>${!link.revoked_at&&Number(link.expires_at)>now?`<div class="case-actions"><button data-revoke-link="${esc(link.id)}">เพิกถอน</button></div>`:""}</article>`).join(""):'<div class="empty">ยังไม่มีลิงก์ทดลอง</div>';
+  document.querySelectorAll("[data-revoke-link]").forEach(button=>button.addEventListener("click",()=>revokeTestLink(button.dataset.revokeLink)));
+}
+async function createTestLink(event){
+  event.preventDefault();const form=event.currentTarget,data=new FormData(form);
+  const result=await api("/api/admin/test-links",{method:"POST",body:JSON.stringify({service:data.get("service"),durationMinutes:Number(data.get("durationMinutes")),membership:data.get("membership")==="on"})});
+  const root=document.getElementById("createdTestLink");root.classList.remove("hidden");root.innerHTML=`<strong>ลิงก์พร้อมใช้งาน</strong><input id="testLinkValue" readonly value="${esc(result.testLink.url)}"><div class="case-actions"><button type="button" id="copyTestLink">คัดลอก</button><a href="${safeUrl(result.testLink.url)}" target="_blank" rel="noopener noreferrer">เปิดทดลอง</a></div>`;
+  document.getElementById("copyTestLink").onclick=async()=>{await navigator.clipboard.writeText(result.testLink.url);showNotice("คัดลอกลิงก์แล้ว")};
+  await load("testlinks",true);
+}
+async function revokeTestLink(id){await api(`/api/admin/test-links/${encodeURIComponent(id)}/revoke`,{method:"POST",body:"{}"});showNotice("เพิกถอนลิงก์แล้ว");await load("testlinks",true)}
+
 async function loadAudit(){const {events}=await api("/api/admin/audit?limit=100");fill("auditBody",events.map(e=>`<tr><td>${esc(e.actor_email||e.actor_sub)}</td><td>${esc(e.action)}</td><td>${esc(e.target||"-")}</td><td>${date(e.created_at)}</td></tr>`))}
 async function api(path,options={}){const response=await fetch(API+path,{credentials:"include",headers:{"Content-Type":"application/json",...(options.headers||{})},...options});let data={};try{data=await response.json()}catch{}if(!response.ok){const error=new Error(data?.error?.message||`Request failed (${response.status})`);error.status=response.status;throw error}return data}
 function fill(id,rows){document.getElementById(id).innerHTML=rows.length?rows.join(""):'<tr><td colspan="8" class="empty">ไม่มีข้อมูล</td></tr>'}
