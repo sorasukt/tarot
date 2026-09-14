@@ -1,0 +1,73 @@
+/* Shared quiet layout for secondary pages. Loaded last by portal.css. */
+:root{
+  --st-page-top:clamp(64px,9vw,112px);
+  --st-page-bottom:clamp(88px,12vw,144px);
+  --st-copy:620px;
+  --st-control-height:54px;
+}
+
+body{letter-spacing:-.005em}
+main{min-width:0}
+body .tool-shell,body .billing-hero,body .me-shell,body .updates-main,body .history-main,body .redeem-main{padding-top:var(--st-page-top);padding-bottom:var(--st-page-bottom)}
+.tool-shell,.billing-hero,.me-shell,.updates-main,.history-main,.redeem-main,.wrap{margin-inline:auto}
+.tool-shell>h1,.billing-hero h1,.me-hero h1,.updates-hero h1,.timeline-hero h1,.redeem-hero h1{
+  max-width:760px;
+  text-wrap:balance;
+}
+.tool-shell>.lead,.billing-hero .lead,.me-hero .lead,.updates-hero .lead,.timeline-hero .lead,.redeem-hero .lead{
+  max-width:var(--st-copy);
+  color:var(--st-muted);
+  text-wrap:pretty;
+}
+.tool-shell>.lead{margin-bottom:clamp(40px,7vw,72px)}
+
+/* Prefer open composition over nested decorative cards. */
+.tool-shell>.tool-card,.billing-panel,.redeem-card,.weekly-panel{
+  width:min(100%,760px);
+  padding:clamp(24px,4vw,40px) 0;
+  border:0;
+  border-top:1px solid var(--st-line);
+  border-radius:0;
+  background:transparent;
+}
+.tool-card form,.support-form{display:grid;gap:var(--st-space-5)}
+.tool-card label,.support-form>label{margin:0;line-height:1.45}
+.tool-card input,.tool-card select,.tool-card textarea,.support-form input{
+  min-height:var(--st-control-height);
+  padding:14px 16px;
+  border-color:var(--st-line);
+  border-radius:var(--st-radius-sm);
+}
+.tool-card button[type="submit"],.support-form>button[type="submit"],.redeem-card button[type="submit"]{
+  width:max-content;
+  min-width:148px;
+  min-height:50px;
+  margin-top:var(--st-space-2);
+}
+.result{border-radius:var(--st-radius-md);background:var(--st-soft);padding:clamp(20px,4vw,32px)}
+
+/* Short labels paired with one meaningful Font Awesome icon. */
+.page-kicker{display:inline-flex;align-items:center;gap:10px;margin-bottom:18px}
+.page-kicker .fa-solid,.page-kicker .fa-regular{width:18px;text-align:center;font-size:15px}
+.icon-action{display:inline-flex;align-items:center;justify-content:center;gap:10px}
+.icon-action .fa-solid,.icon-action .fa-regular{font-size:.92em}
+
+/* Consistent quiet sections and dense information disclosures. */
+.minimal-section{padding:clamp(48px,8vw,88px) 0;border-top:1px solid var(--st-line)}
+.minimal-section>h2{max-width:680px;text-wrap:balance}
+.minimal-copy{max-width:var(--st-copy);color:var(--st-muted);line-height:1.7}
+details.minimal-disclosure{border-block:1px solid var(--st-line);padding:4px 0}
+details.minimal-disclosure>summary{display:flex;align-items:center;gap:12px;min-height:56px;cursor:pointer;list-style:none;font-weight:600}
+details.minimal-disclosure>summary::-webkit-details-marker{display:none}
+details.minimal-disclosure>summary .fa-chevron-down{margin-left:auto;transition:transform var(--dropdown-open-dur) var(--dropdown-ease)}
+details.minimal-disclosure[open]>summary .fa-chevron-down{transform:rotate(180deg)}
+
+.footer{margin-top:0;padding-block:32px max(48px,env(safe-area-inset-bottom));font-size:14px}
+
+@media(max-width:760px){
+  :root{--st-page-top:56px;--st-page-bottom:88px}
+  .tool-shell>.tool-card,.billing-panel,.redeem-card,.weekly-panel{padding-block:28px}
+  .tool-card button[type="submit"],.support-form>button[type="submit"],.redeem-card button[type="submit"]{width:100%}
+}
+
+@media(prefers-reduced-motion:reduce){details.minimal-disclosure>summary .fa-chevron-down{transition:none}}
