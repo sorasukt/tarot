@@ -185,14 +185,29 @@ function authFailure(returnTo, message, clearCookie) {
   return new Response(null, { status: 302, headers: { Location: target.toString(), "Set-Cookie": clearCookie, "Cache-Control": "no-store" } });
 }
 
-function safeReturnTo(value) {
+export function safeReturnTo(value) {
   try {
     const url = new URL(value || DEFAULT_RETURN_TO);
-    if (url.protocol !== "https:") return DEFAULT_RETURN_TO;
-    if (url.hostname === "pangtag.sorasukt.com" || url.hostname === "pangtang.pages.dev") return url.toString();
-    if (url.hostname !== "sorasukt.com" && url.hostname !== "www.sorasukt.com") return DEFAULT_RETURN_TO;
-    if (!url.pathname.startsWith("/tarot")) return DEFAULT_RETURN_TO;
-    return url.toString();
+    if (
+      url.protocol !== "https:" ||
+      url.username ||
+      url.password ||
+      url.port
+    )
+      return DEFAULT_RETURN_TO;
+    if (url.hostname === "pangtang.sorasukt.com") return url.toString();
+    if (
+      url.hostname === "pangtang.pages.dev" ||
+      url.hostname.endsWith(".pangtang.pages.dev")
+    )
+      return url.toString();
+    if (
+      (url.hostname === "sorasukt.com" ||
+        url.hostname === "www.sorasukt.com") &&
+      url.pathname.startsWith("/tarot")
+    )
+      return url.toString();
+    return DEFAULT_RETURN_TO;
   } catch {
     return DEFAULT_RETURN_TO;
   }
