@@ -9,6 +9,16 @@ import {publicStatus} from "./system-status.js";
 export default {
   async fetch(request,env,ctx){
     const url=new URL(request.url);
+    if(url.hostname==="admin.sorasukt.com"){
+      if(!env.ADMIN_ASSETS)return new Response("Admin Center is unavailable.",{status:503,headers:{"Cache-Control":"no-store"}});
+      const response=await env.ADMIN_ASSETS.fetch(request);
+      const headers=new Headers(response.headers);
+      headers.set("X-Content-Type-Options","nosniff");
+      headers.set("Referrer-Policy","same-origin");
+      headers.set("X-Frame-Options","DENY");
+      if(url.pathname==="/"||url.pathname.endsWith(".html"))headers.set("Cache-Control","no-store");
+      return new Response(response.body,{status:response.status,statusText:response.statusText,headers});
+    }
     if(url.pathname==="/api/status"&&request.method==="GET")return publicStatus(env,baseHeaders(request,env));
     if(url.pathname==="/pangtang"||url.pathname.startsWith("/pangtang/")){
       if(!env.PANGTANG_API)return json({success:false,error:{code:"SERVICE_UNAVAILABLE",message:"PangTang API is not configured"}},503,baseHeaders(request,env));

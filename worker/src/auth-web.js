@@ -280,6 +280,7 @@ export function safeReturnTo(value) {
       url.port
     )
       return DEFAULT_RETURN_TO;
+    if (url.hostname === "admin.sorasukt.com") return url.toString();
     if (url.hostname === "pangtang.sorasukt.com") return url.toString();
     if (
       url.hostname === "pangtang.pages.dev" ||
