@@ -17,7 +17,7 @@ test("admin refund retries reuse the same Stripe operation and return the record
     async batch(statements){for(const statement of statements){if(statement.sql.includes("INSERT INTO stripe_refunds")){const v=statement.values;refunds.set(v[9],{stripe_refund_id:v[0],amount:v[4],currency:v[5],status:v[6]})}}return statements.map(()=>({success:true}))}
   };
   const body={paymentIntentId:"pi_test",amount:5000,requestId:"123e4567-e89b-12d3-a456-426614174111"};
-  const session={sub:"auth0|admin",email:"admin@example.com",roles:["admin"]};
+  const session={sub:"auth0|admin",email:"admin@sorasukt.com",roles:["admin"]};
   try{
     const first=await handleAdvancedAdmin(new Request("https://api.sorasukt.com/api/admin/payments/refund",{method:"POST",headers,body:JSON.stringify(body)}),{DB,STRIPE_SECRET_KEY:"sk_test"},headers,session);
     const second=await handleAdvancedAdmin(new Request("https://api.sorasukt.com/api/admin/payments/refund",{method:"POST",headers,body:JSON.stringify(body)}),{DB,STRIPE_SECRET_KEY:"sk_test"},headers,session);

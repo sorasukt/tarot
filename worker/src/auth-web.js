@@ -1,4 +1,5 @@
 const SESSION_COOKIE = "sorasukt_session";
+const TEST_SESSION_COOKIE = "sorasukt_test_session";
 const TX_COOKIE = "sorasukt_auth_tx";
 const CALLBACK_PATH = "/auth/callback";
 const DEFAULT_RETURN_TO = "https://sorasukt.com/tarot/";
@@ -7,26 +8,105 @@ const DEFAULT_ROLES_CLAIM = "https://sorasukt.com/roles";
 export async function handleAuthRoute(request, env) {
   const url = new URL(request.url);
   if (url.pathname === "/auth/login") return startLogin(request, env);
+  if (url.pathname === "/auth/test") return startTestSession(request, env);
   if (url.pathname === CALLBACK_PATH) return finishLogin(request, env);
   if (url.pathname === "/auth/logout") return logout(request, env);
   return null;
 }
 
 export async function getSession(request, env) {
-  const raw = readCookie(request, SESSION_COOKIE);
-  if (!raw) return null;
-  const [payloadPart, signaturePart] = raw.split(".");
-  if (!payloadPart || !signaturePart) return null;
-  const expected = await sign(payloadPart, env.AUTH0_CLIENT_SECRET);
-  if (!timingSafeEqual(signaturePart, expected)) return null;
-  try {
-    const payload = JSON.parse(decodeBase64Url(payloadPart));
-    if (!payload?.sub || !payload?.exp || payload.exp <= Math.floor(Date.now() / 1000)) return null;
-    payload.roles = normalizeRoles(payload.roles);
-    return payload;
-  } catch {
-    return null;
+  const candidates = [
+    readCookie(request, TEST_SESSION_COOKIE),
+    readCookie(request, SESSION_COOKIE)
+  ].filter(Boolean);
+  for (const raw of candidates) {
+    const [payloadPart, signaturePart] = raw.split(".");
+    if (!payloadPart || !signaturePart) continue;
+    const expected = await sign(payloadPart, env.AUTH0_CLIENT_SECRET);
+    if (!timingSafeEqual(signaturePart, expected)) continue;
+    try {
+      const payload = JSON.parse(decodeBase64Url(payloadPart));
+      if (!payload?.sub || !payload?.exp || payload.exp <= Math.floor(Date.now() / 1000)) continue;
+      if (payload.test_access) {
+        if (payload.test_access.exp <= Math.floor(Date.now() / 1000)) continue;
+        const wantsPangTang = new URL(request.url).pathname.startsWith("/pangtang");
+        if ((payload.test_access.service === "pangtang") !== wantsPangTang) continue;
+      }
+      payload.roles = normalizeRoles(payload.roles);
+      return payload;
+    } catch {
+      continue;
+    }
   }
+  return null;
+}
+
+async function startTestSession(request, env) {
+  if (!env.DB || !env.AUTH0_CLIENT_SECRET)
+    return new Response("Temporary access is unavailable.", {
+      status: 503,
+      headers: { "Cache-Control": "no-store" }
+    });
+  const url = new URL(request.url);
+  const token = url.searchParams.get("token") || "";
+  if (!/^[A-Za-z0-9_-]{40,100}$/.test(token))
+    return new Response("This test link is invalid.", {
+      status: 400,
+      headers: { "Cache-Control": "no-store" }
+    });
+  const tokenHash = await sha256Hex(token);
+  const row = await env.DB.prepare(
+    "SELECT id,service,membership,expires_at FROM admin_test_links WHERE token_hash=? AND revoked_at IS NULL AND expires_at>?"
+  ).bind(tokenHash, Math.floor(Date.now() / 1000)).first();
+  if (!row)
+    return new Response("This test link has expired or was revoked.", {
+      status: 403,
+      headers: { "Cache-Control": "no-store" }
+    });
+  const now = Math.floor(Date.now() / 1000);
+  const exp = Math.min(Number(row.expires_at), now + 7200);
+  const session = {
+    sub: `test:${row.id}`,
+    name: "Temporary tester",
+    nickname: "Tester",
+    email: null,
+    picture: null,
+    roles: [],
+    test_access: {
+      id: row.id,
+      service: row.service,
+      membership: Boolean(row.membership),
+      exp
+    },
+    exp
+  };
+  const payload = encodeBase64Url(JSON.stringify(session));
+  const signature = await sign(payload, env.AUTH0_CLIENT_SECRET);
+  await env.DB.prepare(
+    "UPDATE admin_test_links SET last_used_at=CURRENT_TIMESTAMP WHERE id=?"
+  ).bind(row.id).run();
+  const returnTo = row.service === "pangtang"
+    ? "https://pangtang.sorasukt.com/"
+    : "https://sorasukt.com/tarot/";
+  return new Response(null, {
+    status: 302,
+    headers: {
+      Location: returnTo,
+      "Set-Cookie": `${TEST_SESSION_COOKIE}=${payload}.${signature}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=${Math.max(1, exp - now)}`,
+      "Cache-Control": "no-store",
+      "Referrer-Policy": "no-referrer"
+    }
+  });
+}
+
+async function sha256Hex(value) {
+  const result = await crypto.subtle.digest(
+    "SHA-256",
+    new TextEncoder().encode(value)
+  );
+  return [...new Uint8Array(result)]
+    .map(byte => byte.toString(16).padStart(2, "0"))
+    .join("");
 }
 
 async function startLogin(request, env) {
@@ -125,14 +205,19 @@ async function logout(request, env) {
   const auth0Logout = new URL(`https://${auth0Domain(env)}/v2/logout`);
   auth0Logout.searchParams.set("client_id", env.AUTH0_CLIENT_ID);
   auth0Logout.searchParams.set("returnTo", returnTo);
-  return new Response(null, {
-    status: 302,
-    headers: {
-      Location: auth0Logout.toString(),
-      "Set-Cookie": `${SESSION_COOKIE}=; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=0`,
-      "Cache-Control": "no-store"
-    }
+  const headers = new Headers({
+    Location: auth0Logout.toString(),
+    "Cache-Control": "no-store"
   });
+  headers.append(
+    "Set-Cookie",
+    `${SESSION_COOKIE}=; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=0`
+  );
+  headers.append(
+    "Set-Cookie",
+    `${TEST_SESSION_COOKIE}=; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=0`
+  );
+  return new Response(null, { status: 302, headers });
 }
 
 async function readTransaction(request, env) {

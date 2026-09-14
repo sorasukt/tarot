@@ -1,4 +1,5 @@
 import {readJsonBody,RequestBodyError} from "./request.js";
+import {handleSystemAdmin} from "./system-status.js";
 
 const CASE_STATUSES=new Set(["open","pending","resolved","closed"]);
 const CASE_PRIORITIES=new Set(["low","normal","high","urgent"]);
@@ -12,10 +13,12 @@ const ROLE_PERMISSIONS={
 export async function handleAdmin(request,env,headers,session){
   if(!session)return json({success:false,error:{code:"UNAUTHORIZED",message:"Authentication required"}},401,headers);
   const access=adminAccess(session);
-  if(!access.roles.length)return json({success:false,error:{code:"FORBIDDEN",message:"Admin Console role required"}},403,headers);
+  if(!access.authorized)return json({success:false,error:{code:"FORBIDDEN",message:"A @sorasukt.com account with the Auth0 admin role is required"}},403,headers);
   if(!env.DB)return json({success:false,error:{code:"STORAGE_NOT_CONFIGURED",message:"Storage is not configured"}},503,headers);
   const url=new URL(request.url);
   try{
+    const systemResponse=await handleSystemAdmin(request,env,headers,session);
+    if(systemResponse)return systemResponse;
     if(url.pathname==="/api/admin/session")return only(request,"GET",headers,()=>json({success:true,admin:{sub:session.sub,name:session.name,email:session.email,roles:access.roles,permissions:access.permissions}},200,headers));
     if(url.pathname==="/api/admin/overview")return guarded(request,"GET",headers,access,"overview:read",()=>overview(env,headers));
     if(url.pathname==="/api/admin/payments")return guarded(request,"GET",headers,access,"payments:read",()=>payments(env,headers,url));
@@ -42,9 +45,11 @@ export async function handleAdmin(request,env,headers,session){
 }
 
 export function adminAccess(session){
+  const email=String(session?.email||"").trim().toLowerCase();
   const roles=[...new Set((Array.isArray(session?.roles)?session.roles:[]).map(role=>String(role||"").trim().toLowerCase()).filter(role=>ROLE_PERMISSIONS[role]))];
-  const permissions=[...new Set(roles.flatMap(role=>ROLE_PERMISSIONS[role]))];
-  return {roles,permissions};
+  const authorized=email.endsWith("@sorasukt.com")&&roles.includes("admin");
+  const permissions=authorized?[...new Set(roles.flatMap(role=>ROLE_PERMISSIONS[role]))]:[];
+  return {authorized,roles:authorized?roles:[],permissions};
 }
 
 async function overview(env,headers){

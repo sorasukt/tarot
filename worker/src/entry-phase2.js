@@ -4,10 +4,12 @@ import {handleAdvancedBilling,handleAdvancedAdmin,handleStripeWebhookWithRecover
 import {handleBillingAccount} from "./billing-account.js";
 import {handleRedeem} from "./redeem.js";
 import {handleRedeemAdmin} from "./redeem-admin.js";
+import {publicStatus} from "./system-status.js";
 
 export default {
   async fetch(request,env,ctx){
     const url=new URL(request.url);
+    if(url.pathname==="/api/status"&&request.method==="GET")return publicStatus(env,baseHeaders(request,env));
     if(url.pathname==="/pangtang"||url.pathname.startsWith("/pangtang/")){
       if(!env.PANGTANG_API)return json({success:false,error:{code:"SERVICE_UNAVAILABLE",message:"PangTang API is not configured"}},503,baseHeaders(request,env));
       const target=new URL(request.url);
@@ -17,7 +19,7 @@ export default {
       if(request.method!=="OPTIONS"&&target.pathname!=="/health"){
         let session=null;
         try{session=await getSession(request,env)}catch(error){console.error(JSON.stringify({message:"PangTang session failed",error:error?.message||"error"}))}
-        if(session)forwardedHeaders.set("X-PangTang-Identity",encodeIdentity({sub:session.sub,email:session.email,name:session.name}));
+        if(session)forwardedHeaders.set("X-PangTang-Identity",encodeIdentity({sub:session.sub,email:session.email,name:session.name,test_membership:Boolean(session.test_access?.membership),test_expires_at:session.test_access?.exp||null}));
       }
       return env.PANGTANG_API.fetch(new Request(target,{method:request.method,headers:forwardedHeaders,body:request.method==="GET"||request.method==="HEAD"?undefined:request.body,redirect:"manual"}));
     }

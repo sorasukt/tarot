@@ -8,6 +8,13 @@ const LIMITS={
 };
 
 export async function entitlementFor(env,session,feature){
+  if(session?.test_access){
+    const membership=session.test_access.membership
+      ? {active:true,period:"monthly",paymentType:"temporary_test",expiresAt:session.test_access.exp}
+      : null;
+    const tier=membership?"member":"free";
+    return {tier,membership,limit:LIMITS[tier]?.[feature]??0,temporary:true};
+  }
   const membership=session?.sub?await loadMembership(env,session.sub):null;
   const tier=membership?.active?(membership.period==="yearly"?"annual_member":"member"):session?.sub?"free":"guest";
   return {tier,membership,limit:LIMITS[tier]?.[feature]??0};
