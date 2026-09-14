@@ -23,6 +23,11 @@ export async function getSession(request, env) {
   try {
     const payload = JSON.parse(decodeBase64Url(payloadPart));
     if (!payload?.sub || !payload?.exp || payload.exp <= Math.floor(Date.now() / 1000)) return null;
+    if (payload.test_access) {
+      if (payload.test_access.exp <= Math.floor(Date.now() / 1000)) return null;
+      const wantsPangTang = new URL(request.url).pathname.startsWith("/pangtang");
+      if ((payload.test_access.service === "pangtang") !== wantsPangTang) return null;
+    }
     payload.roles = normalizeRoles(payload.roles);
     return payload;
   } catch {
