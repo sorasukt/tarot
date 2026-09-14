@@ -3,7 +3,7 @@ import test from "node:test";
 import {handleRedeemAdmin} from "../src/redeem-admin.js";
 
 const headers={"Content-Type":"application/json"};
-const session={sub:"auth0|admin",roles:["admin"]};
+const session={sub:"auth0|admin",email:"admin@sorasukt.com",roles:["admin"]};
 
 function db(){return {prepare(sql){let values=[];return {bind(...bound){values=bound;return this},async run(){return {meta:{changes:1},sql,values}},async all(){return {results:[]}}}}}}
 
